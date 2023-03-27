@@ -3,10 +3,17 @@ package logika;
 import splosno.Poteza;
 
 public class Igra {
+	
+	private Mreza mreza;
+	private BarvaIgralca naslednjiIgralec;
 
 	public Igra() {
-		// TODO: Konstruktor mora ustvariti novo igro velikosti 9x9
-		// igro začne črni igralec
+		this(9);
+	}
+
+	public Igra(int velikost) {
+		mreza = new Mreza(velikost, velikost);
+		naslednjiIgralec = BarvaIgralca.CRNA;
 	}
 	
 	public boolean odigraj(Poteza poteza) {
