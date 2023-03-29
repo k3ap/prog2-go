@@ -13,6 +13,7 @@ public abstract class Iskanje {
 	
 	protected abstract void vstopnaAkcija(Indeks idx);
 	protected abstract void izstopnaAkcija(Indeks idx);
+	protected abstract void opaznaAkcija(Indeks idx, Indeks stars);
 	
 	private final int sosedi[][] = new int[][] {
 		{-1, 0},
@@ -34,6 +35,7 @@ public abstract class Iskanje {
 				continue;
 			
 			Indeks novIdx = new Indeks(i, j);
+			opaznaAkcija(novIdx, idx);
 			podatki.oznaciPreiskano(novIdx);
 		}
 		
@@ -49,6 +51,14 @@ public abstract class Iskanje {
 		indeksiZaIskanje.add(zacetniIdx);
 		while (!indeksiZaIskanje.isEmpty()) {
 			korakIskanja();
+		}
+	}
+	
+	public void pozeniVse() {
+		for (int i = 0; i < mreza.visina(); i++) {
+			for (int j = 0; j < mreza.sirina(); j++) {
+				pozeni(new Indeks(i, j));
+			}
 		}
 	}
 }
