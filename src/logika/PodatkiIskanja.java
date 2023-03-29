@@ -17,4 +17,8 @@ public class PodatkiIskanja {
 	public void oznaciPreiskano(Indeks idx) {
 		preiskano.add(idx);
 	}
+	
+	public void ponastavi() {
+		preiskano.clear();
+	}
 }
