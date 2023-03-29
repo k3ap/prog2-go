@@ -51,4 +51,12 @@ public class Igra {
 		}
 		return true;
 	}
+
+	public int sirina() {
+		return mreza.sirina();
+	}
+
+	public int visina() {
+		return mreza.visina();
+	}
 }
