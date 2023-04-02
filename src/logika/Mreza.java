@@ -3,11 +3,15 @@ package logika;
 import java.util.HashMap;
 import java.util.HashSet;
 
+/**
+ * Predstavitev igralne mreže
+ */
 public class Mreza {
 	
-	/*	Pomožna razreda za iskanje povezanih komponent v grafu
-	 * */
-	
+	/**
+	 * Pomožni razred za iskanje povezanih komponent v grafu
+	 * Hrani "barvo" vozlišč; vozlišči sta iste barve nt, ko sta v isti komponenti
+	 */
 	private class PodatkiIskanjaKomponent extends PodatkiIskanja {
 		private int steviloBarv = 0;
 		
@@ -21,6 +25,10 @@ public class Mreza {
 		}
 	}
 	
+	/**
+	 * Pomožni razred, ki išče povezane komponente v grafu.
+	 * Med iskanjem nastavi vrednosti v mreza.povezaneKomponente
+	 */
 	private class IskanjeKomponent extends IskanjeVSirino {
 
 		public IskanjeKomponent(Mreza mreza, PodatkiIskanjaKomponent podatki) {
@@ -46,10 +54,14 @@ public class Mreza {
 
 		@Override
 		protected boolean dodajSoseda(Indeks stars, Indeks sosed) {
-			return mreza.barvaPolja(sosed) == mreza.barvaPolja(stars);
+			return super.dodajSoseda(stars, sosed) 
+					&& mreza.barvaPolja(sosed) == mreza.barvaPolja(stars);
 		}
 	}
 	
+	/**
+	 * Pomožni razred za hranjenje podatkov o svobodah med iskanjem
+	 */
 	private class PodatkiIskanjaSvobod extends PodatkiIskanja {
 		private HashMap< Integer, HashSet<Indeks> > svobode;
 		
@@ -69,6 +81,11 @@ public class Mreza {
 		}
 	}
 	
+	/**
+	 * Pomožni razred za iskanje svobod določene komponente
+	 * Predpostavi, da je bilo iskanje komponent že zaključeno in 
+	 * da so podatki v mreza.povezaneKomponente točni
+	 */
 	private class IskanjeSvobod extends IskanjeVSirino {
 
 		public IskanjeSvobod(Mreza mreza, PodatkiIskanjaSvobod podatki) {
@@ -83,7 +100,9 @@ public class Mreza {
 
 		@Override
 		protected boolean dodajSoseda(Indeks stars, Indeks sosed) {
-			return mreza.barvaPolja(stars) == mreza.barvaPolja(sosed) && mreza.barvaPolja(stars) != BarvaPolja.PRAZNA;
+			return super.dodajSoseda(stars, sosed)
+					&& mreza.barvaPolja(stars) == mreza.barvaPolja(sosed) 
+					&& mreza.barvaPolja(stars) != BarvaPolja.PRAZNA;
 		}
 
 		@Override
@@ -100,9 +119,23 @@ public class Mreza {
 		
 	}
 	
+	/**
+	 * Hrani trenutno barvo kamna, postavljenega na nek del mreže
+	 */
 	private BarvaPolja mreza[][];
+	
+	/**
+	 * Hrani števila ("barve"), ki predstavljajo povezano komponento.
+	 * Enako število pomeni ista komponenta.
+	 * To tabelo izpolni IskanjeKomponent
+	 */
 	private int povezaneKomponente[][];
+	
+	/**
+	 * Višina in širina mreže.
+	 */
 	private int visina, sirina;
+
 	private IskanjeKomponent iskanjeKomponent;
 	private IskanjeSvobod iskanjeSvobod;
 	
@@ -120,22 +153,42 @@ public class Mreza {
 	public int visina() { return visina; }
 	public int sirina() { return sirina; }
 	
+	/**
+	 * Vrne trenutno barvo kamna na danem polju.
+	 * @param idx Indeks polja
+	 * @return Barva kamna na indeksu
+	 */
 	public BarvaPolja barvaPolja(Indeks idx) {
 		return mreza[idx.i()][idx.j()];
 	}
 	
+	/**
+	 * Preveri, če sta dva indeksa v isti komponenti
+	 * @param idx1 Indeks prvega vozlišča
+	 * @param idx2 Indeks drugega vozlišča
+	 * @return true nt, ko sta indeksa v isti komponenti 
+	 */
 	public boolean istaKomponenta(Indeks idx1, Indeks idx2) {
 		return povezaneKomponente[idx1.i()][idx1.j()] == povezaneKomponente[idx2.i()][idx2.j()];
 	}
 	
+	/**
+	 * Nastavi kamen v mreži na dano barvo
+	 * @param idx Indeks v mreži
+	 * @param barva Barva kamna
+	 */
 	public void postaviBarvo(Indeks idx, BarvaPolja barva) {
 		mreza[idx.i()][idx.j()] = barva;
 		iskanjeKomponent.pozeniVse();
 		iskanjeSvobod.pozeniVse();
 	}
 	
+	/**
+	 * Preveri, če je dana barva izgubila igro (če ima komponento brez svobod)
+	 * @param barva Barva, za katero iščemo prazne svobode. Deluje smiselno le za CRNA ali BELA
+	 * @return true, če je dana barva izgubila igro
+	 */
 	public boolean jeBarvaIzgubila(BarvaPolja barva) {
-		// vrne true, če je dana barva izgubila (ima skupino z 0 svobodami)
 		for (int i = 0; i < visina; i++) {
 			for (int j = 0; j < sirina; j++) {
 				if (mreza[i][j] != barva) continue;
