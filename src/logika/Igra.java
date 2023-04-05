@@ -81,5 +81,4 @@ public class Igra {
 	 */
 	public PlayerColor playerTurn() { return nextPlayer; }
 	public PlayerColor winner() { return winner; }
-
 }
