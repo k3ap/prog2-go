@@ -1,5 +1,8 @@
 package logika;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import splosno.Poteza;
 
 /**
@@ -62,4 +65,17 @@ public class Igra {
 	public BarvaPolja barvaPolja(Indeks idx) { return mreza.barvaPolja(idx); }
 	public BarvaIgralca naPotezi() { return naslednjiIgralec; }
 	public BarvaIgralca zmagovalec() { return zmagovalec; }
+	
+	/**
+	 * Poišči veljavne poteze za naslednjega igralca
+	 * @return Seznam veljavnih potez
+	 */
+	public List<Poteza> veljavnePoteze() {
+		ArrayList<Poteza> res = new ArrayList<>();
+		for (Indeks idx : mreza.prostaPolja()) {
+			res.add(idx.poteza());
+		}
+		return res;
+	}
+
 }

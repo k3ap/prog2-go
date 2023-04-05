@@ -10,4 +10,12 @@ public record Indeks(int i, int j) {
 	Indeks(Poteza poteza) {
 		this(poteza.x(), poteza.y());
 	}
+	
+	/**
+	 * Pretvori indeks v potezo
+	 * @return Poteza z enakimi koordinatami
+	 */
+	public Poteza poteza() {
+		return new Poteza(i, j);
+	}
 }
