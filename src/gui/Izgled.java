@@ -12,6 +12,7 @@ public class Izgled {
 	public Color crnKamen;
 	public Color crnKamenRob;
 	public Color barvaMreze;
+	public int premerKamna;
 
 	public Izgled() {
 		// privzeti izgled
@@ -22,5 +23,6 @@ public class Izgled {
 		crnKamen = new Color(5, 5, 10);
 		crnKamenRob = new Color(100, 0, 100);
 		barvaMreze = new Color(0, 0, 0);
+		premerKamna = 40;
 	}
 }
