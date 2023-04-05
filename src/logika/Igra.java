@@ -52,11 +52,8 @@ public class Igra {
 		return true;
 	}
 
-	public int sirina() {
-		return mreza.sirina();
-	}
-
-	public int visina() {
-		return mreza.visina();
-	}
+	public int sirina() { return mreza.sirina(); }
+	public int visina() { return mreza.visina(); }
+	public BarvaPolja barvaPolja(Indeks idx) { return mreza.barvaPolja(idx); }
+	public BarvaIgralca naPotezi() { return naslednjiIgralec; }
 }
