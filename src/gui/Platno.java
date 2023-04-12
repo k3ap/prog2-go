@@ -37,10 +37,26 @@ class Platno extends JPanel implements MouseListener {
 	private void izracunajDimenzije() {
 		if (igra == null) { return; }
 		
-		leviRob = (int) (dimenzije.width * 0.1);
-		sirinaKorak = (int) (dimenzije.width * 0.8 / (igra.sirina() - 1));
-		zgornjiRob = (int) (dimenzije.height * 0.1);
-		visinaKorak = (int) (dimenzije.height * 0.8 / (igra.visina() - 1));
+		int sirina = getSize().width;
+		int visina = getSize().height;
+		
+		// poskrbeti je treba, da bo mreža kvadratna
+		if (sirina >= visina) {
+			// zamaknemo na sredino
+			leviRob = (sirina - visina) / 2;
+			zgornjiRob = 0;
+			sirina = visina; // da bo mreza res kvadratna
+		}
+		else {
+			leviRob = 0;
+			zgornjiRob = (visina - sirina) / 2;
+			visina = sirina;
+		}
+		
+		leviRob += (int) (sirina * 0.1);
+		sirinaKorak = (int) (sirina * 0.8 / (igra.sirina() - 1));
+		zgornjiRob += (int) (visina * 0.1);
+		visinaKorak = (int) (visina * 0.8 / (igra.visina() - 1));
 	}
 
 	@Override
@@ -146,8 +162,9 @@ class Platno extends JPanel implements MouseListener {
 	 * @param sporocilo Tekst, ki ga želimo napisati.
 	 */
 	private void napisiSporocilo(Graphics2D g2, String sporocilo) {
-		g2.setFont(g2.getFont().deriveFont((float) 20.0));
-		g2.drawString(sporocilo, (int) (dimenzije.width * 0.1), (int) (dimenzije.height * 0.05));
+		float velikost = (float) (20.0 * getSize().height / 700.0);
+		g2.setFont(g2.getFont().deriveFont(velikost));
+		g2.drawString(sporocilo, leviRob, (int) (zgornjiRob - velikost));
 	}
 	
 	/**
