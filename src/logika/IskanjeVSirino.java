@@ -12,8 +12,14 @@ public abstract class IskanjeVSirino extends Iskanje {
 	private LinkedList<Indeks> indeksiZaIskanje;
 	
 	@Override
+	protected void oznaciZaPreiskati(Indeks idx) {
+		indeksiZaIskanje.add(idx);
+	}
+	
+	@Override
 	protected void zacetek(Indeks zacetniIdx) {
 		indeksiZaIskanje.add(zacetniIdx);
+		podatki.oznaciPreiskano(zacetniIdx);
 	}
 	
 	@Override

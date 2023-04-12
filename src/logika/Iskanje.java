@@ -50,8 +50,8 @@ public abstract class Iskanje {
 	protected abstract void izstopnaAkcija(Indeks idx, Indeks zacetniIdx);
 	
 	/**
-	 * Akcija, ki se zgodi, ko dodamo soseda nekega vozlišča v obravnavo
-	 * Zgodi se le ob pogoju, da dodajSoseda(stars, sosed) vrne true
+	 * Akcija, ki se zgodi, preden dodamo soseda nekega vozlišča v obravnavo
+	 * (tudi če ga ne bomo)
 	 * @param sosed Vozlišče, ki ga opazimo
 	 * @param stars Vozlišče, iz katerega opazimo
 	 * @param zacetniIdx Indeks, kjer se je iskanje začelo
@@ -67,6 +67,12 @@ public abstract class Iskanje {
 	protected boolean dodajSoseda(Indeks stars, Indeks sosed) {
 		return podatki.zaPreiskati(sosed);
 	}
+	
+	/**
+	 * Označi(dodaj v vrsto/sklad/...), da je treba dani indeks preiskati
+	 * @param idx Indeks
+	 */
+	protected abstract void oznaciZaPreiskati(Indeks idx);
 	
 	/**
 	 * Pomožna tabela, ki hrani indekse sosednjih vozlišč.
@@ -92,8 +98,9 @@ public abstract class Iskanje {
 				continue;
 			
 			Indeks novIdx = new Indeks(i, j);
+			opaznaAkcija(novIdx, idx, zacetniIdx);
 			if (dodajSoseda(idx, novIdx)) {
-				opaznaAkcija(novIdx, idx, zacetniIdx);
+				oznaciZaPreiskati(novIdx);
 				podatki.oznaciPreiskano(novIdx);
 			}
 		}
@@ -128,7 +135,10 @@ public abstract class Iskanje {
 		podatki.ponastavi();
 		for (int i = 0; i < mreza.visina(); i++) {
 			for (int j = 0; j < mreza.sirina(); j++) {
-				pozeni(new Indeks(i, j));
+				Indeks idx = new Indeks(i, j);
+				if (podatki.zaPreiskati(idx)) {
+					pozeni(idx);
+				}
 			}
 		}
 	}

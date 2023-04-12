@@ -1,7 +1,9 @@
 package logika;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Predstavitev igralne mreže
@@ -21,6 +23,7 @@ public class Mreza {
 		
 		@Override
 		public void ponastavi() {
+			super.ponastavi();
 			steviloBarv = 0;
 		}
 	}
@@ -55,7 +58,7 @@ public class Mreza {
 		@Override
 		protected boolean dodajSoseda(Indeks stars, Indeks sosed) {
 			return super.dodajSoseda(stars, sosed) 
-					&& mreza.barvaPolja(sosed) == mreza.barvaPolja(stars);
+					&& mreza.barvaPolja(sosed).equals(mreza.barvaPolja(stars));
 		}
 	}
 	
@@ -77,7 +80,19 @@ public class Mreza {
 		}
 		
 		public int steviloSvobod(int povezanaBarva) {
+			if (!svobode.containsKey(povezanaBarva)) {
+				return 0;
+			}
 			return svobode.get(povezanaBarva).size();
+		}
+		
+		public void oznaciKotSvobodo(int barva, Indeks idx) {
+			if (svobode.containsKey(barva)) {
+				svobode.get(barva).add(idx);
+			} else {
+				svobode.put(barva, new HashSet<>());
+				svobode.get(barva).add(idx);
+			}
 		}
 	}
 	
@@ -101,8 +116,8 @@ public class Mreza {
 		@Override
 		protected boolean dodajSoseda(Indeks stars, Indeks sosed) {
 			return super.dodajSoseda(stars, sosed)
-					&& mreza.barvaPolja(stars) == mreza.barvaPolja(sosed) 
-					&& mreza.barvaPolja(stars) != BarvaPolja.PRAZNA;
+					&& mreza.barvaPolja(stars).equals(mreza.barvaPolja(sosed)) 
+					&& !mreza.barvaPolja(stars).equals(BarvaPolja.PRAZNA);
 		}
 
 		@Override
@@ -111,9 +126,9 @@ public class Mreza {
 				return;
 			
 			if (mreza.barvaPolja(idx) == BarvaPolja.PRAZNA) {
-				int barva = mreza.povezaneKomponente[idx.i()][idx.j()];
+				int barva = mreza.povezaneKomponente[stars.i()][stars.j()];
 				PodatkiIskanjaSvobod p = (PodatkiIskanjaSvobod) (this.podatki);
-				p.svobode.get(barva).add(idx);
+				p.oznaciKotSvobodo(barva, idx);
 			}
 		}
 		
@@ -141,6 +156,11 @@ public class Mreza {
 	
 	public Mreza(int visina, int sirina) {
 		mreza = new BarvaPolja[visina][sirina];
+		for (int i = 0; i < visina; i++) {
+			for (int j = 0; j < sirina; j++) {
+				mreza[i][j] = BarvaPolja.PRAZNA;
+			}
+		}
 		povezaneKomponente = new int[visina][sirina];
 		this.visina = visina;
 		this.sirina = sirina;
@@ -181,6 +201,12 @@ public class Mreza {
 		mreza[idx.i()][idx.j()] = barva;
 		iskanjeKomponent.pozeniVse();
 		iskanjeSvobod.pozeniVse();
+		/*for (int i = 0; i < visina; i++) {
+			for (int j = 0; j < sirina; j++) {
+				System.out.format("%d ", povezaneKomponente[i][j]);
+			}
+			System.out.println();
+		}*/
 	}
 	
 	/**
@@ -199,5 +225,45 @@ public class Mreza {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * Poglej, če je polje z danim ideksom prosto
+	 * @param idx Indeks
+	 * @return true, kadar je polje idx prosto
+	 */
+	public boolean jePoljeProsto(Indeks idx) {
+		return barvaPolja(idx) == BarvaPolja.PRAZNA;
+	}
+	
+	/**
+	 * Poišči vsa prosta polja
+	 * @return Seznam prostih polj v mreži
+	 */
+	public List<Indeks> prostaPolja() {
+		ArrayList<Indeks> res = new ArrayList<>();
+		for (int i = 0; i < visina; i++) {
+			for (int j = 0; j < sirina; j++) {
+				Indeks idx = new Indeks(i, j);
+				if (jePoljeProsto(idx)) {
+					res.add(idx);
+				}
+			}
+		}
+		return res;
+	}
+
+	public void izpisi() {
+		for (int i = 0; i < visina; i++) {
+			for (int j = 0; j < sirina; j++) {
+				char c = switch(mreza[i][j]) {
+				case PRAZNA -> '.';
+				case BELA -> 'o';
+				case CRNA -> '#';
+				};
+				System.out.print(c);
+			}
+			System.out.println();
+		}
 	}
 }
