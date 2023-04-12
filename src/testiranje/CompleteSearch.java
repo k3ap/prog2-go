@@ -10,20 +10,30 @@ import logika.Mreza;
  */
 public class CompleteSearch {
 	
-	private static void search(Mreza mreza, BarvaIgralca igralec, int globina) {
+	private record DveStevili(int a, int b) {}
+	
+	private static DveStevili search(Mreza mreza, BarvaIgralca igralec, int globina) {
+		int zmage = 0;
+		int zgube = 0;
 		for (Indeks idx : mreza.prostaPolja()) {
 			mreza.postaviBarvo(idx, BarvaPolja.igralcevaBarva(igralec));
 			mreza.izpisi();
 			if (mreza.jeBarvaIzgubila(BarvaPolja.igralcevaBarva(BarvaIgralca.novaBarva(igralec)))) {
 				System.out.println("Zmaga za " + igralec);
+				zmage++;
 			} else if (mreza.jeBarvaIzgubila(BarvaPolja.igralcevaBarva(igralec))) {
 				System.out.println("Izguba za " + igralec);
+				zgube++;
 			} else {
-				System.out.format("Branchpoint (depth=%d).", globina);
-				search(mreza, BarvaIgralca.novaBarva(igralec), globina+1);
+				System.out.format("Branchpoint (depth=%d).\n", globina);
+				DveStevili ns = search(mreza, BarvaIgralca.novaBarva(igralec), globina+1);
+				zmage += ns.b;
+				zgube += ns.a;
+				System.out.format("Branchpoint (depth=%d) backtrack. Zmage/izgube za %s: %d/%d\n", globina, igralec.toString(), ns.b, ns.a);
 			}
 			mreza.postaviBarvo(idx, BarvaPolja.PRAZNA);
 		}
+		return new DveStevili(zmage, zgube);
 	}
 	
 	private static final int N = 4;
