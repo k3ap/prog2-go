@@ -1,0 +1,11 @@
+* Teorija za ustvaritev funkcije
+
+Možna ideja je, da ustvariva metrike, ki bi lahko merile, kako dobra je določena pozicija. Te (številske) metrike nato s pomočjo testnih podatkov uteživa, da dobiva končno funkcijo.
+
+Možne metrike so naslednje: ("on" je nasprotnik)
+- število mojih/njegovih kamnov
+- koliko svobod ima moja/njegova najslabša komponenta
+- povprečno število svobod za moje/njegove komponente
+- najmanjša/povprečna/skupna velikost praznih komponent, ki so sosednje mojim/njegovim komponentam
+
+Za uteževanje potrebujeva nekaj dobrih primerov; v ta namen je napisan razred =CompleteSearch.java=, ki na naključni mreži preišče vse možnosti in izpiše, kolikokrat je igralec zgubil ali zmagal.
