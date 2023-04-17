@@ -58,11 +58,13 @@ public class CompleteSearch {
 			barva = BarvaIgralca.novaBarva(barva);
 		}
 		*/
-		Mreza mreza = RandomMrezaGenerator.nakljucnaMreza(9, 0.6);
+		Mreza mreza = RandomMrezaGenerator.nakljucnaMreza(9, 0.7);
 		BarvaIgralca barva = BarvaIgralca.CRNA;
 		mreza.izpisi();
-		// mreza.izpisiVDatoteko("mreza.m9");
+		mreza.izpisiVDatoteko("autogen-primeri/najnovejsi.m9");
 		System.out.println();
+		System.out.format("minSS za crno: %d\n", mreza.minSteviloSvobodBarve(BarvaPolja.CRNA));
+		System.out.format("minSS za belo: %d\n", mreza.minSteviloSvobodBarve(BarvaPolja.BELA));
 		DveStevili ns = search(mreza, barva, 0, false);
 		System.out.format("Zmage/izgube za %s: %d/%d\n", barva.toString(), ns.a, ns.b);
 		
