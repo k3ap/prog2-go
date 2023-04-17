@@ -309,4 +309,16 @@ public class Grid {
 		}
 		return grid;
     }
+
+	public Mreza deepcopy() {
+		Grid m = new Grid(hright, width);
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				m.grid[i][j] = grid[i][j];
+			}
+		}
+		m.componetSearch.runAll();
+		m.libertiesSearch.runAll();
+		return m;
+	}
 }
