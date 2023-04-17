@@ -73,12 +73,12 @@ public class VodenaIgra {
 			status = RezultatPoteze.NEVELJAVNA;
 			return;
 		}
-
-		if (tipIgre == TipIgre.CLORAC || tipIgre == TipIgre.RACCLO) {
+		
+		status = zmagovalecVRezultat(igra.zmagovalec());
+		if ((tipIgre == TipIgre.CLORAC || tipIgre == TipIgre.RACCLO) && status == RezultatPoteze.IGRAMO) {
+			// ko človek konča s potezo je na vrsti računalnik
+			status = RezultatPoteze.POCAKAJ;
 			inteligencaNarediPotezo();
-		}
-		else {
-			status = RezultatPoteze.IGRAMO;
 		}
 	}
 
@@ -114,12 +114,27 @@ public class VodenaIgra {
 				}
 
 				igra.odigraj(poteza);
-				status = RezultatPoteze.IGRAMO;
+				status = zmagovalecVRezultat(igra.zmagovalec());
 				okno.update();
 			}
 		};
 		status = RezultatPoteze.POCAKAJ;
 		worker.execute();
+	}
+	
+	private RezultatPoteze zmagovalecVRezultat(BarvaIgralca zmagovalec) {
+		if (zmagovalec == null) {
+			return RezultatPoteze.IGRAMO;
+		}
+		switch (igra.zmagovalec()) {
+		case BELA:
+			return RezultatPoteze.ZMAGABEL;
+		case CRNA:
+			return RezultatPoteze.ZMAGACRN;
+		default:
+			assert false;
+			return RezultatPoteze.IGRAMO;
+		}
 	}
 
 	/**

@@ -122,7 +122,6 @@ class Platno extends JPanel implements MouseListener {
 		// kdo je na vrsti
 		switch (igra.statusIgre()) {
 		case NEVELJAVNA:
-			break;
 		case IGRAMO:
 			switch (igra.naPotezi()) {
 			case BELA:
@@ -138,6 +137,12 @@ class Platno extends JPanel implements MouseListener {
 			break;
 		case NAPAKA:
 			napisiSporocilo(g2, "Algoritem za izbiro poteze se je sesul.");
+			break;
+		case ZMAGABEL:
+			napisiSporocilo(g2, "Zmagal je igralec belih kamnov.");
+			break;
+		case ZMAGACRN:
+			napisiSporocilo(g2, "Zmagal je igralec črnih kamnov.");
 			break;
 		}
 	}
@@ -194,10 +199,10 @@ class Platno extends JPanel implements MouseListener {
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if (igra == null) { return; }
-		// Če se odloča računalnik ali pa če je računalnik naredil napako
-		// klikanje ne naredi ničesar.
-		if (igra.statusIgre() == RezultatPoteze.POCAKAJ
-			|| igra.statusIgre() == RezultatPoteze.NAPAKA) { return; }
+		// Če v trenutnem statusu igre človek ne more narediti poteze,
+		// klikanje ne naredi ničesar
+		if (igra.statusIgre() != RezultatPoteze.NEVELJAVNA
+			&& igra.statusIgre() != RezultatPoteze.IGRAMO) { return; }
 		
 		izracunajDimenzije();
 		int x = e.getX();

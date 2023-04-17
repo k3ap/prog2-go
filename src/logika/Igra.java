@@ -9,6 +9,7 @@ public class Igra {
 	
 	private Mreza mreza;
 	private BarvaIgralca naslednjiIgralec;
+	private BarvaIgralca zmagovalec;
 
 	/**
 	 * Ustvari novo igro na polju 9x9.
@@ -23,6 +24,7 @@ public class Igra {
 	 */
 	public Igra(int velikost) {
 		mreza = new Mreza(velikost, velikost);
+		zmagovalec = null; // null pomeni, da nihče ni zmagal
 		naslednjiIgralec = BarvaIgralca.CRNA;
 	}
 	
@@ -40,13 +42,16 @@ public class Igra {
 			return false;
 		}
 		mreza.postaviBarvo(idx, BarvaPolja.igralcevaBarva(naslednjiIgralec));
+		BarvaIgralca taIgralec = naslednjiIgralec;
 		naslednjiIgralec = BarvaIgralca.novaBarva(naslednjiIgralec);
 		if (mreza.jeBarvaIzgubila( BarvaPolja.igralcevaBarva(naslednjiIgralec) )) {
-			System.out.println("poteza je bila zmagajoca");
+			// taIgralec je igral zmagujočo potezo
+			zmagovalec = taIgralec;
 			return true;
 		}
 		if (mreza.jeBarvaIzgubila( BarvaPolja.igralcevaBarva( BarvaIgralca.novaBarva(naslednjiIgralec) ) )) {
-			System.out.println("poteza je bila samomor");
+			// ta igralec je naredil samomorilno potezo
+			zmagovalec = naslednjiIgralec;
 			return true;
 		}
 		return true;
@@ -56,4 +61,5 @@ public class Igra {
 	public int visina() { return mreza.visina(); }
 	public BarvaPolja barvaPolja(Indeks idx) { return mreza.barvaPolja(idx); }
 	public BarvaIgralca naPotezi() { return naslednjiIgralec; }
+	public BarvaIgralca zmagovalec() { return zmagovalec; }
 }
