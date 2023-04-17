@@ -22,8 +22,7 @@ public class Inteligenca extends KdoIgra {
 	 * Je tu za namene tekmovanja.
 	 */
 	public Inteligenca() {
-		//this(new NakljucniDolocevalecPoteze());
-		this(new MinMaxDolocevalecPoteze(3));
+		this(new MinMaxDolocevalecPoteze(2));
 	}
 	
 	public Poteza izberiPotezo(Igra igra) {		

@@ -18,6 +18,7 @@ public class MinMaxDolocevalecPoteze extends DolocevalecPoteze {
 	private double oceniStanje(Mreza mreza, BarvaIgralca naslednjiIgralec) {
 		int mojeTocke = mreza.minSteviloSvobodBarve(naslednjiIgralec.polje());
 		int njegoveTocke = mreza.minSteviloSvobodBarve(naslednjiIgralec.naslednji().polje());
+		//System.out.format("svobode (%s): %d - %d\n", naslednjiIgralec, mojeTocke, njegoveTocke);
 		return mojeTocke - njegoveTocke;
 	}
 	
@@ -28,7 +29,7 @@ public class MinMaxDolocevalecPoteze extends DolocevalecPoteze {
 			return Double.NEGATIVE_INFINITY;
 		}
 		if (globina == maxGlobina) return oceniStanje(mreza, igralec);
-		double najbolje = 0;
+		Double najbolje = null;
 		for (Indeks poteza : mreza.prostaPolja()) {
 			Mreza nova = mreza.deepcopy();
 			nova.postaviBarvo(poteza, igralec.polje());
@@ -38,9 +39,12 @@ public class MinMaxDolocevalecPoteze extends DolocevalecPoteze {
 			} else if (mreza.jeBarvaIzgubila(igralec.polje())) {
 				vrednost = Double.NEGATIVE_INFINITY;
 			} else {
-				vrednost = minMaxOceni(nova, globina+1, igralec.naslednji());
+				//System.out.println("rekurzija");
+				//nova.izpisi();
+				vrednost = -minMaxOceni(nova, globina+1, igralec.naslednji());
 			}
-			najbolje = Math.max(-najbolje, vrednost);
+			if (najbolje == null || vrednost > najbolje)
+				najbolje = vrednost;
 		}
 		return najbolje;
 	}
@@ -55,9 +59,13 @@ public class MinMaxDolocevalecPoteze extends DolocevalecPoteze {
 		Poteza najboljsa = null;
 		double najocena = 0;
 		for (Poteza poteza : igra.veljavnePoteze()) {
-			double ocena = minMaxOceni(igra.mreza, 1, igra.naslednjiIgralec);
+			Mreza nova = igra.mreza.deepcopy();
+			nova.postaviBarvo(new Indeks(poteza), igra.naslednjiIgralec.polje());
+			double ocena = -minMaxOceni(nova, 1, igra.naslednjiIgralec.naslednji());
+			//System.out.format("Igralec %s oceni %d,%d za %f\n", igra.naslednjiIgralec.toString(), poteza.x(), poteza.y(), ocena);
 			if (najboljsa == null || najocena < ocena) {
 				najboljsa = poteza;
+				najocena = ocena;
 			}
 		}
 		return najboljsa;
