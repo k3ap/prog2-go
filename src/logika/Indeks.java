@@ -7,7 +7,7 @@ import splosno.Poteza;
  * Povsem ekvivalentno razredu splosno.Poteza, vendar je ločen razred iz semantičnih razlogov.
  */
 public record Indeks(int i, int j) {
-	Indeks(Poteza poteza) {
+	public Indeks(Poteza poteza) {
 		this(poteza.x(), poteza.y());
 	}
 	
