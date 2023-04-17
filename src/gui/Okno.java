@@ -7,26 +7,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
-/**
- * Vrsta igre, glede na to katere barve je AI, ali pa sta oba igralca človeka.
- * @see #CLORAC
- * @see #RACCLO
- * @see #CLOCLO
- */
-enum TipIgre {
-	/**
-	 * Človek je črn, računalnik pa bel.
-	 */
-	CLORAC,
-	/**
-	 * Računalnik je bel, človek pa črn.
-	 */
-	RACCLO,
-	/**
-	 * Človek nadzira črnega in belega.
-	 */
-	CLOCLO,
-}
+import vodja.TipIgre;
+
 
 public class Okno extends JFrame implements ActionListener {
 	private static final long serialVersionUID = -3977009338403276682L;
@@ -63,23 +45,31 @@ public class Okno extends JFrame implements ActionListener {
 		return nov;
 	}
 
+	/**
+	 * Posodobi ves GUI.
+	 */
+	public void update() {
+		repaint();
+		platno.repaint();
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// Klik na menu bar na vrhu ekrana.
 		Object vir = e.getSource();
 		if (vir == cloRac) {
-			platno.novaIgra(TipIgre.CLORAC);
+			platno.novaIgra(TipIgre.CLORAC, this);
 		}
 		else if (vir == racClo) {
-			platno.novaIgra(TipIgre.RACCLO);
+			platno.novaIgra(TipIgre.RACCLO, this);
 		}
 		else if (vir == cloClo) {
-			platno.novaIgra(TipIgre.CLOCLO);
+			platno.novaIgra(TipIgre.CLOCLO, this);
 		}
 		else {
 			assert false;
 		}
 		
-		repaint();
+		update();
 	}
 }
