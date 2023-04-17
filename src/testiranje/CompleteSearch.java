@@ -1,5 +1,8 @@
 package testiranje;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import logika.BarvaIgralca;
 import logika.BarvaPolja;
 import logika.Indeks;
@@ -58,9 +61,19 @@ public class CompleteSearch {
 		Mreza mreza = RandomMrezaGenerator.nakljucnaMreza(9, 0.6);
 		BarvaIgralca barva = BarvaIgralca.CRNA;
 		mreza.izpisi();
+		// mreza.izpisiVDatoteko("mreza.m9");
 		System.out.println();
 		DveStevili ns = search(mreza, barva, 0, false);
 		System.out.format("Zmage/izgube za %s: %d/%d\n", barva.toString(), ns.a, ns.b);
+		
+		/*Mreza mreza = null;
+		try {
+			mreza = Mreza.preberiIzDatoteke("mreza.m9", 9);
+		} catch (Exception e) {
+			System.out.println("error");
+			System.exit(1);
+		}
+		mreza.izpisi();*/
 	}
 
 }
