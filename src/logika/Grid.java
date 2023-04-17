@@ -253,6 +253,18 @@ public class Grid {
 		return free;
 	}
 
+    public int minimumNumberOfLiberties(FieldColor color) {
+		int cnt = height*width;
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				if (!grid[i][j].equals(color)) continue;
+				int num = ((LibertiesSearchData)libertiesSearch.data).numberOfLiberties(connectedComponents[i][j]);
+				cnt = Math.min(cnt, num);
+			}
+		}
+		return cnt;
+    }
+
     @Override
     public String toString() {
 		String buf = "";
