@@ -9,14 +9,16 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import logika.BarvaIgralca;
-import logika.Igra;
+import vodja.VodenaIgra;
 import logika.Indeks;
 import splosno.Poteza;
+import vodja.RezultatPoteze;
+import vodja.TipIgre;
 
 
 class Platno extends JPanel implements MouseListener {
 	private static final long serialVersionUID = 7693008210122811280L;
-	private Igra igra;
+	private VodenaIgra igra;
 	private Dimension dimenzije;
 	private Izgled izgled;
 	private int leviRob, zgornjiRob, sirinaKorak, visinaKorak;
@@ -118,12 +120,24 @@ class Platno extends JPanel implements MouseListener {
 		}
 		
 		// kdo je na vrsti
-		switch (igra.naPotezi()) {
-		case BELA:
-			napisiSporocilo(g2, "Na vrsti je bel.");
+		switch (igra.statusIgre()) {
+		case NEVELJAVNA:
 			break;
-		case CRNA:
-			napisiSporocilo(g2, "Na vrsti je črn.");
+		case IGRAMO:
+			switch (igra.naPotezi()) {
+			case BELA:
+				napisiSporocilo(g2, "Na vrsti je bel.");
+				break;
+			case CRNA:
+				napisiSporocilo(g2, "Na vrsti je črn.");
+				break;
+			}
+			break;
+		case POCAKAJ:
+			napisiSporocilo(g2, "Računalnik se odloča...");
+			break;
+		case NAPAKA:
+			napisiSporocilo(g2, "Algoritem za izbiro poteze se je sesul.");
 			break;
 		}
 	}
@@ -171,24 +185,19 @@ class Platno extends JPanel implements MouseListener {
 	 * Začne novo igro danega tipa.
 	 * @param tip Tip igre, ki se igra.
 	 */
-	protected void novaIgra(TipIgre tip) {
-		switch (tip) {
-		case CLOCLO:
-			igra = new Igra();
-			break;
-		case CLORAC:
-			System.out.println("Ta tip igre še ni podprt.");
-			break;
-		case RACCLO:
-			System.out.println("Ta tip igre še ni podprt.");
-			break;
-		}
+	protected void novaIgra(TipIgre tip, Okno okno) {
+		// vodenaIgra potrebuje okno, da ga osveži po potezi računalnika
+		igra = new VodenaIgra(tip, okno);
 		repaint();
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if (igra == null) { return; }
+		// Če se odloča računalnik ali pa če je računalnik naredil napako
+		// klikanje ne naredi ničesar.
+		if (igra.statusIgre() == RezultatPoteze.POCAKAJ
+			|| igra.statusIgre() == RezultatPoteze.NAPAKA) { return; }
 		
 		izracunajDimenzije();
 		int x = e.getX();
