@@ -7,6 +7,8 @@ package vodja;
  * @see #POCAKAJ
  * @see #NEVELJAVNA
  * @see #NAPAKA
+ * @see #ZMAGACRN
+ * @see #ZMAGABEL
  */
 public enum RezultatPoteze {
 	/**
@@ -26,4 +28,12 @@ public enum RezultatPoteze {
 	 * Inteligenca za izbiranje potez se je sesula.
 	 */
 	NAPAKA,
+	/**
+	 * Zmagal črni.
+	 */
+	ZMAGACRN,
+	/**
+	 * Zmagal beli.
+	 */
+	ZMAGABEL,
 }
