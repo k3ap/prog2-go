@@ -253,7 +253,9 @@ public class Grid {
 		return free;
 	}
 
-	public void print() {
+    @Override
+    public String toString() {
+		String buf = "";
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				char c = switch(grid[i][j]) {
@@ -261,9 +263,38 @@ public class Grid {
 				case WHITE -> 'o';
 				case BLACK -> '#';
 				};
-				System.out.print(c);
+				buf += c;
 			}
-			System.out.println();
+			buf += '\n';
 		}
-	}
+		return buf;
+    }
+
+    public void printToFile(String filename) {
+		try (FileWriter writer = new FileWriter(imeDatoteke)) {
+			writer.write(toString());
+		}
+		catch(Exception e) {}
+    }
+
+    public static Grid readFromFile(String filename, int size) throws FileNotFoundException, IOException {
+        Grid grid = new Grid(size, size);
+		try (FileReader reader = new FileReader(filename)) {
+			for (int i = 0; i < size; i++) {
+				for (int j = 0; j < size; j++) {
+					char c = (char) reader.read();
+					switch(c) {
+					case 'o':
+						grid.grid[i][j] = FieldColor.WHITE;
+						break;
+					case '#':
+						grid.grid[i][j] = FieldColor.BLACK;
+						break;
+					}
+				}
+				reader.read();  // newline
+			}
+		}
+		return grid;
+    }
 }
