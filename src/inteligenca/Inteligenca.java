@@ -22,7 +22,7 @@ public class Inteligenca extends KdoIgra {
 	 * Je tu za namene tekmovanja.
 	 */
 	public Inteligenca() {
-		this(new MiniMaxDolocevalecPoteze(3));
+		this(new AlphaBetaDolocevalecPoteze(3, new PrimitivniOcenjevalecMreze()));
 	}
 	
 	public Poteza izberiPotezo(Igra igra) {		
