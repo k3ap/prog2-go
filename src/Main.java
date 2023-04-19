@@ -1,9 +1,9 @@
-import gui.Okno;
+import gui.Window;
 
 class Main {
 	public static void main(String[] args) {
-		Okno o = new Okno();
-		o.pack();
-		o.setVisible(true);
+		Window window = new Window();
+		window.pack();
+		window.setVisible(true);
 	}
 }
