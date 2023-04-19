@@ -16,10 +16,12 @@ public class MiniMaxDolocevalecPoteze extends DolocevalecPoteze {
 	 * uporabimo ocenjevalno funkcijo
 	 */
 	private int maxGlobina;
+	private OcenjevalecMreze ocenjevalec;
 	
-	public MiniMaxDolocevalecPoteze(int maxGlobina) {
+	public MiniMaxDolocevalecPoteze(int maxGlobina, OcenjevalecMreze ocenjevalec) {
 		super();
 		this.maxGlobina = maxGlobina;
+		this.ocenjevalec = ocenjevalec;
 	}
 	
 	/**
@@ -30,10 +32,7 @@ public class MiniMaxDolocevalecPoteze extends DolocevalecPoteze {
 	 * @return Ocena najboljšega izida igre. Večja številka pomeni bolje.
 	 */
 	private double oceniStanje(Mreza mreza, BarvaIgralca igralec) {
-		// Trenutno je ocena preprosta razlika med številom svobod
-		int mojeTocke = mreza.minSteviloSvobodBarve(igralec.polje());
-		int njegoveTocke = mreza.minSteviloSvobodBarve(igralec.naslednji().polje());
-		return mojeTocke - njegoveTocke;
+		return ocenjevalec.oceniMrezo(mreza, igralec);
 	}
 	
 	/**
@@ -75,7 +74,7 @@ public class MiniMaxDolocevalecPoteze extends DolocevalecPoteze {
 
 	@Override
 	public String ime() {
-		return "betago-minimax-"+maxGlobina;
+		return "betago-minimax-"+maxGlobina+"-"+ocenjevalec.ime;
 	}
 
 	@Override
