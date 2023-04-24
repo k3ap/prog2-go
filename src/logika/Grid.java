@@ -321,4 +321,21 @@ public class Grid {
 		m.libertiesSearch.runAll();
 		return m;
 	}
+
+    public double distanceFromBorder(FieldColor color) {
+		int r = 10;
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				Index idx = new Index(i, j);
+				if (fieldColor(idx).equals(color)) {
+					r = Math.min(r,
+                                 Math.min(
+                                     Math.min(i, j),
+                                     Math.min(8-i, 8-j)
+                                     ));
+				}
+			}
+		}
+		return r;
+    }
 }
