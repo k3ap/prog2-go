@@ -108,7 +108,7 @@ public class ManagedGame {
 
 				if (move == null) {
 					// Returning null is an error on Intelligence's part.
-					System.out.println("Intelligence.getMove has returned null.");
+					System.out.println("Intelligence.getMove je vrnila null.");
 					status = MoveResult.ERROR;
 					window.update();
 					return;

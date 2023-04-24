@@ -17,17 +17,17 @@ public class Window extends JFrame implements ActionListener {
 	
 	public Window() {
 		super();
-		setTitle("Capture Go");
+		setTitle("Igra Capture Go");
 		panel = new Panel(700, 700);
 		add(panel);
 		
 		JMenuBar menubar = new JMenuBar();
 		setJMenuBar(menubar);
 		
-		JMenu igre = newMenu(menubar, "Games");
-		humCom = newMenuItem(igre, "Human vs. computer");
-		comHum = newMenuItem(igre, "Computer vs. human");
-		humHum = newMenuItem(igre, "Human vs. human");
+		JMenu igre = newMenu(menubar, "Igre");
+		humCom = newMenuItem(igre, "Človek vs. računalnik");
+		comHum = newMenuItem(igre, "Računalnik vs. človek");
+		humHum = newMenuItem(igre, "Človek vs. človek");
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}

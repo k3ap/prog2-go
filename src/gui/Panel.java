@@ -68,7 +68,7 @@ class Panel extends JPanel implements MouseListener {
 		if (game == null) {
 			// increase font size
 			g2.setFont(g2.getFont().deriveFont((float) 30.0));
-			g2.drawString("Choose a game type", dimensions.width / 3, dimensions.height / 2);
+			g2.drawString("Izberite tip igre", dimensions.width / 3, dimensions.height / 2);
 			return;
 		}
 		
@@ -126,24 +126,24 @@ class Panel extends JPanel implements MouseListener {
 		case PLAY:
 			switch (game.playerTurn()) {
 			case WHITE:
-				writeMessage(g2, "It is white's turn.");
+				writeMessage(g2, "Na vrsti je bel.");
 				break;
 			case BLACK:
-				writeMessage(g2, "It is black's turn.");
+				writeMessage(g2, "Na vrsti je črn.");
 				break;
 			}
 			break;
 		case WAIT:
-			writeMessage(g2, "The computer is making a decision...");
+			writeMessage(g2, "Računalnik izbera potezo...");
 			break;
 		case ERROR:
-			writeMessage(g2, "The move choosing algorithm has ran into an error.");
+			writeMessage(g2, "Program za izpibarnje poteze se je sesul.");
 			break;
 		case WHITEWINS:
-			writeMessage(g2, "The white player has won.");
+			writeMessage(g2, "Beli igralec je zmagal.");
 			break;
 		case BLACKWINS:
-			writeMessage(g2, "The black player has won.");
+			writeMessage(g2, "Črn igralec je zmagal.");
 			break;
 		}
 	}
