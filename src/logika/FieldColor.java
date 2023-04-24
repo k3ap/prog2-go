@@ -1,7 +1,7 @@
 package logika;
 
 /**
- * The color of a field in the grid, either EMPTY, BLACKFIELD, or WHITEFIELD.
+ * The color of a field in the grid, either EMPTY, BLACK, or WHITE.
  */
 public enum FieldColor {
 	EMPTY, BLACK, WHITE;

@@ -9,7 +9,7 @@ import splosno.Poteza;
 /**
  * The simplest move choosing algorithm, chooses a random valid move.
  */
-public class RandomMoveChooser extends MooveChooser {
+public class RandomMoveChooser extends MoveChooser {
 	
 	private static Random rng = new Random();
 
@@ -17,7 +17,6 @@ public class RandomMoveChooser extends MooveChooser {
 	public Poteza chooseMove(Igra igra) {
 		List<Poteza> validMoves = igra.validMoves();
 		int idx = rng.nextInt() % validMoves.size();
-		System.out.println(idx + " od " + validMoves.size());
 		return validMoves.get(idx);
 	}
 

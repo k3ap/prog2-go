@@ -4,7 +4,7 @@ import java.util.LinkedList;
 
 /**
  * Abstract depth first search
- * the same as BreadthSearch except that it uses a stack instead of a queue.
+ * the same as BreadthFirstSearch except that it uses a stack instead of a queue.
  */
 public abstract class DepthFirstSearch extends Search {
 	

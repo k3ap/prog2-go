@@ -6,7 +6,7 @@ import splosno.Poteza;
 /**
  * The class for choosing the next move.
  */
-public abstract class MooveChooser {
+public abstract class MoveChooser {
 	
 	/**
 	 * The name of the chooser, it's used as the name for inteligenca.

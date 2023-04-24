@@ -3,7 +3,7 @@ package logika;
 /**
  * Abstract class that represents a search through the grid.
  * The class implements the basic abstraction common to DFS and BFS.
- * For actual use see DepthSearch and BreadthSearch,
+ * For actual use see DepthFirstSearch and BreadthFirstSearch,
  */
 public abstract class Search {
 	

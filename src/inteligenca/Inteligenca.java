@@ -6,13 +6,13 @@ import splosno.Poteza;
 
 public class Inteligenca extends KdoIgra {
 	
-	private MooveChooser dolocevalec;
+	private MoveChooser dolocevalec;
 	
 	/**
 	 * Konstruktor z določenim določevalcem poteze
 	 * @param dolocevalec
 	 */
-	public Inteligenca(MooveChooser dolocevalec) {
+	public Inteligenca(MoveChooser dolocevalec) {
 		super(dolocevalec.name());
 		this.dolocevalec = dolocevalec;
 	}
