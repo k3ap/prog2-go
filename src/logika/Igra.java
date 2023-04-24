@@ -1,5 +1,8 @@
 package logika;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import splosno.Poteza;
 
 /**
@@ -56,6 +59,18 @@ public class Igra {
 		}
 		return true;
 	}
+	
+	/**
+	 * Search for all valid moves that nextPlayer can make.
+	 * @return A list of valid moves.
+	 */
+	public List<Poteza> validMoves() {
+		ArrayList<Poteza> res = new ArrayList<>();
+		for (Index idx : grid.freeFields()) {
+			res.add(idx.poteza());
+		}
+		return res;
+	}
 
 	public int width() { return grid.width(); }
 	public int height() { return grid.height(); }
@@ -66,4 +81,5 @@ public class Igra {
 	 */
 	public PlayerColor playerTurn() { return nextPlayer; }
 	public PlayerColor winner() { return winner; }
+
 }
