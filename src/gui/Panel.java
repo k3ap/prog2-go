@@ -108,10 +108,10 @@ class Panel extends JPanel implements MouseListener {
 				int x = leftEdge + j * widthStep - style.stoneDiameter / 2;
 				
 				switch (game.fieldColor(new Index(i, j))) {
-				case WHITEFIELD:
+				case WHITE:
 					drawStone(g2, x, y, PlayerColor.WHITE);
 					break;
-				case BLACKFIELD:
+				case BLACK:
 					drawStone(g2, x, y, PlayerColor.BLACK);
 					break;
 				case EMPTY:

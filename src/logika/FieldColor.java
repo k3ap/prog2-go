@@ -4,7 +4,7 @@ package logika;
  * The color of a field in the grid, either EMPTY, BLACKFIELD, or WHITEFIELD.
  */
 public enum FieldColor {
-	EMPTY, BLACKFIELD, WHITEFIELD;
+	EMPTY, BLACK, WHITE;
 	
 	/**
 	 * Turns a PlayerColor into the corresponding FieldColor.
@@ -14,9 +14,9 @@ public enum FieldColor {
 	public static FieldColor playersColor(PlayerColor color) {
 		switch (color) {
 		case BLACK:
-			return FieldColor.BLACKFIELD;
+			return FieldColor.BLACK;
 		case WHITE:
-			return FieldColor.WHITEFIELD;
+			return FieldColor.WHITE;
 		}
 		assert false;
 		return null;

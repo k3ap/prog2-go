@@ -1,15 +1,15 @@
-package intelligence;
+package inteligenca;
 
-import logika.Game;
+import logika.Igra;
 import splosno.KdoIgra;
 import splosno.Poteza;
 
-public class Intelligence extends KdoIgra {
-	public Intelligence() {
+public class Inteligenca extends KdoIgra {
+	public Inteligenca() {
 		super("betago");
 	}
 	
-	public Poteza chooseMove(Game game) {
+	public Poteza izberiPotezo(Igra igra) {
 		// TODO: vrni najboljšo rešitev glede na dano igro
 		// čas reševanja bo v tekmi omejen na 5s
 		return null;

@@ -12,7 +12,7 @@ public class Grid {
 	
 	/**
 	 * Helper class for finding connected components in the graph.
-	 * Holds the "color" of the vertices; vertices at the same color, when they are in the same component
+	 * Holds the "color" of the vertices; vertices have the same color, when they are in the same component
 	 */
 	private class ComponentSearchData extends SearchData {
 		private int numberOfColors = 0;
@@ -32,7 +32,7 @@ public class Grid {
 	 * Helper class that finds connected components in a graph.
 	 * Sets the values in grid.connectedComponents while searching.
 	 */
-	private class ComponetSearch extends BreadthSearch {
+	private class ComponetSearch extends BreadthFirstSearch {
 
 		public ComponetSearch(Grid grid, ComponentSearchData data) {
 			super(grid, data);
@@ -65,10 +65,10 @@ public class Grid {
 	/**
 	 * Helper class for keeping data on liberties while searching.
 	 */
-	private class LipertiesSearchData extends SearchData {
+	private class LibertiesSearchData extends SearchData {
 		private HashMap< Integer, HashSet<Index> > liberties;
 		
-		public LipertiesSearchData() {
+		public LibertiesSearchData() {
 			super();
 			this.liberties = new HashMap<>();
 		}
@@ -101,9 +101,9 @@ public class Grid {
 	 * Assumes that the component search has already been done and
 	 * that the data in grid.connectedComponents is accurate
 	 */
-	private class LibertiesSearch extends BreadthSearch {
+	private class LibertiesSearch extends BreadthFirstSearch {
 
-		public LibertiesSearch(Grid grid, LipertiesSearchData data) {
+		public LibertiesSearch(Grid grid, LibertiesSearchData data) {
 			super(grid, data);
 		}
 
@@ -127,7 +127,7 @@ public class Grid {
 			
 			if (grid.colorOfField(idx) == FieldColor.EMPTY) {
 				int color = grid.connectedComponents[parent.i()][parent.j()];
-				LipertiesSearchData d = (LipertiesSearchData) (this.data);
+				LibertiesSearchData d = (LibertiesSearchData) (this.data);
 				d.markAsLiberty(color, idx);
 			}
 		}
@@ -142,7 +142,7 @@ public class Grid {
 	/**
 	 * Holds the numbers ("colors"), that represent connected components.
 	 * The same number means the same component.
-	 * This array is filled out by ComponentSearch.
+	 * This array is filled by ComponentSearch.
 	 */
 	private int connectedComponents[][];
 	
@@ -166,7 +166,7 @@ public class Grid {
 		this.width = width;
 		componetSearch = new ComponetSearch(this, new ComponentSearchData());
 		componetSearch.runAll();
-		libertiesSearch = new LibertiesSearch(this, new LipertiesSearchData());
+		libertiesSearch = new LibertiesSearch(this, new LibertiesSearchData());
 		libertiesSearch.runAll();
 	}
 	
@@ -219,7 +219,7 @@ public class Grid {
 			for (int j = 0; j < width; j++) {
 				if (grid[i][j] != color) continue;
 				int componentColor = connectedComponents[i][j];
-				if (((LipertiesSearchData)libertiesSearch.data).numberOfLiberties(componentColor) == 0) {
+				if (((LibertiesSearchData)libertiesSearch.data).numberOfLiberties(componentColor) == 0) {
 					return true;
 				}
 			}
@@ -258,8 +258,8 @@ public class Grid {
 			for (int j = 0; j < width; j++) {
 				char c = switch(grid[i][j]) {
 				case EMPTY -> '.';
-				case WHITEFIELD -> 'o';
-				case BLACKFIELD -> '#';
+				case WHITE -> 'o';
+				case BLACK -> '#';
 				};
 				System.out.print(c);
 			}

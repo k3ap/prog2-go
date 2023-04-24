@@ -21,13 +21,13 @@ public abstract class Search {
 	 * Prepare the structure so search from the given index.
 	 * @param startIdx Index where we begin the search.
 	 */
-	protected abstract void beginning(Index startIdx);
+	protected abstract void startAtIndex(Index start);
 	
 	/**
 	 * Check if there is any new index to search.
 	 * @return `true`, if next() is going to return a sensible value, `false` otherwise.
 	 */
-	protected abstract boolean isNext();
+	protected abstract boolean hasNext();
 
 	/**
 	 * Function that dictates the search order through the graph.
@@ -75,7 +75,7 @@ public abstract class Search {
 	protected abstract void markToSearch(Index idx);
 	
 	/**
-	 * Helper array that holds the indicies of the neighbors.
+	 * Helper array that holds the indices of the neighbors.
 	 */
 	private final int neighbors[][] = new int[][] {
 		{-1, 0}, {1, 0}, {0, 1}, {0, -1}
@@ -122,8 +122,8 @@ public abstract class Search {
 	 * @param beginInx Index where we begin the search.
 	 */
 	public void run(Index beginInx) {
-		this.beginning(beginInx);
-		while (this.isNext()) {
+		this.startAtIndex(beginInx);
+		while (this.hasNext()) {
 			searchStep(beginInx);
 		}
 	}

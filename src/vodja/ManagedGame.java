@@ -5,10 +5,10 @@ import java.util.concurrent.ExecutionException;
 import javax.swing.SwingWorker;
 
 import gui.Window;
-import intelligence.Intelligence;
+import inteligenca.Inteligenca;
 import logika.PlayerColor;
 import logika.FieldColor;
-import logika.Game;
+import logika.Igra;
 import logika.Index;
 import splosno.Poteza;
 
@@ -16,9 +16,9 @@ import splosno.Poteza;
  * A wrapper around Game and Intelligence that handles the interactions between these. 
  */
 public class ManagedGame {
-	private Game game;
+	private Igra game;
 	private GameType gameType;
-	private Intelligence intelligence;
+	private Inteligenca intelligence;
 	private MoveResult status;
 	private Window window;
 
@@ -27,7 +27,7 @@ public class ManagedGame {
 	 * @param gameType See the enum {@link GameType}
 	 */
 	public ManagedGame(GameType gameType, Window window) {
-		game = new Game();
+		game = new Igra();
 		this.window = window;
 		dealWithType(gameType);
 	}
@@ -38,7 +38,7 @@ public class ManagedGame {
 	 * @param size Size (width and height) of the game grid, default is 9.
 	 */
 	public ManagedGame(GameType gameType, int size) {
-		game = new Game(size);
+		game = new Igra(size);
 		dealWithType(gameType);
 	}
 
@@ -50,11 +50,11 @@ public class ManagedGame {
 			status = MoveResult.PLAY;
 			break;
 		case HUMCOM:
-			intelligence = new Intelligence();
+			intelligence = new Inteligenca();
 			status = MoveResult.PLAY; // it's the human's turn first
 			break;
 		case COMHUM:
-			intelligence = new Intelligence();
+			intelligence = new Inteligenca();
 			status = MoveResult.WAIT; // it's the computer's turn first
 			getMoveFromIntelligence();
 			break;
@@ -68,7 +68,7 @@ public class ManagedGame {
 	 * @see #statusIgre
 	 */
 	public void play(Poteza move) {
-		if (!game.play(move)) {
+		if (!game.odigraj(move)) {
 			// If the given move is invalid we don't do anything else.
 			status = MoveResult.INVALID;
 			return;
@@ -89,7 +89,7 @@ public class ManagedGame {
 		SwingWorker<Poteza, Void> worker = new SwingWorker<Poteza, Void> () {
 			@Override
 			protected Poteza doInBackground() {
-				return intelligence.chooseMove(game);
+				return intelligence.izberiPotezo(game);
 			}
 			@Override
 			protected void done () {
@@ -114,7 +114,7 @@ public class ManagedGame {
 					return;
 				}
 
-				game.play(move);
+				game.odigraj(move);
 				status = winnerToGameStatus(game.winner());
 				window.update();
 			}
