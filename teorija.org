@@ -4,6 +4,7 @@ Možna ideja je, da ustvariva metrike, ki bi lahko merile, kako dobra je določe
 
 Možne metrike so naslednje: ("on" je nasprotnik)
 - število mojih/njegovih kamnov
+- število mojih/njegovih komponent
 - koliko svobod ima moja/njegova najslabša komponenta
 - povprečno število svobod za moje/njegove komponente
 - najmanjša/povprečna/skupna velikost praznih komponent, ki so sosednje mojim/njegovim komponentam
