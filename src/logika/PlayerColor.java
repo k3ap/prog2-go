@@ -24,7 +24,7 @@ public enum PlayerColor {
 		return PlayerColor.newColor(this);
 	}
 	
-	public PlayerColor field() {
+	public FieldColor field() {
 		return FieldColor.playersColor(this);
 	}
 }

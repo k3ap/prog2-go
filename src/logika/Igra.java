@@ -10,7 +10,7 @@ import splosno.Poteza;
  */
 public class Igra {
 	
-	private Grid grid;
+	public Grid grid;
 	private PlayerColor nextPlayer;
 	private PlayerColor winner;
 
