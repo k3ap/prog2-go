@@ -7,7 +7,7 @@ import splosno.Poteza;
  * Entirely equivalent to the `Poteza` class but it's separated for semantic reasons.
  */
 public record Index(int i, int j) {
-	Index(Poteza poteza) {
+	public Index(Poteza poteza) {
 		this(poteza.x(), poteza.y());
 	}
 	

@@ -1,5 +1,9 @@
 package logika;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -283,7 +287,7 @@ public class Grid {
     }
 
     public void printToFile(String filename) {
-		try (FileWriter writer = new FileWriter(imeDatoteke)) {
+		try (FileWriter writer = new FileWriter(filename)) {
 			writer.write(toString());
 		}
 		catch(Exception e) {}
@@ -310,8 +314,8 @@ public class Grid {
 		return grid;
     }
 
-	public Mreza deepcopy() {
-		Grid m = new Grid(hright, width);
+	public Grid deepcopy() {
+		Grid m = new Grid(height, width);
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				m.grid[i][j] = grid[i][j];
@@ -327,7 +331,7 @@ public class Grid {
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				Index idx = new Index(i, j);
-				if (fieldColor(idx).equals(color)) {
+				if (colorOfField(idx).equals(color)) {
 					r = Math.min(r,
                                  Math.min(
                                      Math.min(i, j),
