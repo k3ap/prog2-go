@@ -65,7 +65,7 @@ public abstract class Search {
 	 * @return Do we have to process the neighbor?
 	 */
 	protected boolean addNeighbor(Index parent, Index neighbor) {
-		return data.toSearch(neighbor);
+		return data.hasNotSearched(neighbor);
 	}
 	
 	/**
@@ -82,7 +82,7 @@ public abstract class Search {
 	};
 	
 	/**
-	 * Function that takes a step in the direction of the search.
+	 * Function that makes a search step.
 	 * @param oldIdx Index on which the search started.
 	 */
 	private void searchStep(Index oldIdx) {
@@ -132,11 +132,11 @@ public abstract class Search {
 	 * Run the search on all parts of the grid.
 	 */
 	public void runAll() {
-		data.simplify();
+		data.clear();
 		for (int i = 0; i < grid.height(); i++) {
 			for (int j = 0; j < grid.width(); j++) {
 				Index idx = new Index(i, j);
-				if (data.toSearch(idx)) {
+				if (data.hasNotSearched(idx)) {
 					run(idx);
 				}
 			}

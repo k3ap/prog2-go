@@ -22,8 +22,8 @@ public class Grid {
 		}
 		
 		@Override
-		public void simplify() {
-			super.simplify();
+		public void clear() {
+			super.clear();
 			numberOfColors = 0;
 		}
 	}
@@ -74,8 +74,8 @@ public class Grid {
 		}
 		
 		@Override
-		public void simplify() {
-			super.simplify();
+		public void clear() {
+			super.clear();
 			liberties.clear();
 		}
 		

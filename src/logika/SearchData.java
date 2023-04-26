@@ -22,7 +22,7 @@ public class SearchData {
 	 * @param idx The index of interest.
 	 * @return true, if we still need to look at this index.
 	 */
-	public boolean toSearch(Index idx) {
+	public boolean hasNotSearched(Index idx) {
 		return !searched.contains(idx);
 	}
 	
@@ -35,10 +35,10 @@ public class SearchData {
 	}
 	
 	/**
-	 * Simplify the entire all data.
+	 * Clear all data.
 	 * Subclasses should copy this method and call super.simplify.
 	 */
-	public void simplify() {
+	public void clear() {
 		searched.clear();
 	}
 }
