@@ -16,7 +16,7 @@ public class RandomMoveChooser extends MoveChooser {
 	@Override
 	public Poteza chooseMove(Igra igra) {
 		List<Poteza> validMoves = igra.validMoves();
-		int idx = rng.nextInt() % validMoves.size();
+		int idx = Math.abs(rng.nextInt()) % validMoves.size();
 		return validMoves.get(idx);
 	}
 
