@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Representation of the playing field.
@@ -257,18 +258,6 @@ public class Grid {
 		return free;
 	}
 
-    public int minimumNumberOfLiberties(FieldColor color) {
-		int cnt = height*width;
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
-				if (!grid[i][j].equals(color)) continue;
-				int num = ((LibertiesSearchData)libertiesSearch.data).numberOfLiberties(connectedComponents[i][j]);
-				cnt = Math.min(cnt, num);
-			}
-		}
-		return cnt;
-    }
-
     @Override
     public String toString() {
 		String buf = "";
@@ -344,5 +333,59 @@ public class Grid {
 			}
 		}
 		return r;
+    }
+    
+    /**
+     * Get the minimum number of liberties a certain connected component has
+     * @param color The color we're interested in
+     * @return The minimal number of liberties of any component of this color
+     */
+    public int minimumNumberOfLiberties(FieldColor color) {
+		int cnt = height*width;
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				if (!grid[i][j].equals(color)) continue;
+				int num = ((LibertiesSearchData)libertiesSearch.data).numberOfLiberties(connectedComponents[i][j]);
+				cnt = Math.min(cnt, num);
+			}
+		}
+		return cnt;
+    }
+    
+    /**
+     * Get the average number of liberties over all connected components of this color
+     * @param color The color we're interested in
+     */
+    public double averageNumberOfLiberties(FieldColor color) {
+    	int s = 0;
+    	Set<Integer> counter = new HashSet<>();
+    	for (int i = 0; i < height; i++) {
+    		for (int j = 0; j < width; j++) {
+    			int cc = connectedComponents[i][j];
+    			if (grid[i][j].equals(color) && !counter.contains(cc)) {
+    				counter.add(cc);
+    				s += ((LibertiesSearchData)(libertiesSearch.data)).numberOfLiberties(cc);
+    			}
+    		}
+    	}
+    	if (counter.isEmpty()) return 0;
+    	return ((double)s) / counter.size();
+    }
+    
+    /**
+     * Get the number of connected components a color has
+     * @param color The color we're interested in
+     * @return The number of components belonging to this color.
+     */
+    public int numberOfComponents(FieldColor color) {
+    	Set<Integer> s = new HashSet<>();
+    	for (int i = 0; i < height; i++) {
+    		for (int j = 0; j < width; j++) {
+    			if (grid[i][j].equals(color)) {
+    				s.add(connectedComponents[i][j]);
+    			}
+    		}
+    	}
+    	return s.size();
     }
 }
