@@ -21,10 +21,12 @@ class Panel extends JPanel implements MouseListener {
 	private ManagedGame game;
 	private Dimension dimensions;
 	private Style style;
+	private Window window;
 	private int leftEdge, topEdge, widthStep, heightStep;
 
-	public Panel(int width, int height) {
+	public Panel(int width, int height, Window window) {
 		super();
+		this.window = window;
 		dimensions = new Dimension(width, height);
 		setPreferredSize(dimensions);
 		style = new Style();
@@ -38,8 +40,8 @@ class Panel extends JPanel implements MouseListener {
 	private void calculateDimensions() {
 		if (game == null) { return; }
 		
-		int width = getSize().width;
-		int height = getSize().height;
+		int width = getWidth();
+		int height = getHeight();
 		
 		// We need to make sure to draw the grid square
 		if (width >= height) {
@@ -54,10 +56,10 @@ class Panel extends JPanel implements MouseListener {
 			height = width;
 		}
 		
-		leftEdge += (int) (width * 0.1);
-		widthStep = (int) (width * 0.8 / (game.width() - 1));
-		topEdge += (int) (height * 0.1);
-		heightStep = (int) (height * 0.8 / (game.height() - 1));
+		leftEdge += (int) (width * 0.05);
+		widthStep = (int) (width * 0.9 / (game.width() - 1));
+		topEdge += (int) (height * 0.05);
+		heightStep = (int) (height * 0.9 / (game.height() - 1));
 	}
 
 	@Override
@@ -65,12 +67,8 @@ class Panel extends JPanel implements MouseListener {
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D) g;
 		
-		if (game == null) {
-			// increase font size
-			g2.setFont(g2.getFont().deriveFont((float) 30.0));
-			g2.drawString("Izberite tip igre", dimensions.width / 3, dimensions.height / 2);
+		if (game == null) 
 			return;
-		}
 		
 		calculateDimensions();
 
@@ -126,24 +124,24 @@ class Panel extends JPanel implements MouseListener {
 		case PLAY:
 			switch (game.playerTurn()) {
 			case WHITE:
-				writeMessage(g2, "Na vrsti je bel.");
+				window.writeMessage("Na vrsti je bel.");
 				break;
 			case BLACK:
-				writeMessage(g2, "Na vrsti je črn.");
+				window.writeMessage("Na vrsti je črn.");
 				break;
 			}
 			break;
 		case WAIT:
-			writeMessage(g2, "Računalnik izbera potezo...");
+			window.writeMessage("Računalnik izbera potezo...");
 			break;
 		case ERROR:
-			writeMessage(g2, "Program za izpibarnje poteze se je sesul.");
+			window.writeMessage("Program za izbiranje poteze se je sesul.");
 			break;
 		case WHITEWINS:
-			writeMessage(g2, "Beli igralec je zmagal.");
+			window.writeMessage("Beli igralec je zmagal.");
 			break;
 		case BLACKWINS:
-			writeMessage(g2, "Črn igralec je zmagal.");
+			window.writeMessage("Črn igralec je zmagal.");
 			break;
 		}
 	}
@@ -177,17 +175,6 @@ class Panel extends JPanel implements MouseListener {
 	}
 	
 	/**
-	 * Draws a message at the above the grid.
-	 * @param g2 Graphics on which to draw.
-	 * @param message Text that will be written.
-	 */
-	private void writeMessage(Graphics2D g2, String message) {
-		float size = (float) (20.0 * getSize().height / 700.0);
-		g2.setFont(g2.getFont().deriveFont(size));
-		g2.drawString(message, leftEdge, (int) (topEdge - size));
-	}
-	
-	/**
 	 * Starts a new game of the given type.
 	 * @param type Type of game that is started.
 	 */
@@ -195,7 +182,6 @@ class Panel extends JPanel implements MouseListener {
 		// ManagedGame needs access to the window to update the board 
 		// once the computer has decided what to play
 		game = new ManagedGame(type, window);
-		repaint();
 	}
 
 	@Override
@@ -216,7 +202,7 @@ class Panel extends JPanel implements MouseListener {
 		if (i < 0 || i >= game.width() || j < 0 || j >= game.height()) { return; }
 		
 		game.play(new Poteza(i, j));
-		repaint();
+		window.update();
 	}
 	
 	// Unused methods of MouseListener

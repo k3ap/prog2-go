@@ -1,8 +1,11 @@
 package gui;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -12,13 +15,31 @@ import vodja.GameType;
 
 public class Window extends JFrame implements ActionListener {
 	private static final long serialVersionUID = -3977009338403276682L;
+	private GridBagLayout grid;
 	private Panel panel;
+	private JLabel statusBar;
 	private JMenuItem humCom, comHum, humHum;
 	
 	public Window() {
 		super();
 		setTitle("Igra Capture Go");
-		panel = new Panel(700, 700);
+		grid = new GridBagLayout();
+		setLayout(grid);
+		
+		statusBar = new JLabel("Izberite tip igre", JLabel.CENTER);
+		statusBar.setFont(statusBar.getFont().deriveFont((float) 20.0));
+		GridBagConstraints consBar = new GridBagConstraints();
+		consBar.ipady = 20;
+		consBar.weighty = 0.0;
+		grid.setConstraints(statusBar, consBar);
+		add(statusBar);
+		panel = new Panel(500, 600, this);
+		GridBagConstraints consPanel = new GridBagConstraints();
+		consPanel.gridx = 0;
+		consPanel.weighty = 1.0;
+		consPanel.weightx = 1.0;
+		consPanel.fill = GridBagConstraints.BOTH;
+		grid.setConstraints(panel, consPanel);
 		add(panel);
 		
 		JMenuBar menubar = new JMenuBar();
@@ -30,6 +51,7 @@ public class Window extends JFrame implements ActionListener {
 		humHum = newMenuItem(igre, "Človek vs. človek");
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		update();
 	}
 	
 	private JMenu newMenu(JMenuBar menubar, String name) {
@@ -44,9 +66,13 @@ public class Window extends JFrame implements ActionListener {
 		newItem.addActionListener(this);
 		return newItem;
 	}
+	
+	protected void writeMessage(String message) {
+		statusBar.setText(message);
+	}
 
 	/**
-	 * Uptide the enture GUI.
+	 * Update the entire GUI.
 	 */
 	public void update() {
 		repaint();
