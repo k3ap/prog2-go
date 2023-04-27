@@ -11,18 +11,30 @@ public class Style {
 	public Color whiteStoneEdge;
 	public Color blackStone;
 	public Color blackStoneEdge;
+	public Color whiteShadowStone;
+	public Color whiteShadowStoneEdge;
+	public Color blackShadowStone;
+	public Color blackShadowStoneEdge;
 	public Color gridColor;
 	public int stoneDiameter;
 
 	public Style() {
-		// privzeti izgled
+		// Default look
+		// grid
 		grid = new BasicStroke(1);
+		gridColor = new Color(0, 0, 0);
+
+		// stone color
 		stoneEdge = new BasicStroke(1);
 		whiteStone = new Color(240, 255, 255);
 		whiteStoneEdge = new Color(0, 100, 100);
 		blackStone = new Color(5, 5, 10);
 		blackStoneEdge = new Color(100, 0, 100);
-		gridColor = new Color(0, 0, 0);
 		stoneDiameter = 40;
+		// stone shadow
+		whiteShadowStone = new Color(240, 255, 255, 40);
+		whiteShadowStoneEdge = new Color(0, 100, 100, 40);
+		blackShadowStone = new Color(5, 5, 10, 40);
+		blackShadowStoneEdge = new Color(100, 0, 100, 40);
 	}
 }

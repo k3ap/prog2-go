@@ -7,21 +7,24 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 
 import logika.PlayerColor;
 import vodja.ManagedGame;
+import logika.FieldColor;
 import logika.Index;
 import splosno.Poteza;
 import vodja.MoveResult;
 import vodja.GameType;
 
 
-class Panel extends JPanel implements MouseListener {
+class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	private static final long serialVersionUID = 7693008210122811280L;
 	private ManagedGame game;
 	private Dimension dimensions;
 	private Style style;
 	private Window window;
+	private Index shadow;
 	private int leftEdge, topEdge, widthStep, heightStep;
 
 	public Panel(int width, int height, Window window) {
@@ -31,7 +34,9 @@ class Panel extends JPanel implements MouseListener {
 		setPreferredSize(dimensions);
 		style = new Style();
 		game = null;
+		shadow = null;
 		addMouseListener(this);
+		addMouseMotionListener(this);
 	}
 	
 	/**
@@ -101,21 +106,23 @@ class Panel extends JPanel implements MouseListener {
 		
 		// stones
 		for (int i = 0; i < gridHeight; i++) {
-			int y = topEdge + i * heightStep - style.stoneDiameter / 2;
 			for (int j = 0; j < gridWidth; j++) {
-				int x = leftEdge + j * widthStep - style.stoneDiameter / 2;
-				
 				switch (game.fieldColor(new Index(i, j))) {
 				case WHITE:
-					drawStone(g2, x, y, PlayerColor.WHITE);
+					drawStone(g2, i, j, PlayerColor.WHITE);
 					break;
 				case BLACK:
-					drawStone(g2, x, y, PlayerColor.BLACK);
+					drawStone(g2, i, j, PlayerColor.BLACK);
 					break;
 				case EMPTY:
 					break;
 				}
 			}
+		}
+		
+		// shadow stone
+		if (shadow != null) {
+			drawShadowStone(g2, shadow.i(), shadow.j(), game.playerTurn());
 		}
 		
 		// draw game status
@@ -149,11 +156,11 @@ class Panel extends JPanel implements MouseListener {
 	/**
 	 * Draw a stone (colored circle) at the given coordinates. 
 	 * @param g2 Graphics on which to draw.
-	 * @param x coordinate on the panel on which to draw the stone (not the grid index).
-	 * @param y coordinate on the panel on which to draw the stone (not the grid index).
+	 * @param i grid index on which to draw the stone.
+	 * @param j grid index on the panel on which to draw the stone.
 	 * @param color Player color to draw the stone with.
 	 */
-	private void drawStone(Graphics2D g2, int x, int y, PlayerColor color) {
+	private void drawStone(Graphics2D g2, int i, int j, PlayerColor color) {
 		Color center = Color.PINK;
 		Color edge = Color.CYAN;
 		switch (color) {
@@ -167,6 +174,42 @@ class Panel extends JPanel implements MouseListener {
 			default:
 				assert false;
 		}
+		
+		drawAbstractStone(g2, i, j, center, edge);
+	}
+	
+	/**
+	 * Draw a shadow of a stone at the given coordinates.
+	 * A shadow is drawn when hovering over a valid spot for a stone.
+	 * @param g2 Graphics on which to draw.
+	 * @param x coordinate on the panel on which to draw the stone (not the grid index).
+	 * @param y coordinate on the panel on which to draw the stone (not the grid index).
+	 * @param color Player color to draw the stone with.
+	 */
+	private void drawShadowStone(Graphics2D g2, int i, int j, PlayerColor color) {
+		Color center = Color.PINK;
+		Color edge = Color.CYAN;
+		switch (color) {
+			case BLACK:
+				center = style.blackShadowStone;
+				edge = style.blackShadowStoneEdge;
+				break;
+			case WHITE:
+				center = style.whiteShadowStone;
+				edge = style.whiteShadowStoneEdge;
+			default:
+				assert false;
+		}
+		
+		drawAbstractStone(g2, i, j, center, edge);
+	}
+	
+	/**
+	 * Do not call this method directly.
+	 */
+	private void drawAbstractStone(Graphics2D g2, int i, int j, Color center, Color edge) {
+		int y = topEdge + i * heightStep - style.stoneDiameter / 2;
+		int x = leftEdge + j * widthStep - style.stoneDiameter / 2;
 		
 		g2.setColor(center);
 		g2.fillOval(x, y, style.stoneDiameter, style.stoneDiameter);
@@ -183,6 +226,19 @@ class Panel extends JPanel implements MouseListener {
 		// once the computer has decided what to play
 		game = new ManagedGame(type, window);
 	}
+	
+	private Poteza moveFromXY(int x, int y) {
+		calculateDimensions();
+		
+		// calculate the indices of the field that was clicked
+		int i = (y - topEdge + heightStep / 2) / heightStep;
+		int j = (x - leftEdge + widthStep / 2) / widthStep;
+		// ignore a click if it happened too far outside the grid
+		if (i < 0 || i >= game.width() || j < 0 || j >= game.height())
+			return null;
+		
+		return new Poteza(i, j);
+	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
@@ -191,21 +247,40 @@ class Panel extends JPanel implements MouseListener {
 		if (game.gameStatus() != MoveResult.INVALID
 			&& game.gameStatus() != MoveResult.PLAY) { return; }
 		
-		calculateDimensions();
-		int x = e.getX();
-		int y = e.getY();
-		
-		// calculate the indices of the field that was clicked
-		int i = (y - topEdge + heightStep / 2) / heightStep;
-		int j = (x - leftEdge + widthStep / 2) / widthStep;
-		// ignore a click if it happened too far outside the grid
-		if (i < 0 || i >= game.width() || j < 0 || j >= game.height()) { return; }
-		
-		game.play(new Poteza(i, j));
+		game.play(moveFromXY(e.getX(), e.getY()));
 		window.update();
 	}
 	
-	// Unused methods of MouseListener
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		if (game == null) { return; }
+		// Ignore clicks if the player is not allowed to play a move.
+		if (game.gameStatus() != MoveResult.INVALID
+			&& game.gameStatus() != MoveResult.PLAY) { return; }
+		
+		Poteza hoveredMaybe = moveFromXY(e.getX(), e.getY());
+		if (hoveredMaybe == null) {
+			shadow = null;
+		}
+		else {
+			Index hovered = new Index(hoveredMaybe);
+			if (game.fieldColor(hovered) == FieldColor.EMPTY) {
+				shadow = hovered;
+			}
+			else {
+				shadow = null;
+			}
+		}
+		window.update();
+	}
+	
+	@Override
+	public void mouseExited(MouseEvent e) {
+		shadow = null;
+		window.update();
+	}
+	
+	// Unused methods of MouseListener and MouseMotionListener
 	@Override
 	public void mousePressed(MouseEvent e) {}
 	@Override
@@ -213,5 +288,6 @@ class Panel extends JPanel implements MouseListener {
 	@Override
 	public void mouseEntered(MouseEvent e) {}
 	@Override
-	public void mouseExited(MouseEvent e) {}
+	public void mouseDragged(MouseEvent e) {}
+
 }
