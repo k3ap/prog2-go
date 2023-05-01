@@ -311,6 +311,8 @@ public class Grid {
 				reader.read();  // newline
 			}
 		}
+		grid.componetSearch.runAll();
+		grid.libertiesSearch.runAll();
 		return grid;
     }
 
