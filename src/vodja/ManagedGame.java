@@ -149,8 +149,10 @@ public class ManagedGame {
 		worker.execute();
 	}
 	
+	/**
+	 * The loop that plays two intelligences against each other.
+	 */
 	private void comComLoop() {
-		// the loop that runs when two computers play against each other
 		SwingWorker<PlayerColor, Void> worker = new SwingWorker<PlayerColor, Void> () {
 			private Inteligenca switchIntelligence(Inteligenca current) {
 				if (current == intelligence) {
@@ -161,7 +163,7 @@ public class ManagedGame {
 			@Override
 			protected PlayerColor doInBackground() throws InterruptedException {
 				Inteligenca active = intelligence;
-				
+								
 				class Sleeper extends Thread {
 					public void run() {
 						try {

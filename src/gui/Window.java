@@ -59,6 +59,10 @@ public class Window extends JFrame implements ActionListener {
 		panel.repaint();
 	}
 	
+	/**
+	 * Show a pop up to choose the pair of intelligences to be played against eachother.
+	 * @return The IntelligencePair of the selected intelligences.
+	 */
 	private IntelligencePair getIntelligencePairChoice() {
 		IntelligenceOption[] options = IntelligenceOption.getAll();
 		JComboBox<IntelligenceOption> izbira = new JComboBox<IntelligenceOption>(options);
@@ -82,6 +86,10 @@ public class Window extends JFrame implements ActionListener {
 		}
 	}
 	
+	/**
+	 * Shows a pop up for choosing the intelligence that will be the users opponent.
+	 * @return The chosen intelligence.
+	 */
 	private Inteligenca getIntelligenceChoice() {
 		IntelligenceOption[] options = IntelligenceOption.getAll();
 		JComboBox<IntelligenceOption> izbira = new JComboBox<IntelligenceOption>(options);
