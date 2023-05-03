@@ -57,15 +57,15 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 	@Override
 	public Poteza chooseMove(Igra igra) {
 		Poteza best = null;
-		double bestest = 0;
+		double bestEst = 0;
 		double alpha = Double.NEGATIVE_INFINITY, beta = Double.POSITIVE_INFINITY;
 		for (Poteza poteza : igra.validMoves()) {
 			Grid newGrid = igra.grid.deepcopy();
 			newGrid.placeColor(new Index(poteza), igra.playerTurn().field());
 			double ocena = -alphabetaEstimate(newGrid, 1, igra.playerTurn().next(), -beta, -alpha);
-			if (best == null || bestest < ocena) {
+			if (best == null || bestEst < ocena) {
 				best = poteza;
-				bestest = ocena;
+				bestEst = ocena;
 			}
 			if (alpha < ocena)
 				alpha = ocena;

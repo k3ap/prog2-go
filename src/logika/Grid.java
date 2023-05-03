@@ -306,6 +306,7 @@ public class Grid {
 					case '#':
 						grid.grid[i][j] = FieldColor.BLACK;
 						break;
+					default:
 					}
 				}
 				reader.read();  // newline
