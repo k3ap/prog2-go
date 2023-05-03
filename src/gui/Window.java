@@ -13,7 +13,7 @@ import vodja.GameType;
 public class Window extends JFrame implements ActionListener {
 	private static final long serialVersionUID = -3977009338403276682L;
 	private Panel panel;
-	private JMenuItem humCom, comHum, humHum;
+	private JMenuItem humCom, comHum, humHum, comCom;
 	
 	public Window() {
 		super();
@@ -28,6 +28,7 @@ public class Window extends JFrame implements ActionListener {
 		humCom = newMenuItem(igre, "Človek vs. računalnik");
 		comHum = newMenuItem(igre, "Računalnik vs. človek");
 		humHum = newMenuItem(igre, "Človek vs. človek");
+		comCom = newMenuItem(igre, "Računalnik vs. računalnik");
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
@@ -65,6 +66,9 @@ public class Window extends JFrame implements ActionListener {
 		}
 		else if (source == humHum) {
 			panel.newGame(GameType.HUMHUM, this);
+		}
+		else if (source == comCom) {
+			panel.newGame(GameType.COMCOM, this);
 		}
 		else {
 			assert false;
