@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -52,6 +53,12 @@ public class Grid {
 				grid.connectedComponents[idx.i()][idx.j()] = 
 						grid.connectedComponents[startIdx.i()][startIdx.j()];
 			}
+			int color = grid.connectedComponents[idx.i()][idx.j()];
+			if (!grid.componentSize.containsKey(color)) {
+				grid.componentSize.put(color, 1);
+			} else {
+				grid.componentSize.put(color, grid.componentSize.get(color)+1);
+			}
 		}
 
 		@Override
@@ -61,9 +68,9 @@ public class Grid {
 		protected void noticeAction(Index idx, Index stars, Index zacetniIdx) {}
 
 		@Override
-		protected boolean addNeighbor(Index stars, Index neighbor) {
-			return super.addNeighbor(stars, neighbor) 
-					&& grid.colorOfField(neighbor).equals(grid.colorOfField(stars));
+		protected boolean addNeighbor(Index parent, Index neighbor) {
+			return super.addNeighbor(parent, neighbor) 
+					&& grid.colorOfField(neighbor).equals(grid.colorOfField(parent));
 		}
 	}
 	
@@ -150,6 +157,7 @@ public class Grid {
 	 * This array is filled by ComponentSearch.
 	 */
 	private int connectedComponents[][];
+	private Map<Integer, Integer> componentSize;
 	
 	/**
 	 * Height and width of the grid.
@@ -167,6 +175,7 @@ public class Grid {
 			}
 		}
 		connectedComponents = new int[height][width];
+		componentSize = new HashMap<>();
 		this.height = height;
 		this.width = width;
 		componetSearch = new ComponetSearch(this, new ComponentSearchData());
@@ -387,5 +396,30 @@ public class Grid {
     		}
     	}
     	return s.size();
+    }
+    
+    /**
+     * Return the smallest size of a liberty component adjacent to any 
+     * field of the given color
+     * @param color The color we're interested in
+     * @return As described
+     */
+    public int minLibertiesSize(FieldColor color) {
+    	int[][] d = new int[][] {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+    	int m = width*height;
+    	for (int i = 0; i < height; i++) {
+    		for (int j = 0; j < width; j++) {
+    			if (!grid[i][j].equals(color)) continue;
+    			for (int didx = 0; didx < 4; didx++) {
+    				int di = d[didx][0];
+    				int dj = d[didx][1];
+    				if (i+di < 0 || i+di >= height || j+dj < 0 || j+dj >= width) continue;
+    				if (grid[i+di][j+dj].equals(FieldColor.EMPTY)) {
+    					m = Math.min(m, componentSize.get(connectedComponents[i+di][j+dj]));
+    				}
+    			}
+    		}
+    	}
+    	return m;
     }
 }

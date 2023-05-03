@@ -58,7 +58,7 @@ public class CompleteSearch {
 		
 		Grid grid = null;
 		try {
-			grid = Grid.readFromFile("mreza.m9", 9);
+			grid = Grid.readFromFile("autogen-primeri/1.m9", 9);
 		} catch (Exception e) {
 			System.out.println("error");
 			System.exit(1);
@@ -71,8 +71,10 @@ public class CompleteSearch {
 		System.out.println();
 		System.out.format("minSS za crno: %d\n", grid.minimumNumberOfLiberties(FieldColor.BLACK));
 		System.out.format("minSS za belo: %d\n", grid.minimumNumberOfLiberties(FieldColor.WHITE));
+		
 		TwoNumbers ns = search(grid, color, 0, false);
 		System.out.format("Zmage/izgube za %s: %d/%d\n", color.toString(), ns.a, ns.b);
+		
 		
 	}
 

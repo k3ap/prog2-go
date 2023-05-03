@@ -8,5 +8,9 @@ Možne metrike so naslednje: ("on" je nasprotnik)
 - koliko svobod ima moja/njegova najslabša komponenta
 - povprečno število svobod za moje/njegove komponente
 - najmanjša/povprečna/skupna velikost praznih komponent, ki so sosednje mojim/njegovim komponentam
+- najmanjša/povprečna razdalja mojih/njegovih kamnov od roba
 
 Za uteževanje potrebujeva nekaj dobrih primerov; v ta namen je napisan razred =CompleteSearch.java=, ki na naključni mreži preišče vse možnosti in izpiše, kolikokrat je igralec zgubil ali zmagal.
+
+Možne optimizacije:
+- validMoves uredim po številu sosedov?
