@@ -2,11 +2,16 @@ package gui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 
+import inteligenca.Inteligenca;
 import vodja.GameType;
 
 
@@ -25,10 +30,10 @@ public class Window extends JFrame implements ActionListener {
 		setJMenuBar(menubar);
 		
 		JMenu igre = newMenu(menubar, "Igre");
-		humCom = newMenuItem(igre, "Človek vs. računalnik");
-		comHum = newMenuItem(igre, "Računalnik vs. človek");
+		humCom = newMenuItem(igre, "Človek vs. računalnik...");
+		comHum = newMenuItem(igre, "Računalnik vs. človek...");
 		humHum = newMenuItem(igre, "Človek vs. človek");
-		comCom = newMenuItem(igre, "Računalnik vs. računalnik");
+		comCom = newMenuItem(igre, "Računalnik vs. računalnik...");
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
@@ -47,11 +52,51 @@ public class Window extends JFrame implements ActionListener {
 	}
 
 	/**
-	 * Uptide the enture GUI.
+	 * Update the entire GUI.
 	 */
 	public void update() {
 		repaint();
 		panel.repaint();
+	}
+	
+	private IntelligencePair getIntelligencePairChoice() {
+		IntelligenceOption[] options = IntelligenceOption.getAll();
+		JComboBox<IntelligenceOption> izbira = new JComboBox<IntelligenceOption>(options);
+		izbira.setSelectedIndex(0);
+		JComboBox<IntelligenceOption> izbira2 = new JComboBox<IntelligenceOption>(options);
+		izbira2.setSelectedIndex(0);
+		final JComponent[] inputs = new JComponent[] {
+				new JLabel("Igralec belih kamnov:"),
+		        izbira,
+				new JLabel("Igralec črnih kamnov:"),
+		        izbira2,
+		};
+		int result = JOptionPane.showConfirmDialog(null, inputs, "Izberite odločevalca potez", JOptionPane.PLAIN_MESSAGE);
+		if (result == JOptionPane.OK_OPTION) {
+			return new IntelligencePair(
+					options[izbira.getSelectedIndex()].toIntelligence(),
+					options[izbira2.getSelectedIndex()].toIntelligence()
+			);
+		} else {
+		    return null;
+		}
+	}
+	
+	private Inteligenca getIntelligenceChoice() {
+		IntelligenceOption[] options = IntelligenceOption.getAll();
+		JComboBox<IntelligenceOption> izbira = new JComboBox<IntelligenceOption>(options);
+		izbira.setSelectedIndex(0);
+		final JComponent[] inputs = new JComponent[] {
+				new JLabel("Nasprotnik:"),
+		        izbira,
+		};
+		int result = JOptionPane.showConfirmDialog(null, inputs, "Izberite tip nasprotnika", JOptionPane.PLAIN_MESSAGE);
+		if (result == JOptionPane.OK_OPTION) {
+			return ((IntelligenceOption) izbira.getSelectedItem()).toIntelligence();
+		} else {
+		    System.out.println("User canceled / closed the dialog, result = " + result);
+		    return null;
+		}
 	}
 
 	@Override
@@ -59,16 +104,25 @@ public class Window extends JFrame implements ActionListener {
 		// A click on the menu bar at the top of the window.
 		Object source = e.getSource();
 		if (source == humCom) {
-			panel.newGame(GameType.HUMCOM, this);
+			Inteligenca selected = getIntelligenceChoice();
+			if (selected != null) {
+				panel.newComGame(GameType.HUMCOM, selected, this);
+			}
 		}
 		else if (source == comHum) {
-			panel.newGame(GameType.COMHUM, this);
+			Inteligenca selected = getIntelligenceChoice();
+			if (selected != null) {
+				panel.newComGame(GameType.COMHUM, selected, this);
+			}
 		}
 		else if (source == humHum) {
-			panel.newGame(GameType.HUMHUM, this);
+			panel.newHumHumGame(this);
 		}
 		else if (source == comCom) {
-			panel.newGame(GameType.COMCOM, this);
+			IntelligencePair selected = getIntelligencePairChoice();
+			if (selected != null) {
+				panel.newComComGame(selected, this);
+			}
 		}
 		else {
 			assert false;
