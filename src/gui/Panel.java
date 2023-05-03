@@ -1,6 +1,8 @@
 package gui;
 import javax.swing.JPanel;
 
+import inteligenca.Inteligenca;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -191,13 +193,36 @@ class Panel extends JPanel implements MouseListener {
 	}
 	
 	/**
-	 * Starts a new game of the given type.
-	 * @param type Type of game that is started.
+	 * Starts a new game with the type HUMHUM.
 	 */
-	protected void newGame(GameType type, Window window) {
+	protected void newHumHumGame(Window window) {
 		// ManagedGame needs access to the window to update the board 
 		// once the computer has decided what to play
-		game = new ManagedGame(type, window);
+		game = new ManagedGame(GameType.HUMHUM, window);
+		repaint();
+	}
+	
+	/**
+	 * Starts a new game with the given type with intelligence playing one of the sides.
+	 * @param type Game type being played, has to be either HUMCOM or COMHUM.
+	 * @param intelligence The intelligence playing.
+	 */
+	protected void newComGame(GameType type, Inteligenca intelligence, Window window) {
+		// ManagedGame needs access to the window to update the board 
+		// once the computer has decided what to play
+		assert(type == GameType.HUMCOM || type == GameType.COMHUM);
+		game = new ManagedGame(type, intelligence, window);
+		repaint();
+	}
+	
+	/**
+	 * Starts a new game of the type COMCOM.
+	 * @param intelligences The pair of intelligences playing against each other.
+	 */
+	protected void newComComGame(IntelligencePair intelligences, Window window) {
+		// ManagedGame needs access to the window to update the board 
+		// once the computer has decided what to play
+		game = new ManagedGame(GameType.COMCOM, intelligences, window);
 		repaint();
 	}
 

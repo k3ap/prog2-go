@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.SwingWorker;
 
+import gui.IntelligencePair;
 import gui.Window;
 import inteligenca.Inteligenca;
 import logika.PlayerColor;
@@ -33,6 +34,32 @@ public class ManagedGame {
 		this.window = window;
 		dealWithType(gameType);
 	}
+	
+	/**
+	 * Create a new managed game with the given game type and intelligences.
+	 * @param intelligence The intelligence which is playing.
+	 * @param gameType See the enum {@link GameType}
+	 */
+	public ManagedGame(GameType gameType, Inteligenca intelligence, Window window) {
+		game = new Igra();
+		this.window = window;
+		this.intelligence = intelligence;
+		dealWithType(gameType);
+	}
+	
+	/**
+	 * Create a new managed game with the given game type and intelligences.
+	 * @param intelligences Pair of intelligences playing, the second one can be null,
+	 * if the game type is such that it is never called.
+	 * @param gameType See the enum {@link GameType}
+	 */
+	public ManagedGame(GameType gameType, IntelligencePair intelligences, Window window) {
+		game = new Igra();
+		this.window = window;
+		intelligence = intelligences.i1();
+		intelligence2 = intelligences.i2();
+		dealWithType(gameType);
+	}
 
 	/**
 	 * Create a new managed game with the given game type and grid size.
@@ -48,21 +75,16 @@ public class ManagedGame {
 		this.gameType = gameType;
 		switch (gameType) {
 		case HUMHUM:
-			intelligence = null;
 			status = MoveResult.PLAY;
 			break;
 		case HUMCOM:
-			intelligence = new Inteligenca();
 			status = MoveResult.PLAY; // it's the human's turn first
 			break;
 		case COMHUM:
-			intelligence = new Inteligenca();
 			status = MoveResult.WAIT; // it's the computer's turn first
 			getMoveFromIntelligence();
 			break;
 		case COMCOM:
-			intelligence = new Inteligenca();
-			intelligence2 = new Inteligenca();
 			comComLoop();
 			break;
 		}
@@ -139,10 +161,24 @@ public class ManagedGame {
 			@Override
 			protected PlayerColor doInBackground() throws InterruptedException {
 				Inteligenca active = intelligence;
+				
+				class Sleeper extends Thread {
+					public void run() {
+						try {
+							TimeUnit.MILLISECONDS.sleep(500);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				Sleeper sleeper = new Sleeper();
+				
 				while (true) {
-					TimeUnit.MILLISECONDS.sleep(500);
-					System.out.println("Izbiram potezo");
+					sleeper.run();
 					Poteza move = intelligence.izberiPotezo(game);
+					// if izberiPotezo took less than the sleeper's sleeping time than
+					// wait for the sleeper to finish to slow the computers' game down
+					sleeper.join();
 					if (move == null) {
 						nullReturnError(intelligence);
 						break;
