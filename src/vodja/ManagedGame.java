@@ -1,6 +1,7 @@
 package vodja;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.SwingWorker;
 
@@ -19,6 +20,7 @@ public class ManagedGame {
 	private Igra game;
 	private GameType gameType;
 	private Inteligenca intelligence;
+	private Inteligenca intelligence2; // only used when 2 computers are playing against eachother
 	private MoveResult status;
 	private Window window;
 
@@ -57,6 +59,11 @@ public class ManagedGame {
 			intelligence = new Inteligenca();
 			status = MoveResult.WAIT; // it's the computer's turn first
 			getMoveFromIntelligence();
+			break;
+		case COMCOM:
+			intelligence = new Inteligenca();
+			intelligence2 = new Inteligenca();
+			comComLoop();
 			break;
 		}
 	}
@@ -107,10 +114,7 @@ public class ManagedGame {
 				}
 
 				if (move == null) {
-					// Returning null is an error on Intelligence's part.
-					System.out.println("Intelligence.getMove je vrnila null.");
-					status = MoveResult.ERROR;
-					window.update();
+					nullReturnError(intelligence);
 					return;
 				}
 
@@ -120,6 +124,64 @@ public class ManagedGame {
 			}
 		};
 		status = MoveResult.WAIT;
+		worker.execute();
+	}
+	
+	private void comComLoop() {
+		// the loop that runs when two computers play against each other
+		SwingWorker<PlayerColor, Void> worker = new SwingWorker<PlayerColor, Void> () {
+			private Inteligenca switchIntelligence(Inteligenca current) {
+				if (current == intelligence) {
+					return intelligence2;
+				}
+				return intelligence;
+			}
+			@Override
+			protected PlayerColor doInBackground() throws InterruptedException {
+				Inteligenca active = intelligence;
+				while (true) {
+					TimeUnit.MILLISECONDS.sleep(500);
+					System.out.println("Izbiram potezo");
+					Poteza move = intelligence.izberiPotezo(game);
+					if (move == null) {
+						nullReturnError(intelligence);
+						break;
+					}
+					
+					game.odigraj(move);
+					if (game.winner() != null) {
+						break;
+					}
+					window.update();
+					active = switchIntelligence(active);
+				}
+				
+				return game.winner(); // can also be null if the game ended due to an exception
+			}
+			@Override
+			protected void done () {
+				PlayerColor winner = null;
+				try {
+					winner = get();
+				}
+				catch (ExecutionException | InterruptedException e) {
+					// set the status to error and finish
+					e.printStackTrace();
+					status = MoveResult.ERROR;
+					window.update();
+					return;
+				}
+
+				if (winner == null) {
+					// game ended due to an exception
+					return;
+				}
+
+				status = winnerToGameStatus(winner);
+				window.update();
+			}
+		};
+		status = MoveResult.ALLCOMPUTERS;
 		worker.execute();
 	}
 	
@@ -137,6 +199,13 @@ public class ManagedGame {
 			assert false;
 			return MoveResult.PLAY;
 		}
+	}
+	
+	private void nullReturnError(Inteligenca perpetrator) {
+		// Returning null is an error on Intelligence's part.
+		System.out.println("Intelligence.getMove od " + perpetrator.ime() + " je vrnila null.");
+		status = MoveResult.ERROR;
+		window.update();
 	}
 
 	/**

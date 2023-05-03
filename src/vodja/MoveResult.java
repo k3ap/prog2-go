@@ -34,4 +34,8 @@ public enum MoveResult {
 	 * The white player has won.
 	 */
 	WHITEWINS,
+	/**
+	 * Both sides are computers.
+	 */
+	ALLCOMPUTERS,
 }

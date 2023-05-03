@@ -145,6 +145,9 @@ class Panel extends JPanel implements MouseListener {
 		case BLACKWINS:
 			writeMessage(g2, "Črn igralec je zmagal.");
 			break;
+		case ALLCOMPUTERS:
+			writeMessage(g2, "Računalnik igra proti samemu sebi...");
+			break;
 		}
 	}
 	
