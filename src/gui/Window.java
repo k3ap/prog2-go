@@ -71,9 +71,9 @@ public class Window extends JFrame implements ActionListener {
 		izbira2.setSelectedIndex(0);
 		final JComponent[] inputs = new JComponent[] {
 				new JLabel("Igralec belih kamnov:"),
-		        izbira,
+				izbira,
 				new JLabel("Igralec črnih kamnov:"),
-		        izbira2,
+				izbira2,
 		};
 		int result = JOptionPane.showConfirmDialog(null, inputs, "Izberite odločevalca potez", JOptionPane.PLAIN_MESSAGE);
 		if (result == JOptionPane.OK_OPTION) {
@@ -82,7 +82,7 @@ public class Window extends JFrame implements ActionListener {
 					options[izbira2.getSelectedIndex()].toIntelligence()
 			);
 		} else {
-		    return null;
+			return null;
 		}
 	}
 	
@@ -96,14 +96,14 @@ public class Window extends JFrame implements ActionListener {
 		izbira.setSelectedIndex(0);
 		final JComponent[] inputs = new JComponent[] {
 				new JLabel("Nasprotnik:"),
-		        izbira,
+				izbira,
 		};
 		int result = JOptionPane.showConfirmDialog(null, inputs, "Izberite tip nasprotnika", JOptionPane.PLAIN_MESSAGE);
 		if (result == JOptionPane.OK_OPTION) {
 			return ((IntelligenceOption) izbira.getSelectedItem()).toIntelligence();
 		} else {
-		    System.out.println("User canceled / closed the dialog, result = " + result);
-		    return null;
+			System.out.println("User canceled / closed the dialog, result = " + result);
+			return null;
 		}
 	}
 
