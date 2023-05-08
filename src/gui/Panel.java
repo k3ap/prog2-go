@@ -139,7 +139,8 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			}
 			break;
 		case WAIT:
-			window.writeMessage("Računalnik izbera potezo...");
+			String ime = game.intelligenceName();
+			window.writeMessage("Algoritem " + ime + " izbira potezo...");
 			break;
 		case ERROR:
 			window.writeMessage("Program za izbiranje poteze se je sesul.");

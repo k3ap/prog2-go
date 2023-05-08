@@ -144,6 +144,11 @@ public class ManagedGame {
 	 * @return Current status as {@link MoveResult}.
 	 */
 	public MoveResult gameStatus() { return status; }
+	
+	public String intelligenceName() {
+		assert gameType == GameType.COMHUM || gameType == GameType.HUMCOM;
+		return intelligence.ime();
+	}
 
 	// Expose useful methods from Game
 	/**
