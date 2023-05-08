@@ -60,7 +60,7 @@ public class Window extends JFrame implements ActionListener {
 	}
 	
 	/**
-	 * Show a pop up to choose the pair of intelligences to be played against eachother.
+	 * Show a pop up to choose the pair of intelligences to be played against each other.
 	 * @return The IntelligencePair of the selected intelligences.
 	 */
 	private IntelligencePair getIntelligencePairChoice() {

@@ -21,7 +21,7 @@ public class ManagedGame {
 	private Igra game;
 	private GameType gameType;
 	private Inteligenca intelligence;
-	private Inteligenca intelligence2; // only used when 2 computers are playing against eachother
+	private Inteligenca intelligence2; // only used when 2 computers are playing against each other
 	private MoveResult status;
 	private Window window;
 
