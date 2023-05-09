@@ -1,9 +1,15 @@
 package logika;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Representation of the playing field.
@@ -47,6 +53,12 @@ public class Grid {
 				grid.connectedComponents[idx.i()][idx.j()] = 
 						grid.connectedComponents[startIdx.i()][startIdx.j()];
 			}
+			int color = grid.connectedComponents[idx.i()][idx.j()];
+			if (!grid.componentSize.containsKey(color)) {
+				grid.componentSize.put(color, 1);
+			} else {
+				grid.componentSize.put(color, grid.componentSize.get(color)+1);
+			}
 		}
 
 		@Override
@@ -56,9 +68,9 @@ public class Grid {
 		protected void noticeAction(Index idx, Index stars, Index zacetniIdx) {}
 
 		@Override
-		protected boolean addNeighbor(Index stars, Index neighbor) {
-			return super.addNeighbor(stars, neighbor) 
-					&& grid.colorOfField(neighbor).equals(grid.colorOfField(stars));
+		protected boolean addNeighbor(Index parent, Index neighbor) {
+			return super.addNeighbor(parent, neighbor) 
+					&& grid.colorOfField(neighbor).equals(grid.colorOfField(parent));
 		}
 	}
 	
@@ -145,6 +157,7 @@ public class Grid {
 	 * This array is filled by ComponentSearch.
 	 */
 	private int connectedComponents[][];
+	private Map<Integer, Integer> componentSize;
 	
 	/**
 	 * Height and width of the grid.
@@ -162,6 +175,7 @@ public class Grid {
 			}
 		}
 		connectedComponents = new int[height][width];
+		componentSize = new HashMap<>();
 		this.height = height;
 		this.width = width;
 		componetSearch = new ComponetSearch(this, new ComponentSearchData());
@@ -253,7 +267,9 @@ public class Grid {
 		return free;
 	}
 
-	public void print() {
+    @Override
+    public String toString() {
+		String buf = "";
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				char c = switch(grid[i][j]) {
@@ -261,9 +277,149 @@ public class Grid {
 				case WHITE -> 'o';
 				case BLACK -> '#';
 				};
-				System.out.print(c);
+				buf += c;
 			}
-			System.out.println();
+			buf += '\n';
 		}
+		return buf;
+    }
+
+    public void printToFile(String filename) {
+		try (FileWriter writer = new FileWriter(filename)) {
+			writer.write(toString());
+		}
+		catch(Exception e) {}
+    }
+
+    public static Grid readFromFile(String filename, int size) throws FileNotFoundException, IOException {
+        Grid grid = new Grid(size, size);
+		try (FileReader reader = new FileReader(filename)) {
+			for (int i = 0; i < size; i++) {
+				for (int j = 0; j < size; j++) {
+					char c = (char) reader.read();
+					switch(c) {
+					case 'o':
+						grid.grid[i][j] = FieldColor.WHITE;
+						break;
+					case '#':
+						grid.grid[i][j] = FieldColor.BLACK;
+						break;
+					default:
+					}
+				}
+				reader.read();  // newline
+			}
+		}
+		grid.componetSearch.runAll();
+		grid.libertiesSearch.runAll();
+		return grid;
+    }
+
+	public Grid deepcopy() {
+		Grid m = new Grid(height, width);
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				m.grid[i][j] = grid[i][j];
+			}
+		}
+		m.componetSearch.runAll();
+		m.libertiesSearch.runAll();
+		return m;
 	}
+
+    public double distanceFromBorder(FieldColor color) {
+		int r = 10;
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				Index idx = new Index(i, j);
+				if (colorOfField(idx).equals(color)) {
+					r = Math.min(r,
+                                 Math.min(
+                                     Math.min(i, j),
+                                     Math.min(8-i, 8-j)
+                                     ));
+				}
+			}
+		}
+		return r;
+    }
+    
+    /**
+     * Get the minimum number of liberties a certain connected component has
+     * @param color The color we're interested in
+     * @return The minimal number of liberties of any component of this color
+     */
+    public int minimumNumberOfLiberties(FieldColor color) {
+		int cnt = height*width;
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				if (!grid[i][j].equals(color)) continue;
+				int num = ((LibertiesSearchData)libertiesSearch.data).numberOfLiberties(connectedComponents[i][j]);
+				cnt = Math.min(cnt, num);
+			}
+		}
+		return cnt;
+    }
+    
+    /**
+     * Get the average number of liberties over all connected components of this color
+     * @param color The color we're interested in
+     */
+    public double averageNumberOfLiberties(FieldColor color) {
+    	int s = 0;
+    	Set<Integer> counter = new HashSet<>();
+    	for (int i = 0; i < height; i++) {
+    		for (int j = 0; j < width; j++) {
+    			int cc = connectedComponents[i][j];
+    			if (grid[i][j].equals(color) && !counter.contains(cc)) {
+    				counter.add(cc);
+    				s += ((LibertiesSearchData)(libertiesSearch.data)).numberOfLiberties(cc);
+    			}
+    		}
+    	}
+    	if (counter.isEmpty()) return 0;
+    	return ((double)s) / counter.size();
+    }
+    
+    /**
+     * Get the number of connected components a color has
+     * @param color The color we're interested in
+     * @return The number of components belonging to this color.
+     */
+    public int numberOfComponents(FieldColor color) {
+    	Set<Integer> s = new HashSet<>();
+    	for (int i = 0; i < height; i++) {
+    		for (int j = 0; j < width; j++) {
+    			if (grid[i][j].equals(color)) {
+    				s.add(connectedComponents[i][j]);
+    			}
+    		}
+    	}
+    	return s.size();
+    }
+    
+    /**
+     * Return the smallest size of a liberty component adjacent to any 
+     * field of the given color
+     * @param color The color we're interested in
+     * @return As described
+     */
+    public int minLibertiesSize(FieldColor color) {
+    	int[][] d = new int[][] {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+    	int m = width*height;
+    	for (int i = 0; i < height; i++) {
+    		for (int j = 0; j < width; j++) {
+    			if (!grid[i][j].equals(color)) continue;
+    			for (int didx = 0; didx < 4; didx++) {
+    				int di = d[didx][0];
+    				int dj = d[didx][1];
+    				if (i+di < 0 || i+di >= height || j+dj < 0 || j+dj >= width) continue;
+    				if (grid[i+di][j+dj].equals(FieldColor.EMPTY)) {
+    					m = Math.min(m, componentSize.get(connectedComponents[i+di][j+dj]));
+    				}
+    			}
+    		}
+    	}
+    	return m;
+    }
 }

@@ -22,7 +22,7 @@ public class Inteligenca extends KdoIgra {
 	 * Je tu za namene tekmovanja.
 	 */
 	public Inteligenca() {
-		this(new RandomMoveChooser());
+		this(new AlphaBetaMoveChooser(3, new WeightedGridEstimator()));
 	}
 	
 	public Poteza izberiPotezo(Igra igra) {		

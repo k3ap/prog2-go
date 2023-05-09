@@ -16,7 +16,11 @@ public enum GameType {
 	 */
 	COMHUM,
 	/**
-	 * Humans cotroll both sides.
+	 * Humans control both sides.
 	 */
 	HUMHUM,
+	/**
+	 * Computers control both sides.
+	 */
+	COMCOM,
 }

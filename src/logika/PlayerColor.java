@@ -19,4 +19,12 @@ public enum PlayerColor {
 		assert false;
 		return null;
 	}
+
+	public PlayerColor next() {
+		return PlayerColor.newColor(this);
+	}
+	
+	public FieldColor field() {
+		return FieldColor.playersColor(this);
+	}
 }
