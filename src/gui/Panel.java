@@ -27,7 +27,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	private Style style;
 	private Window window;
 	private Index shadow;
-	private int leftEdge, topEdge, widthStep, heightStep;
+	private int leftEdge, topEdge, widthStep, heightStep, sideLength;
 
 	public Panel(int width, int height, Window window) {
 		super();
@@ -62,7 +62,9 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			topEdge = (height - width) / 2;
 			height = width;
 		}
+		assert width == height;
 		
+		sideLength = width;
 		leftEdge += (int) (width * 0.05);
 		widthStep = (int) (width * 0.9 / (game.width() - 1));
 		topEdge += (int) (height * 0.05);
@@ -231,13 +233,15 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	 * Do not call this method directly.
 	 */
 	private void drawAbstractStone(Graphics2D g2, int i, int j, Color center, Color edge) {
-		int y = topEdge + i * heightStep - style.stoneDiameter / 2;
-		int x = leftEdge + j * widthStep - style.stoneDiameter / 2;
-		
+		int d = style.stoneDiameter * sideLength / 500;
+		// sideLength is 500 if the window hasn't been resized
+		int y = topEdge + i * heightStep - d / 2;
+		int x = leftEdge + j * widthStep - d / 2;
+
 		g2.setColor(center);
-		g2.fillOval(x, y, style.stoneDiameter, style.stoneDiameter);
+		g2.fillOval(x, y, d, d);
 		g2.setColor(edge);
-		g2.drawOval(x, y, style.stoneDiameter, style.stoneDiameter);
+		g2.drawOval(x, y, d, d);
 	}
 	
 	/**
