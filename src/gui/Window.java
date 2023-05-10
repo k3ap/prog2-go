@@ -4,14 +4,11 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 
 import inteligenca.Inteligenca;
 import vodja.GameType;
@@ -22,7 +19,11 @@ public class Window extends JFrame implements ActionListener {
 	private GridBagLayout grid;
 	private Panel panel;
 	private JLabel statusBar;
-	private JMenuItem humCom, comHum, humHum, comCom;
+	private JMenuItem humCom, comHum, humHum, comCom, compDelayOption;
+	/**
+	 * @see #getCompDelay
+	 */
+	private int compDelay = 500;
 	
 	public Window() {
 		super();
@@ -54,6 +55,9 @@ public class Window extends JFrame implements ActionListener {
 		comHum = newMenuItem(igre, "Računalnik vs. človek...");
 		humHum = newMenuItem(igre, "Človek vs. človek");
 		comCom = newMenuItem(igre, "Računalnik vs. računalnik...");
+		
+		JMenu options = newMenu(menubar, "Nastavitve");
+		compDelayOption = newMenuItem(options, "Hitrost računalnika...");
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		update();
@@ -85,51 +89,12 @@ public class Window extends JFrame implements ActionListener {
 	}
 	
 	/**
-	 * Show a pop up to choose the pair of intelligences to be played against each other.
-	 * @return The IntelligencePair of the selected intelligences.
+	 * If the move choosing algorithm takes less that this amount of
+	 * time to choose a move, wait till this much time has passed.
+	 * (Unit is milliseconds)
 	 */
-	private IntelligencePair getIntelligencePairChoice() {
-		IntelligenceOption[] options = IntelligenceOption.getAll();
-		JComboBox<IntelligenceOption> izbira = new JComboBox<IntelligenceOption>(options);
-		izbira.setSelectedIndex(0);
-		JComboBox<IntelligenceOption> izbira2 = new JComboBox<IntelligenceOption>(options);
-		izbira2.setSelectedIndex(0);
-		final JComponent[] inputs = new JComponent[] {
-				new JLabel("Igralec belih kamnov:"),
-				izbira,
-				new JLabel("Igralec črnih kamnov:"),
-				izbira2,
-		};
-		int result = JOptionPane.showConfirmDialog(null, inputs, "Izberite odločevalca potez", JOptionPane.PLAIN_MESSAGE);
-		if (result == JOptionPane.OK_OPTION) {
-			return new IntelligencePair(
-					options[izbira.getSelectedIndex()].toIntelligence(),
-					options[izbira2.getSelectedIndex()].toIntelligence()
-			);
-		} else {
-			return null;
-		}
-	}
-	
-	/**
-	 * Shows a pop up for choosing the intelligence that will be the users opponent.
-	 * @return The chosen intelligence.
-	 */
-	private Inteligenca getIntelligenceChoice() {
-		IntelligenceOption[] options = IntelligenceOption.getAll();
-		JComboBox<IntelligenceOption> izbira = new JComboBox<IntelligenceOption>(options);
-		izbira.setSelectedIndex(0);
-		final JComponent[] inputs = new JComponent[] {
-				new JLabel("Nasprotnik:"),
-				izbira,
-		};
-		int result = JOptionPane.showConfirmDialog(null, inputs, "Izberite tip nasprotnika", JOptionPane.PLAIN_MESSAGE);
-		if (result == JOptionPane.OK_OPTION) {
-			return ((IntelligenceOption) izbira.getSelectedItem()).toIntelligence();
-		} else {
-			System.out.println("User canceled / closed the dialog, result = " + result);
-			return null;
-		}
+	public int getCompDelay() {
+		return compDelay;
 	}
 
 	@Override
@@ -137,13 +102,13 @@ public class Window extends JFrame implements ActionListener {
 		// A click on the menu bar at the top of the window.
 		Object source = e.getSource();
 		if (source == humCom) {
-			Inteligenca selected = getIntelligenceChoice();
+			Inteligenca selected = Popups.getIntelligenceChoice();
 			if (selected != null) {
 				panel.newComGame(GameType.HUMCOM, selected, this);
 			}
 		}
 		else if (source == comHum) {
-			Inteligenca selected = getIntelligenceChoice();
+			Inteligenca selected = Popups.getIntelligenceChoice();
 			if (selected != null) {
 				panel.newComGame(GameType.COMHUM, selected, this);
 			}
@@ -152,10 +117,13 @@ public class Window extends JFrame implements ActionListener {
 			panel.newHumHumGame(this);
 		}
 		else if (source == comCom) {
-			IntelligencePair selected = getIntelligencePairChoice();
+			IntelligencePair selected = Popups.getIntelligencePairChoice();
 			if (selected != null) {
 				panel.newComComGame(selected, this);
 			}
+		}
+		else if (source == compDelayOption) {
+			compDelay = Popups.getDelayOption(compDelay);
 		}
 		else {
 			assert false;

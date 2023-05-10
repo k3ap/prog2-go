@@ -24,6 +24,17 @@ public class ManagedGame {
 	private Inteligenca intelligence2; // only used when 2 computers are playing against each other
 	private MoveResult status;
 	private Window window;
+	
+	class Sleeper extends Thread {
+		public void run() {
+			try {
+				TimeUnit.MILLISECONDS.sleep(window.getCompDelay());
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	private Sleeper sleeper = new Sleeper();
 
 	/**
 	 * Create a new managed game with the given game type.
@@ -125,7 +136,9 @@ public class ManagedGame {
 				// try to read Intelligence's decision
 				Poteza move = null;
 				try {
+					sleeper.run();
 					move = get();
+					sleeper.join();
 				}
 				catch (ExecutionException | InterruptedException e) {
 					// set the status to error and finish
@@ -163,17 +176,6 @@ public class ManagedGame {
 			@Override
 			protected PlayerColor doInBackground() throws InterruptedException {
 				Inteligenca active = intelligence;
-								
-				class Sleeper extends Thread {
-					public void run() {
-						try {
-							TimeUnit.MILLISECONDS.sleep(500);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-				Sleeper sleeper = new Sleeper();
 				
 				while (true) {
 					sleeper.run();
