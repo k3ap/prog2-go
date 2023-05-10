@@ -1,7 +1,9 @@
 package gui;
 
+import inteligenca.AlphaBetaMoveChooser;
 import inteligenca.Inteligenca;
 import inteligenca.RandomMoveChooser;
+import inteligenca.WeightedGridEstimator;
 
 /**
  * Class that represents an algorithm used by Inteligenca to choose moves, 
@@ -12,6 +14,8 @@ import inteligenca.RandomMoveChooser;
 public class IntelligenceOption {
 	enum Options {
 		RANDOM,
+		ALPHABETA3,
+		ALPHABETA2,
 	}
 	
 	private Options option;
@@ -42,6 +46,10 @@ public class IntelligenceOption {
 		switch (option) {
 		case RANDOM:
 			return "Naključne poteze";
+		case ALPHABETA3:
+			return "Alfa-beta obrezovanje, globina 3";
+		case ALPHABETA2:
+			return "Alfa-beta obrezovanje, globina 2";
 		}
 		
 		assert(false);
@@ -56,6 +64,10 @@ public class IntelligenceOption {
 		switch (option) {
 		case RANDOM:
 			return new Inteligenca(new RandomMoveChooser());
+		case ALPHABETA3:
+			return new Inteligenca(new AlphaBetaMoveChooser(3, new WeightedGridEstimator()));
+		case ALPHABETA2:
+			return new Inteligenca(new AlphaBetaMoveChooser(2, new WeightedGridEstimator()));
 		}
 		
 		assert(false);
