@@ -17,6 +17,7 @@ public class Style {
 	public Color blackShadowStoneEdge;
 	public Color gridColor;
 	public int stoneDiameter;
+	public Color loosingHighlight;
 
 	public Style() {
 		// Default look
@@ -36,5 +37,8 @@ public class Style {
 		whiteShadowStoneEdge = new Color(0, 100, 100, 40);
 		blackShadowStone = new Color(5, 5, 10, 40);
 		blackShadowStoneEdge = new Color(100, 0, 100, 40);
+
+		// color with which the loosing component is highlighted
+		loosingHighlight = new Color(200, 10, 10, 40);
 	}
 }

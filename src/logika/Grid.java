@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -160,6 +161,11 @@ public class Grid {
 	private Map<Integer, Integer> componentSize;
 	
 	/**
+	 * Holds the "color" (the value found in connectedComponents) of the loosing component.
+	 */
+	private int loosingColor = -1;
+
+	/**
 	 * Height and width of the grid.
 	 */
 	private int height, width;
@@ -234,6 +240,7 @@ public class Grid {
 				if (grid[i][j] != color) continue;
 				int componentColor = connectedComponents[i][j];
 				if (((LibertiesSearchData)libertiesSearch.data).numberOfLiberties(componentColor) == 0) {
+					loosingColor = componentColor;
 					return true;
 				}
 			}
@@ -241,6 +248,27 @@ public class Grid {
 		return false;
 	}
 	
+	/**
+	 * Get the component which has no liberties and has lost its owner the game.
+	 * @return An array of indices that the component occupies.
+	 */
+	public Index[] loosingComponent() {
+		assert (hasColorLost(FieldColor.WHITE) || hasColorLost(FieldColor.BLACK));
+
+		LinkedList<Index> out = new LinkedList<Index>();
+
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				if (connectedComponents[i][j] == loosingColor)
+					out.add(new Index(i, j));
+			}
+		}
+
+		Index[] outArr = new Index[out.size()];
+		out.toArray(outArr);
+		return outArr;
+	}
+
 	/**
 	 * Check if the field with the given index is free.
 	 * @param idx Index

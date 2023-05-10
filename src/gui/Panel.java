@@ -151,6 +151,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			break;
 		case WHITEWINS:
 		case BLACKWINS:
+			highlightLooser(g2);
 			switch (game.getOutcome()) {
 			case COMBLACKWON:
 				window.writeMessage("Algoritem " + game.intelligence1Name() + " (črni) je zmagal.");
@@ -178,6 +179,19 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		}
 	}
 	
+	private void highlightLooser(Graphics2D g2) {
+		Index[] looser = game.loosingComponent();
+		g2.setColor(style.loosingHighlight);
+		for (Index idx : looser) {
+			g2.fillRect(
+					leftEdge + (int) ((idx.j() - 0.5 ) * widthStep),
+					topEdge + (int) ((idx.i() - 0.5 ) * widthStep),
+					widthStep,
+					heightStep
+			);
+		}
+	}
+
 	/**
 	 * Draw a stone (colored circle) at the given coordinates. 
 	 * @param g2 Graphics on which to draw.

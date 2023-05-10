@@ -81,4 +81,8 @@ public class Igra {
 	 */
 	public PlayerColor playerTurn() { return nextPlayer; }
 	public PlayerColor winner() { return winner; }
+	/**
+	 * @see Grid#loosingComponent
+	 */
+	public Index[] loosingComponent() { return grid.loosingComponent(); }
 }

@@ -314,4 +314,9 @@ public class ManagedGame {
 	 * @return {@link PlayerColor}, of the player who's move it is.
 	 */
 	public PlayerColor playerTurn() { return game.playerTurn(); }
+	/**
+	 * Get the component which has no liberties and has lost its owner the game.
+	 * @return An array of indices that the component occupies.
+	 */
+	public Index[] loosingComponent() { return game.loosingComponent(); }
 }
