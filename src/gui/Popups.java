@@ -9,18 +9,26 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
+import inteligenca.AlphaBetaMoveChooser;
 import inteligenca.Inteligenca;
+import inteligenca.RandomMoveChooser;
+import inteligenca.WeightedGridEstimator;
 
 public class Popups {
+	private final static Inteligenca[] intelligenceOptions = {
+			new Inteligenca(new RandomMoveChooser()),
+			new Inteligenca(new AlphaBetaMoveChooser(3, new WeightedGridEstimator())),
+			new Inteligenca(new AlphaBetaMoveChooser(2, new WeightedGridEstimator())),
+	};
+	
 	/**
 	 * Show a pop up to choose the pair of intelligences to be played against each other.
 	 * @return The IntelligencePair of the selected intelligences.
 	 */
 	protected static IntelligencePair getIntelligencePairChoice() {
-		IntelligenceOption[] options = IntelligenceOption.getAll();
-		JComboBox<IntelligenceOption> izbira = new JComboBox<IntelligenceOption>(options);
+		JComboBox<Inteligenca> izbira = new JComboBox<Inteligenca>(intelligenceOptions);
 		izbira.setSelectedIndex(0);
-		JComboBox<IntelligenceOption> izbira2 = new JComboBox<IntelligenceOption>(options);
+		JComboBox<Inteligenca> izbira2 = new JComboBox<Inteligenca>(intelligenceOptions);
 		izbira2.setSelectedIndex(0);
 		final JComponent[] inputs = new JComponent[] {
 				new JLabel("Igralec belih kamnov:"),
@@ -31,8 +39,8 @@ public class Popups {
 		int result = JOptionPane.showConfirmDialog(null, inputs, "Izberite odločevalca potez", JOptionPane.OK_CANCEL_OPTION);
 		if (result == JOptionPane.OK_OPTION) {
 			return new IntelligencePair(
-					options[izbira.getSelectedIndex()].toIntelligence(),
-					options[izbira2.getSelectedIndex()].toIntelligence()
+					intelligenceOptions[izbira.getSelectedIndex()],
+					intelligenceOptions[izbira2.getSelectedIndex()]
 			);
 		} else {
 			return null;
@@ -44,8 +52,7 @@ public class Popups {
 	 * @return The chosen intelligence.
 	 */
 	protected static Inteligenca getIntelligenceChoice() {
-		IntelligenceOption[] options = IntelligenceOption.getAll();
-		JComboBox<IntelligenceOption> izbira = new JComboBox<IntelligenceOption>(options);
+		JComboBox<Inteligenca> izbira = new JComboBox<Inteligenca>(intelligenceOptions);
 		izbira.setSelectedIndex(0);
 		final JComponent[] inputs = new JComponent[] {
 				new JLabel("Nasprotnik:"),
@@ -53,7 +60,7 @@ public class Popups {
 		};
 		int result = JOptionPane.showConfirmDialog(null, inputs, "Izberite tip nasprotnika", JOptionPane.OK_CANCEL_OPTION);
 		if (result == JOptionPane.OK_OPTION) {
-			return ((IntelligenceOption) izbira.getSelectedItem()).toIntelligence();
+			return intelligenceOptions[izbira.getSelectedIndex()];
 		} else {
 			return null;
 		}
