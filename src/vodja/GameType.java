@@ -5,6 +5,7 @@ package vodja;
  * @see #HUMCOM
  * @see #COMHUM
  * @see #HUMHUM
+ * @see #COMCOM
  */
 public enum GameType {
 	/**
@@ -22,5 +23,13 @@ public enum GameType {
 	/**
 	 * Computers control both sides.
 	 */
-	COMCOM,
+	COMCOM;
+	
+	/**
+	 * The GameType is one of computer-human or human-computer
+	 * @return the truthfulness of the above statement
+	 */
+	public boolean mixedGame() {
+		return this == COMHUM || this == HUMCOM;
+	}
 }

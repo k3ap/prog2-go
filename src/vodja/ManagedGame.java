@@ -253,8 +253,46 @@ public class ManagedGame {
 	public MoveResult gameStatus() { return status; }
 	
 	public String intelligenceName() {
-		assert gameType == GameType.COMHUM || gameType == GameType.HUMCOM;
+		assert gameType.mixedGame();
 		return intelligence.ime();
+	}
+	public String intelligence1Name() {
+		assert gameType == GameType.COMCOM;
+		return intelligence.ime();
+	}
+	public String intelligence2Name() {
+		assert gameType == GameType.COMCOM;
+		return intelligence2.ime();
+	}
+	
+	/**
+	 * Can only be called once the game is finished.
+	 * @return the outcome of a game as the type {@link GameOutcome}
+	 */
+	public GameOutcome getOutcome() {
+		assert status.isWonGame();
+		if (gameType.mixedGame()) {
+			if (status == MoveResult.BLACKWINS && gameType == GameType.COMHUM)
+				return GameOutcome.COMWON;
+			if (status == MoveResult.WHITEWINS && gameType == GameType.HUMCOM)
+				return GameOutcome.COMWON;
+			if (status == MoveResult.BLACKWINS && gameType == GameType.HUMCOM)
+				return GameOutcome.HUMWON;
+			if (status == MoveResult.WHITEWINS && gameType == GameType.COMHUM)
+				return GameOutcome.HUMWON;
+		}
+		else if (gameType == GameType.HUMHUM) {
+			if (status == MoveResult.WHITEWINS)
+				return GameOutcome.HUMWHITEWON;
+			return GameOutcome.HUMBLACKWON;
+		}
+		else {
+			if (status == MoveResult.WHITEWINS)
+				return GameOutcome.COMWHITEWON;
+			return GameOutcome.COMBLACKWON;
+		}
+		
+		return null;
 	}
 
 	// Expose useful methods from Game

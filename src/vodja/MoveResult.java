@@ -37,5 +37,9 @@ public enum MoveResult {
 	/**
 	 * Both sides are computers.
 	 */
-	ALLCOMPUTERS,
+	ALLCOMPUTERS;
+	
+	public boolean isWonGame() {
+		return this == BLACKWINS || this == WHITEWINS;
+	}
 }

@@ -148,10 +148,27 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			window.writeMessage("Program za izbiranje poteze se je sesul.");
 			break;
 		case WHITEWINS:
-			window.writeMessage("Beli igralec je zmagal.");
-			break;
 		case BLACKWINS:
-			window.writeMessage("Črn igralec je zmagal.");
+			switch (game.getOutcome()) {
+			case COMBLACKWON:
+				window.writeMessage("Algoritem " + game.intelligence1Name() + " (črni) je zmagal.");
+				break;
+			case COMWHITEWON:
+				window.writeMessage("Algoritem " + game.intelligence2Name() + " (beli) je zmagal.");
+				break;
+			case COMWON:
+				window.writeMessage("Zmagal je računalnik (" + game.intelligenceName() + ").");
+				break;
+			case HUMBLACKWON:
+				window.writeMessage("Zmagal je igralec črnih.");
+				break;
+			case HUMWHITEWON:
+				window.writeMessage("Zmagal je igralec belih.");
+				break;
+			case HUMWON:
+				window.writeMessage("Zmagali ste.");
+				break;
+			}
 			break;
 		case ALLCOMPUTERS:
 			window.writeMessage("Računalnik igra proti samemu sebi...");
