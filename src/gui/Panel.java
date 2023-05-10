@@ -295,6 +295,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			&& game.gameStatus() != MoveResult.PLAY) { return; }
 		
 		game.play(moveFromXY(e.getX(), e.getY()));
+		shadow = null; // remove the shadow once a stone is placed
 		window.update();
 	}
 	
