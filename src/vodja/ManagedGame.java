@@ -179,12 +179,12 @@ public class ManagedGame {
 				
 				while (true) {
 					sleeper.run();
-					Poteza move = intelligence.izberiPotezo(game);
+					Poteza move = active.izberiPotezo(game);
 					// if izberiPotezo took less than the sleeper's sleeping time than
 					// wait for the sleeper to finish to slow the computers' game down
 					sleeper.join();
 					if (move == null) {
-						nullReturnError(intelligence);
+						nullReturnError(active);
 						break;
 					}
 					
