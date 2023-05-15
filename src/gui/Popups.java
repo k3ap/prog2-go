@@ -17,10 +17,10 @@ import inteligenca.WeightedGridEstimator;
 
 public class Popups {
 	private final static Inteligenca[] intelligenceOptions = {
-			new Inteligenca(new RandomMoveChooser()),
 			new Inteligenca(new AlphaBetaMoveChooser(3, new WeightedGridEstimator())),
 			new Inteligenca(new AlphaBetaMoveChooser(2, new WeightedGridEstimator())),
 			new Inteligenca(new AlphaBetaMoveChooser(3, new PrimitiveGridEstimator())),
+			new Inteligenca(new RandomMoveChooser()),
 	};
 	
 	/**
