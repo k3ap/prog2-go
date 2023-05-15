@@ -36,7 +36,7 @@ public class SearchData {
 	
 	/**
 	 * Clear all data.
-	 * Subclasses should copy this method and call super.simplify.
+	 * Subclasses should implement this method and call super.clear.
 	 */
 	public void clear() {
 		searched.clear();

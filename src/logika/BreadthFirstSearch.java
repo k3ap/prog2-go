@@ -18,8 +18,10 @@ public abstract class BreadthFirstSearch extends Search {
 	
 	@Override
 	protected void startAtIndex(Index start) {
-		indiciesToSearch.add(start);
-		data.markSearched(start);
+		if (data.hasNotSearched(start)) {
+			indiciesToSearch.add(start);
+			data.markSearched(start);
+		}
 	}
 	
 	@Override
