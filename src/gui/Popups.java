@@ -33,9 +33,9 @@ public class Popups {
 		JComboBox<Inteligenca> izbira2 = new JComboBox<Inteligenca>(intelligenceOptions);
 		izbira2.setSelectedIndex(0);
 		final JComponent[] inputs = new JComponent[] {
-				new JLabel("Igralec belih kamnov:"),
-				izbira,
 				new JLabel("Igralec črnih kamnov:"),
+				izbira,
+				new JLabel("Igralec belih kamnov:"),
 				izbira2,
 		};
 		int result = JOptionPane.showConfirmDialog(null, inputs, "Izberite odločevalca potez", JOptionPane.OK_CANCEL_OPTION);
