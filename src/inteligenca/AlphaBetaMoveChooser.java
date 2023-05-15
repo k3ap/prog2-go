@@ -11,10 +11,10 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 	private int maxDepth;
 	private GridEstimator estimator;
 	
-	public AlphaBetaMoveChooser(int maxGlobina, GridEstimator ocenjevalec) {
+	public AlphaBetaMoveChooser(int maxDepth, GridEstimator estimator) {
 		super();
-		this.maxDepth = maxGlobina;
-		this.estimator = ocenjevalec;
+		this.maxDepth = maxDepth;
+		this.estimator = estimator;
 	}
 
 	@Override
@@ -46,7 +46,7 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 			if (najbolje == null || value > najbolje)
 				najbolje = value;
 			
-			if (alpha < value) 
+			if (alpha < value)
 				alpha = value;
 			
 			if (beta < alpha) break;

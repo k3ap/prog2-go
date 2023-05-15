@@ -96,13 +96,19 @@ public class UFDS<T, M extends SetMapping> {
 	}
 	
 	/**
-	 * Insert an element into the structure 
+	 * Insert an element into the structure.
+	 * If it already exists, reparent to itself and set the new mapping.
+	 * This may invalidate other mappings, so be careful!
 	 * @param element
 	 */
 	public void insert(T element, M property) {
-		parent.put(element, element);
-		sizes.put(element, 1);
-		rank.put(element, 0);
+		if (parent.containsKey(element)) {
+			setParent(element, element);
+		} else {
+			parent.put(element, element);
+			sizes.put(element, 1);
+			rank.put(element, 0);
+		}
 		toplevels.put(element, property);
 	}
 	
@@ -126,5 +132,28 @@ public class UFDS<T, M extends SetMapping> {
 	 */
 	public int getSize(T element) {
 		return sizes.get(getRepresentative(element));
+	}
+	
+	/**
+	 * Manually reset the parent of a specific node.
+	 * If the new parent is the same as the element, the new mapping is 
+	 * set to null.
+	 * Careful when using this method, as it may invalidate other mappings!
+	 * @param element
+	 * @param newParent
+	 */
+	public void setParent(T element, T newParent) {
+		T oldParent = getRepresentative(element);
+		
+		if (oldParent.equals(newParent)) return;
+		parent.put(element, newParent);
+		sizes.put(oldParent, sizes.get(oldParent) - 1);
+		sizes.put(newParent, sizes.get(newParent) + 1);
+		rank.put(element, 0);
+		if (rank.get(newParent) < 1) rank.put(newParent, 1);
+		
+		if (newParent.equals(element)) {
+			toplevels.put(element, null);
+		}
 	}
 }

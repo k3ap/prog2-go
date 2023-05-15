@@ -38,15 +38,17 @@ public class Grid {
 
 		public ComponentLibertySearch(Grid grid, SearchData data) {
 			super(grid, data);
+			grid.connectedComponents = new UFDS<>();
 		}
 
 		@Override
 		protected void entryAction(Index idx, Index startIdx) {
+			//System.out.format("entryAction at %d,%d with start %d,%d\n", idx.i(), idx.j(), startIdx.i(), startIdx.j());
 			// no need to fill out the set mapping here; we'll do that in noticeAction
-			connectedCompoents.insert(idx, new LibertiesSetMapping());
+			connectedComponents.insert(idx, new LibertiesSetMapping());
 			
 			// merge the new set with the connected component
-			connectedCompoents.doUnion(idx, startIdx);
+			connectedComponents.doUnion(idx, startIdx);
 		}
 
 		@Override
@@ -58,7 +60,8 @@ public class Grid {
 				return;
 			
 			if (grid.colorOfField(neighbor) == FieldColor.EMPTY) {
-				connectedCompoents.get(parent).liberties.add(neighbor);
+				//System.out.format("liberty for %d,%d at %d,%d\n", parent.i(), parent.j(), neighbor.i(), neighbor.j());
+				connectedComponents.get(parent).liberties.add(neighbor);
 			}
 		}
 		
@@ -82,7 +85,7 @@ public class Grid {
 	/**
 	 * Keeps track of the connected components in the graph and the liberties associated with them
 	 */
-	private UFDS<Index, LibertiesSetMapping> connectedCompoents;
+	private UFDS<Index, LibertiesSetMapping> connectedComponents;
 	
 	private ComponentLibertySearch graphSearch;
 	
@@ -93,7 +96,7 @@ public class Grid {
 				grid[i][j] = FieldColor.EMPTY;
 			}
 		}
-		connectedCompoents = new UFDS<>();
+		connectedComponents = new UFDS<>();
 		this.height = height;
 		this.width = width;
 		graphSearch = new ComponentLibertySearch(this, new SearchData());
@@ -119,17 +122,53 @@ public class Grid {
 	 * @return true when they are in the same component.
 	 */
 	public boolean sameComponent(Index idx1, Index idx2) {
-		return connectedCompoents.isSameSet(idx1, idx2);
+		return connectedComponents.isSameSet(idx1, idx2);
 	}
 	
 	/**
 	 * Place a stone of the given color on the given index.
+	 * Assumes the previous color at the given index is a EMPTY and 
+	 * that we're setting a non-EMPTY color
 	 * @param idx Index in the grid.
 	 * @param color Color of the new stone.
 	 */
 	public void placeColor(Index idx, FieldColor color) {
+		FieldColor oldColor = grid[idx.i()][idx.j()];
 		grid[idx.i()][idx.j()] = color;
-		graphSearch.runAll();
+		
+		// The component directly adjacent to the field we've just painted over may be invalidated
+		// by this, so we need to rerun the BFS
+		
+		final int[][] d = new int[][] {{0, 1}, {1, 0}, {-1, 0}, {0, -1}};
+		
+		graphSearch.data.clear();
+		graphSearch.run(idx);
+		
+		for (int didx = 0; didx < 4; didx++) {
+			int di = d[didx][0];
+			int dj = d[didx][1];
+			
+			if (idx.i() + di < 0 || idx.j() + dj < 0 || idx.i() + di >= height || idx.j() + dj >= width)
+				continue;
+			
+			// if the colors before didn't match, there's nothing to fix
+			if (grid[idx.i() + di][idx.j() + dj].equals(oldColor)) {
+				Index newpar = new Index(idx.i() + di, idx.j() + dj);
+				graphSearch.run(newpar);
+			}
+		}
+		
+		// this used to be a blank field; we need to remove it from any liberties it may be in
+		for (int didx = 0; didx < 4; didx++) {
+			int di = d[didx][0];
+			int dj = d[didx][1];
+			
+			if (idx.i() + di < 0 || idx.j() + dj < 0 || idx.i() + di >= height || idx.j() + dj >= width)
+				continue;
+			
+			Index neighbour = new Index(idx.i() + di, idx.j() + dj);
+			connectedComponents.get(neighbour).liberties.remove(idx);
+		}
 	}
 	
 	/**
@@ -138,9 +177,9 @@ public class Grid {
 	 * @return true, if the given color has lost the game
 	 */
 	public boolean hasColorLost(FieldColor color) {
-		for (Index idx : connectedCompoents.getToplevels()) {
+		for (Index idx : connectedComponents.getToplevels()) {
 			if (colorOfField(idx).equals(color)) {
-				LibertiesSetMapping mapping = connectedCompoents.get(idx);
+				LibertiesSetMapping mapping = connectedComponents.get(idx);
 				if (mapping.liberties.size() == 0) return true;
 			}
 		}
@@ -278,9 +317,9 @@ public class Grid {
      */
     public int minimumNumberOfLiberties(FieldColor color) {
     	int m = width * height;
-		for (Index idx : connectedCompoents.getToplevels()) {
+		for (Index idx : connectedComponents.getToplevels()) {
 			if (colorOfField(idx).equals(color)) {
-				m = Math.min(m, connectedCompoents.get(idx).liberties.size());
+				m = Math.min(m, connectedComponents.get(idx).liberties.size());
 			}
 		}
 		return m;
@@ -293,10 +332,10 @@ public class Grid {
     public double averageNumberOfLiberties(FieldColor color) {
     	int s = 0;  // all liberties
     	int c = 0;  // all components
-		for (Index idx : connectedCompoents.getToplevels()) {
+		for (Index idx : connectedComponents.getToplevels()) {
 			if (colorOfField(idx).equals(color)) {
 				c++;
-				s += connectedCompoents.get(idx).liberties.size();
+				s += connectedComponents.get(idx).liberties.size();
 			}
 		}
 		if (c == 0) return 0;
@@ -310,7 +349,7 @@ public class Grid {
      */
     public int numberOfComponents(FieldColor color) {
     	int c = 0;
-		for (Index idx : connectedCompoents.getToplevels()) {
+		for (Index idx : connectedComponents.getToplevels()) {
 			if (colorOfField(idx).equals(color)) {
 				c++;
 			}
@@ -337,7 +376,7 @@ public class Grid {
     				if (grid[i+di][j+dj].equals(FieldColor.EMPTY)) {
     					m = Math.min(
     						m, 
-    						connectedCompoents.getSize(new Index(i+di, j+dj))
+    						connectedComponents.getSize(new Index(i+di, j+dj))
     					);
     				}
     			}

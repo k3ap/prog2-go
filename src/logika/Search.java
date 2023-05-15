@@ -18,7 +18,7 @@ public abstract class Search {
 	protected Grid grid;
 	
 	/**
-	 * Prepare the structure so search from the given index.
+	 * Prepare the structure to search from the given index.
 	 * @param startIdx Index where we begin the search.
 	 */
 	protected abstract void startAtIndex(Index start);
