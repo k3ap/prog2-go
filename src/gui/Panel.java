@@ -133,13 +133,19 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		switch (game.gameStatus()) {
 		case INVALID:
 		case PLAY:
-			switch (game.playerTurn()) {
-			case WHITE:
-				window.writeMessage("Na vrsti je bel.");
-				break;
-			case BLACK:
-				window.writeMessage("Na vrsti je črn.");
-				break;
+			if (game.gameType().mixedGame()) {
+				// mixedGame => there is only one human player
+				window.writeMessage("Na vrsti ste.");
+			}
+			else {
+				switch (game.playerTurn()) {
+				case WHITE:
+					window.writeMessage("Na vrsti je bel.");
+					break;
+				case BLACK:
+					window.writeMessage("Na vrsti je črn.");
+					break;
+				}
 			}
 			break;
 		case WAIT:

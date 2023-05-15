@@ -267,6 +267,8 @@ public class ManagedGame {
 		return intelligence2.ime();
 	}
 	
+	public GameType gameType() { return gameType; }
+
 	/**
 	 * Can only be called once the game is finished.
 	 * @return the outcome of a game as the type {@link GameOutcome}
