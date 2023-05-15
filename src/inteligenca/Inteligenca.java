@@ -28,4 +28,9 @@ public class Inteligenca extends KdoIgra {
 	public Poteza izberiPotezo(Igra igra) {		
 		return dolocevalec.chooseMove(igra);
 	}
+	
+	@Override
+	public String toString() {
+		return super.ime();
+	}
 }

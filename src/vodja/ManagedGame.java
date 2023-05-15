@@ -24,6 +24,17 @@ public class ManagedGame {
 	private Inteligenca intelligence2; // only used when 2 computers are playing against each other
 	private MoveResult status;
 	private Window window;
+	
+	class Sleeper extends Thread {
+		public void run() {
+			try {
+				TimeUnit.MILLISECONDS.sleep(window.getCompDelay());
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	private Sleeper sleeper = new Sleeper();
 
 	/**
 	 * Create a new managed game with the given game type.
@@ -125,7 +136,9 @@ public class ManagedGame {
 				// try to read Intelligence's decision
 				Poteza move = null;
 				try {
+					sleeper.run();
 					move = get();
+					sleeper.join();
 				}
 				catch (ExecutionException | InterruptedException e) {
 					// set the status to error and finish
@@ -163,17 +176,6 @@ public class ManagedGame {
 			@Override
 			protected PlayerColor doInBackground() throws InterruptedException {
 				Inteligenca active = intelligence;
-								
-				class Sleeper extends Thread {
-					public void run() {
-						try {
-							TimeUnit.MILLISECONDS.sleep(500);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-				Sleeper sleeper = new Sleeper();
 				
 				while (true) {
 					sleeper.run();
@@ -251,6 +253,51 @@ public class ManagedGame {
 	 * @return Current status as {@link MoveResult}.
 	 */
 	public MoveResult gameStatus() { return status; }
+	
+	public String intelligenceName() {
+		assert gameType.mixedGame();
+		return intelligence.ime();
+	}
+	public String intelligence1Name() {
+		assert gameType == GameType.COMCOM;
+		return intelligence.ime();
+	}
+	public String intelligence2Name() {
+		assert gameType == GameType.COMCOM;
+		return intelligence2.ime();
+	}
+	
+	public GameType gameType() { return gameType; }
+
+	/**
+	 * Can only be called once the game is finished.
+	 * @return the outcome of a game as the type {@link GameOutcome}
+	 */
+	public GameOutcome getOutcome() {
+		assert status.isWonGame();
+		if (gameType.mixedGame()) {
+			if (status == MoveResult.BLACKWINS && gameType == GameType.COMHUM)
+				return GameOutcome.COMWON;
+			if (status == MoveResult.WHITEWINS && gameType == GameType.HUMCOM)
+				return GameOutcome.COMWON;
+			if (status == MoveResult.BLACKWINS && gameType == GameType.HUMCOM)
+				return GameOutcome.HUMWON;
+			if (status == MoveResult.WHITEWINS && gameType == GameType.COMHUM)
+				return GameOutcome.HUMWON;
+		}
+		else if (gameType == GameType.HUMHUM) {
+			if (status == MoveResult.WHITEWINS)
+				return GameOutcome.HUMWHITEWON;
+			return GameOutcome.HUMBLACKWON;
+		}
+		else {
+			if (status == MoveResult.WHITEWINS)
+				return GameOutcome.COMWHITEWON;
+			return GameOutcome.COMBLACKWON;
+		}
+		
+		return null;
+	}
 
 	// Expose useful methods from Game
 	/**
@@ -271,4 +318,9 @@ public class ManagedGame {
 	 * @return {@link PlayerColor}, of the player who's move it is.
 	 */
 	public PlayerColor playerTurn() { return game.playerTurn(); }
+	/**
+	 * Get the component which has no liberties and has lost its owner the game.
+	 * @return An array of indices that the component occupies.
+	 */
+	public Index[] losingComponent() { return game.losingComponent(); }
 }

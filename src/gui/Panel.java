@@ -9,29 +9,36 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 
 import logika.PlayerColor;
 import vodja.ManagedGame;
+import logika.FieldColor;
 import logika.Index;
 import splosno.Poteza;
 import vodja.MoveResult;
 import vodja.GameType;
 
 
-class Panel extends JPanel implements MouseListener {
+class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	private static final long serialVersionUID = 7693008210122811280L;
 	private ManagedGame game;
 	private Dimension dimensions;
 	private Style style;
-	private int leftEdge, topEdge, widthStep, heightStep;
+	private Window window;
+	private Index shadow;
+	private int leftEdge, topEdge, widthStep, heightStep, sideLength;
 
-	public Panel(int width, int height) {
+	public Panel(int width, int height, Window window) {
 		super();
+		this.window = window;
 		dimensions = new Dimension(width, height);
 		setPreferredSize(dimensions);
 		style = new Style();
 		game = null;
+		shadow = null;
 		addMouseListener(this);
+		addMouseMotionListener(this);
 	}
 	
 	/**
@@ -40,8 +47,8 @@ class Panel extends JPanel implements MouseListener {
 	private void calculateDimensions() {
 		if (game == null) { return; }
 		
-		int width = getSize().width;
-		int height = getSize().height;
+		int width = getWidth();
+		int height = getHeight();
 		
 		// We need to make sure to draw the grid square
 		if (width >= height) {
@@ -55,11 +62,13 @@ class Panel extends JPanel implements MouseListener {
 			topEdge = (height - width) / 2;
 			height = width;
 		}
+		assert width == height;
 		
-		leftEdge += (int) (width * 0.1);
-		widthStep = (int) (width * 0.8 / (game.width() - 1));
-		topEdge += (int) (height * 0.1);
-		heightStep = (int) (height * 0.8 / (game.height() - 1));
+		sideLength = width;
+		leftEdge += (int) (width * 0.05);
+		widthStep = (int) (width * 0.9 / (game.width() - 1));
+		topEdge += (int) (height * 0.05);
+		heightStep = (int) (height * 0.9 / (game.height() - 1));
 	}
 
 	@Override
@@ -67,12 +76,8 @@ class Panel extends JPanel implements MouseListener {
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D) g;
 		
-		if (game == null) {
-			// increase font size
-			g2.setFont(g2.getFont().deriveFont((float) 30.0));
-			g2.drawString("Izberite tip igre", dimensions.width / 3, dimensions.height / 2);
+		if (game == null) 
 			return;
-		}
 		
 		calculateDimensions();
 
@@ -105,16 +110,13 @@ class Panel extends JPanel implements MouseListener {
 		
 		// stones
 		for (int i = 0; i < gridHeight; i++) {
-			int y = topEdge + i * heightStep - style.stoneDiameter / 2;
 			for (int j = 0; j < gridWidth; j++) {
-				int x = leftEdge + j * widthStep - style.stoneDiameter / 2;
-				
 				switch (game.fieldColor(new Index(i, j))) {
 				case WHITE:
-					drawStone(g2, x, y, PlayerColor.WHITE);
+					drawStone(g2, i, j, PlayerColor.WHITE);
 					break;
 				case BLACK:
-					drawStone(g2, x, y, PlayerColor.BLACK);
+					drawStone(g2, i, j, PlayerColor.BLACK);
 					break;
 				case EMPTY:
 					break;
@@ -122,45 +124,88 @@ class Panel extends JPanel implements MouseListener {
 			}
 		}
 		
+		// shadow stone
+		if (shadow != null) {
+			drawShadowStone(g2, shadow.i(), shadow.j(), game.playerTurn());
+		}
+		
 		// draw game status
 		switch (game.gameStatus()) {
 		case INVALID:
 		case PLAY:
-			switch (game.playerTurn()) {
-			case WHITE:
-				writeMessage(g2, "Na vrsti je bel.");
-				break;
-			case BLACK:
-				writeMessage(g2, "Na vrsti je črn.");
-				break;
+			if (game.gameType().mixedGame()) {
+				// mixedGame => there is only one human player
+				window.writeMessage("Na vrsti ste.");
+			}
+			else {
+				switch (game.playerTurn()) {
+				case WHITE:
+					window.writeMessage("Na vrsti je bel.");
+					break;
+				case BLACK:
+					window.writeMessage("Na vrsti je črn.");
+					break;
+				}
 			}
 			break;
 		case WAIT:
-			writeMessage(g2, "Računalnik izbera potezo...");
+			String ime = game.intelligenceName();
+			window.writeMessage("Algoritem " + ime + " izbira potezo...");
 			break;
 		case ERROR:
-			writeMessage(g2, "Program za izpibarnje poteze se je sesul.");
+			window.writeMessage("Program za izbiranje poteze se je sesul.");
 			break;
 		case WHITEWINS:
-			writeMessage(g2, "Beli igralec je zmagal.");
-			break;
 		case BLACKWINS:
-			writeMessage(g2, "Črn igralec je zmagal.");
+			highlightLoser(g2);
+			switch (game.getOutcome()) {
+			case COMBLACKWON:
+				window.writeMessage("Algoritem " + game.intelligence1Name() + " (črni) je zmagal.");
+				break;
+			case COMWHITEWON:
+				window.writeMessage("Algoritem " + game.intelligence2Name() + " (beli) je zmagal.");
+				break;
+			case COMWON:
+				window.writeMessage("Zmagal je računalnik (" + game.intelligenceName() + ").");
+				break;
+			case HUMBLACKWON:
+				window.writeMessage("Zmagal je igralec črnih.");
+				break;
+			case HUMWHITEWON:
+				window.writeMessage("Zmagal je igralec belih.");
+				break;
+			case HUMWON:
+				window.writeMessage("Zmagali ste.");
+				break;
+			}
 			break;
 		case ALLCOMPUTERS:
-			writeMessage(g2, "Računalnik igra proti samemu sebi...");
+			window.writeMessage("Računalnik igra proti samemu sebi...");
 			break;
 		}
 	}
 	
+	private void highlightLoser(Graphics2D g2) {
+		Index[] loser = game.losingComponent();
+		g2.setColor(style.losingHighlight);
+		for (Index idx : loser) {
+			g2.fillRect(
+					leftEdge + (int) ((idx.j() - 0.5 ) * widthStep),
+					topEdge + (int) ((idx.i() - 0.5 ) * widthStep),
+					widthStep,
+					heightStep
+			);
+		}
+	}
+
 	/**
 	 * Draw a stone (colored circle) at the given coordinates. 
 	 * @param g2 Graphics on which to draw.
-	 * @param x coordinate on the panel on which to draw the stone (not the grid index).
-	 * @param y coordinate on the panel on which to draw the stone (not the grid index).
+	 * @param i grid index on which to draw the stone.
+	 * @param j grid index on the panel on which to draw the stone.
 	 * @param color Player color to draw the stone with.
 	 */
-	private void drawStone(Graphics2D g2, int x, int y, PlayerColor color) {
+	private void drawStone(Graphics2D g2, int i, int j, PlayerColor color) {
 		Color center = Color.PINK;
 		Color edge = Color.CYAN;
 		switch (color) {
@@ -175,21 +220,48 @@ class Panel extends JPanel implements MouseListener {
 				assert false;
 		}
 		
-		g2.setColor(center);
-		g2.fillOval(x, y, style.stoneDiameter, style.stoneDiameter);
-		g2.setColor(edge);
-		g2.drawOval(x, y, style.stoneDiameter, style.stoneDiameter);
+		drawAbstractStone(g2, i, j, center, edge);
 	}
 	
 	/**
-	 * Draws a message at the above the grid.
+	 * Draw a shadow of a stone at the given coordinates.
+	 * A shadow is drawn when hovering over a valid spot for a stone.
 	 * @param g2 Graphics on which to draw.
-	 * @param message Text that will be written.
+	 * @param x coordinate on the panel on which to draw the stone (not the grid index).
+	 * @param y coordinate on the panel on which to draw the stone (not the grid index).
+	 * @param color Player color to draw the stone with.
 	 */
-	private void writeMessage(Graphics2D g2, String message) {
-		float size = (float) (20.0 * getSize().height / 700.0);
-		g2.setFont(g2.getFont().deriveFont(size));
-		g2.drawString(message, leftEdge, (int) (topEdge - size));
+	private void drawShadowStone(Graphics2D g2, int i, int j, PlayerColor color) {
+		Color center = Color.PINK;
+		Color edge = Color.CYAN;
+		switch (color) {
+			case BLACK:
+				center = style.blackShadowStone;
+				edge = style.blackShadowStoneEdge;
+				break;
+			case WHITE:
+				center = style.whiteShadowStone;
+				edge = style.whiteShadowStoneEdge;
+			default:
+				assert false;
+		}
+		
+		drawAbstractStone(g2, i, j, center, edge);
+	}
+	
+	/**
+	 * Do not call this method directly.
+	 */
+	private void drawAbstractStone(Graphics2D g2, int i, int j, Color center, Color edge) {
+		int d = style.stoneDiameter * sideLength / 500;
+		// sideLength is 500 if the window hasn't been resized
+		int y = topEdge + i * heightStep - d / 2;
+		int x = leftEdge + j * widthStep - d / 2;
+
+		g2.setColor(center);
+		g2.fillOval(x, y, d, d);
+		g2.setColor(edge);
+		g2.drawOval(x, y, d, d);
 	}
 	
 	/**
@@ -200,6 +272,19 @@ class Panel extends JPanel implements MouseListener {
 		// once the computer has decided what to play
 		game = new ManagedGame(GameType.HUMHUM, window);
 		repaint();
+	}
+	
+	private Poteza moveFromXY(int x, int y) {
+		calculateDimensions();
+		
+		// calculate the indices of the field that was clicked
+		int i = (y - topEdge + heightStep / 2) / heightStep;
+		int j = (x - leftEdge + widthStep / 2) / widthStep;
+		// ignore a click if it happened too far outside the grid
+		if (i < 0 || i >= game.width() || j < 0 || j >= game.height())
+			return null;
+		
+		return new Poteza(i, j);
 	}
 	
 	/**
@@ -233,21 +318,41 @@ class Panel extends JPanel implements MouseListener {
 		if (game.gameStatus() != MoveResult.INVALID
 			&& game.gameStatus() != MoveResult.PLAY) { return; }
 		
-		calculateDimensions();
-		int x = e.getX();
-		int y = e.getY();
-		
-		// calculate the indices of the field that was clicked
-		int i = (y - topEdge + heightStep / 2) / heightStep;
-		int j = (x - leftEdge + widthStep / 2) / widthStep;
-		// ignore a click if it happened too far outside the grid
-		if (i < 0 || i >= game.width() || j < 0 || j >= game.height()) { return; }
-		
-		game.play(new Poteza(i, j));
-		repaint();
+		game.play(moveFromXY(e.getX(), e.getY()));
+		shadow = null; // remove the shadow once a stone is placed
+		window.update();
 	}
 	
-	// Unused methods of MouseListener
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		if (game == null) { return; }
+		// Ignore clicks if the player is not allowed to play a move.
+		if (game.gameStatus() != MoveResult.INVALID
+			&& game.gameStatus() != MoveResult.PLAY) { return; }
+		
+		Poteza hoveredMaybe = moveFromXY(e.getX(), e.getY());
+		if (hoveredMaybe == null) {
+			shadow = null;
+		}
+		else {
+			Index hovered = new Index(hoveredMaybe);
+			if (game.fieldColor(hovered) == FieldColor.EMPTY) {
+				shadow = hovered;
+			}
+			else {
+				shadow = null;
+			}
+		}
+		window.update();
+	}
+	
+	@Override
+	public void mouseExited(MouseEvent e) {
+		shadow = null;
+		window.update();
+	}
+	
+	// Unused methods of MouseListener and MouseMotionListener
 	@Override
 	public void mousePressed(MouseEvent e) {}
 	@Override
@@ -255,5 +360,6 @@ class Panel extends JPanel implements MouseListener {
 	@Override
 	public void mouseEntered(MouseEvent e) {}
 	@Override
-	public void mouseExited(MouseEvent e) {}
+	public void mouseDragged(MouseEvent e) {}
+
 }

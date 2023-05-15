@@ -1,8 +1,5 @@
 package testiranje;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 import logika.FieldColor;
 import logika.Grid;
 import logika.Index;
