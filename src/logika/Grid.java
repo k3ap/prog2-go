@@ -161,9 +161,9 @@ public class Grid {
 	private Map<Integer, Integer> componentSize;
 	
 	/**
-	 * Holds the "color" (the value found in connectedComponents) of the loosing component.
+	 * Holds the "color" (the value found in connectedComponents) of the losing component.
 	 */
-	private int loosingColor = -1;
+	private int losingColor = -1;
 
 	/**
 	 * Height and width of the grid.
@@ -240,7 +240,7 @@ public class Grid {
 				if (grid[i][j] != color) continue;
 				int componentColor = connectedComponents[i][j];
 				if (((LibertiesSearchData)libertiesSearch.data).numberOfLiberties(componentColor) == 0) {
-					loosingColor = componentColor;
+					losingColor = componentColor;
 					return true;
 				}
 			}
@@ -252,14 +252,14 @@ public class Grid {
 	 * Get the component which has no liberties and has lost its owner the game.
 	 * @return An array of indices that the component occupies.
 	 */
-	public Index[] loosingComponent() {
+	public Index[] losingComponent() {
 		assert (hasColorLost(FieldColor.WHITE) || hasColorLost(FieldColor.BLACK));
 
 		LinkedList<Index> out = new LinkedList<Index>();
 
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-				if (connectedComponents[i][j] == loosingColor)
+				if (connectedComponents[i][j] == losingColor)
 					out.add(new Index(i, j));
 			}
 		}

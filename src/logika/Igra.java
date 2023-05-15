@@ -82,7 +82,7 @@ public class Igra {
 	public PlayerColor playerTurn() { return nextPlayer; }
 	public PlayerColor winner() { return winner; }
 	/**
-	 * @see Grid#loosingComponent
+	 * @see Grid#losingComponent
 	 */
-	public Index[] loosingComponent() { return grid.loosingComponent(); }
+	public Index[] losingComponent() { return grid.losingComponent(); }
 }

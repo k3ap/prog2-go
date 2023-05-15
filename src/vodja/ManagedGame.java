@@ -320,5 +320,5 @@ public class ManagedGame {
 	 * Get the component which has no liberties and has lost its owner the game.
 	 * @return An array of indices that the component occupies.
 	 */
-	public Index[] loosingComponent() { return game.loosingComponent(); }
+	public Index[] losingComponent() { return game.losingComponent(); }
 }

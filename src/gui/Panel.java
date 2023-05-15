@@ -151,7 +151,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			break;
 		case WHITEWINS:
 		case BLACKWINS:
-			highlightLooser(g2);
+			highlightLoser(g2);
 			switch (game.getOutcome()) {
 			case COMBLACKWON:
 				window.writeMessage("Algoritem " + game.intelligence1Name() + " (črni) je zmagal.");
@@ -179,10 +179,10 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		}
 	}
 	
-	private void highlightLooser(Graphics2D g2) {
-		Index[] looser = game.loosingComponent();
-		g2.setColor(style.loosingHighlight);
-		for (Index idx : looser) {
+	private void highlightLoser(Graphics2D g2) {
+		Index[] loser = game.losingComponent();
+		g2.setColor(style.losingHighlight);
+		for (Index idx : loser) {
 			g2.fillRect(
 					leftEdge + (int) ((idx.j() - 0.5 ) * widthStep),
 					topEdge + (int) ((idx.i() - 0.5 ) * widthStep),
