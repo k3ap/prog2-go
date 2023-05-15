@@ -3,6 +3,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.LinkedList;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -20,6 +21,7 @@ public class Window extends JFrame implements ActionListener {
 	private Panel panel;
 	private JLabel statusBar;
 	private JMenuItem humCom, comHum, humHum, comCom, compDelayOption;
+	private float fontSize = (float) 20.0;
 	/**
 	 * @see #getCompDelay
 	 */
@@ -32,10 +34,11 @@ public class Window extends JFrame implements ActionListener {
 		setLayout(grid);
 		
 		statusBar = new JLabel("Izberite tip igre", JLabel.CENTER);
-		statusBar.setFont(statusBar.getFont().deriveFont((float) 20.0));
+		statusBar.setFont(statusBar.getFont().deriveFont(fontSize));
 		GridBagConstraints consBar = new GridBagConstraints();
 		consBar.ipady = 20;
 		consBar.weighty = 0.0;
+		consBar.fill = GridBagConstraints.HORIZONTAL;
 		grid.setConstraints(statusBar, consBar);
 		add(statusBar);
 		panel = new Panel(500, 600, this);
@@ -77,7 +80,32 @@ public class Window extends JFrame implements ActionListener {
 	}
 	
 	protected void writeMessage(String message) {
-		statusBar.setText(message);
+		// use <html> and <br /> to break the text into multiple lines
+		int charsPerLine = (int) (getWidth() * 2 / fontSize);
+		if (charsPerLine <= 0) {
+			charsPerLine = 10;
+		}
+		
+		String[] words = message.split(" ");
+		LinkedList<String> lines = new LinkedList<String>();
+		lines.add(words[0]);
+		for (int i = 1; i < words.length; i++) {
+			if (lines.getLast().length() + words[i].length() > charsPerLine) {
+				lines.add(words[i]);
+			}
+			else {
+				lines.set(lines.size() - 1, lines.getLast() + " " + words[i]);
+			}
+		}
+		
+		String brokenMessage = "<html>";
+		for (int i = 0; i < lines.size(); i++) {
+			if (i != 0)
+				brokenMessage += "<br />";
+			brokenMessage += lines.get(i);
+		}
+		brokenMessage += "</html>";
+		statusBar.setText(brokenMessage);
 	}
 
 	/**
