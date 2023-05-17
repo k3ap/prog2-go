@@ -23,6 +23,7 @@ public class Inteligenca extends KdoIgra {
 	 */
 	public Inteligenca() {
 		this(new AlphaBetaMoveChooser(3, new WeightedGridEstimator()));
+		this.ime = "betago";
 	}
 	
 	public Poteza izberiPotezo(Igra igra) {		
@@ -31,6 +32,6 @@ public class Inteligenca extends KdoIgra {
 	
 	@Override
 	public String toString() {
-		return super.ime();
+		return ime;
 	}
 }
