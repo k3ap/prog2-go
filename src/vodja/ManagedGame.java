@@ -10,6 +10,7 @@ import gui.Window;
 import inteligenca.Inteligenca;
 import logika.PlayerColor;
 import logika.FieldColor;
+import logika.GoGameType;
 import logika.Igra;
 import logika.Index;
 import splosno.Poteza;
@@ -35,54 +36,39 @@ public class ManagedGame {
 		}
 	}
 	private Sleeper sleeper = new Sleeper();
-
+	
 	/**
-	 * Create a new managed game with the given game type.
-	 * @param gameType See the enum {@link GameType}
+	 * Create a new managed game.
+	 * @param managedGameType
+	 * @param window
+	 * @param goGameType
 	 */
-	public ManagedGame(GameType gameType, Window window) {
-		game = new Igra();
+	public ManagedGame(GameType managedGameType, Window window, GoGameType goGameType, int gameSize) {
+		this.game = new Igra(gameSize, goGameType);
 		this.window = window;
-		dealWithType(gameType);
+		handleType(managedGameType);
 	}
 	
 	/**
-	 * Create a new managed game with the given game type and intelligences.
-	 * @param intelligence The intelligence which is playing.
-	 * @param gameType See the enum {@link GameType}
+	 * Set the intelligence in a single-computer game
+	 * @param intelligence
 	 */
-	public ManagedGame(GameType gameType, Inteligenca intelligence, Window window) {
-		game = new Igra();
-		this.window = window;
+	public void setIntelligence(Inteligenca intelligence) {
+		assert gameType.equals(GameType.COMHUM) || gameType.equals(GameType.HUMCOM);
 		this.intelligence = intelligence;
-		dealWithType(gameType);
 	}
 	
 	/**
-	 * Create a new managed game with the given game type and intelligences.
-	 * @param intelligences Pair of intelligences playing, the second one can be null,
-	 * if the game type is such that it is never called.
-	 * @param gameType See the enum {@link GameType}
+	 * Set the intelligences to be used in a computer-computer game
+	 * @param p
 	 */
-	public ManagedGame(GameType gameType, IntelligencePair intelligences, Window window) {
-		game = new Igra();
-		this.window = window;
-		intelligence = intelligences.i1();
-		intelligence2 = intelligences.i2();
-		dealWithType(gameType);
+	public void setIntelligences(IntelligencePair p) {
+		assert gameType.equals(GameType.COMCOM);
+		this.intelligence = p.i1();
+		this.intelligence2 = p.i2();
 	}
 
-	/**
-	 * Create a new managed game with the given game type and grid size.
-	 * @param gameType See the enum {@link GameType}
-	 * @param size Size (width and height) of the game grid, default is 9.
-	 */
-	public ManagedGame(GameType gameType, int size) {
-		game = new Igra(size);
-		dealWithType(gameType);
-	}
-
-	private void dealWithType(GameType gameType) {
+	private void handleType(GameType gameType) {
 		this.gameType = gameType;
 		switch (gameType) {
 		case HUMHUM:
@@ -115,10 +101,9 @@ public class ManagedGame {
 		}
 		
 		status = winnerToGameStatus(game.winner());
-		if (
-				(gameType == GameType.HUMCOM || gameType == GameType.COMHUM) && // the game type has the computer making moves 
-				status == MoveResult.PLAY // no one has won yet
-				) {
+		if ((gameType == GameType.HUMCOM || gameType == GameType.COMHUM) // the game type has the computer making moves 
+			&& status == MoveResult.PLAY) // no one has won yet 
+		{
 			// When the human has made their move it's the coputer's turn.
 			status = MoveResult.WAIT;
 			getMoveFromIntelligence();
@@ -299,7 +284,7 @@ public class ManagedGame {
 		return null;
 	}
 
-	// Expose useful methods from Game
+	// Expose useful methods from Igra
 	/**
 	 * @return Width of the current game grid.
 	 */
@@ -314,7 +299,7 @@ public class ManagedGame {
 	 */
 	public FieldColor fieldColor(Index idx) { return game.fieldColor(idx); }
 	/**
-	 * Who's turn is it?
+	 * Whose turn is it?
 	 * @return {@link PlayerColor}, of the player who's move it is.
 	 */
 	public PlayerColor playerTurn() { return game.playerTurn(); }

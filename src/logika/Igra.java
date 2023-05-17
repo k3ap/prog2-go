@@ -13,20 +13,23 @@ public class Igra {
 	public Grid grid;
 	private PlayerColor nextPlayer;
 	private PlayerColor winner;
+	private GoGameType gameType;
 
 	/**
-	 * Creates a new game with a 9x9 grid.
+	 * Creates a new game with a 9x9 grid and FC rules.
+	 * Exists here for the competition.
 	 */
 	public Igra() {
-		this(9);
+		this(9, GoGameType.FCGO);
 	}
 
 	/**
 	 * Creates a new game with the given grid size.
 	 * @param size Width and height of the new grid.
 	 */
-	public Igra(int size) {
-		grid = new Grid(size, size);
+	public Igra(int size, GoGameType gameType) {
+		grid = new Grid(size, size, gameType);
+		this.gameType = gameType; 
 		winner = null; // null means no one has won yet
 		nextPlayer = PlayerColor.BLACK;
 	}
@@ -37,25 +40,32 @@ public class Igra {
 	 * Where Poteza(0,0) is the upper left corner, Poteza(1,0) is in the second row,
 	 * Poteza(8,8) is the bottom right corner (in a 9x9 grid).
 	 * @param poteza Index for the move (row, col), counted from 0
-	 * @return Is the move valid.
+	 * @return Whether the move was valid.
 	 */
 	public boolean odigraj(Poteza poteza) {
 		Index idx = new Index(poteza);
-		if (grid.colorOfField(idx) != FieldColor.EMPTY) {
+		
+		if (!grid.isPlacementValid(idx, nextPlayer.field())) {
 			return false;
 		}
-		grid.placeColor(idx, FieldColor.playersColor(nextPlayer));
+		
+		grid.placeColor(idx, nextPlayer.field());
 		PlayerColor thisPlayer = nextPlayer;
-		nextPlayer = PlayerColor.newColor(nextPlayer);
-		if (grid.hasColorLost( FieldColor.playersColor(nextPlayer) )) {
-			// thisPlayer has made a winning move
-			winner = thisPlayer;
-			return true;
-		}
-		if (grid.hasColorLost( FieldColor.playersColor( PlayerColor.newColor(nextPlayer) ) )) {
-			// tihisPlayer has made a suicidal Poteza
-			winner = nextPlayer;
-			return true;
+		nextPlayer = nextPlayer.next();
+		
+		if (gameType.equals(GoGameType.FCGO)) {
+			if (grid.hasColorLost( FieldColor.playersColor(nextPlayer) )) {
+				// thisPlayer has made a winning move
+				winner = thisPlayer;
+				return true;
+			}
+			if (grid.hasColorLost( FieldColor.playersColor( PlayerColor.newColor(nextPlayer) ) )) {
+				// tihisPlayer has made a suicidal Poteza
+				winner = nextPlayer;
+				return true;
+			}
+		} else {
+			// TODO
 		}
 		return true;
 	}
@@ -65,6 +75,7 @@ public class Igra {
 	 * @return A list of valid moves.
 	 */
 	public List<Poteza> validMoves() {
+		// TODO: comptibility with GO
 		ArrayList<Poteza> res = new ArrayList<>();
 		for (Index idx : grid.freeFields()) {
 			res.add(idx.poteza());

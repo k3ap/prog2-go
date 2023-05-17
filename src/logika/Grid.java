@@ -94,7 +94,10 @@ public class Grid {
 	
 	private ComponentLibertySearch graphSearch;
 	
-	public Grid(int height, int width) {
+	private GoGameType gameType;
+	
+	public Grid(int height, int width, GoGameType gameType) {
+		this.gameType = gameType;
 		grid = new FieldColor[height][width];
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
@@ -202,11 +205,13 @@ public class Grid {
 	}
 	
 	/**
-	 * Check, if the given color has lost the game (if any component has no liberties).
+	 * Check if the given color has lost the game (if any component has no liberties).
+	 * This is only valid for FCGO.
 	 * @param color Color for which we are checking, only sensible for BLACKFIELD and WHITEFIELD.
 	 * @return true, if the given color has lost the game
 	 */
 	public boolean hasColorLost(FieldColor color) {
+		assert gameType.equals(GoGameType.FCGO);
 		for (Index idx : connectedComponents.getToplevels()) {
 			if (colorOfField(idx).equals(color)) {
 				LibertiesSetMapping mapping = connectedComponents.get(idx);
@@ -218,10 +223,12 @@ public class Grid {
 	
 	/**
 	 * Get the component which has no liberties and has lost its owner the game.
+	 * Only valid for FCGO.
 	 * @return An array of indices that the component occupies.
 	 */
 	public Index[] losingComponent(FieldColor color) {
 		assert (hasColorLost(FieldColor.WHITE) || hasColorLost(FieldColor.BLACK));
+		assert gameType.equals(GoGameType.FCGO);
 
 		LinkedList<Index> out = new LinkedList<Index>();
 
@@ -242,7 +249,7 @@ public class Grid {
 	/**
 	 * Check if the field with the given index is free.
 	 * @param idx Index
-	 * @return true, when the field at index is free.
+	 * @return true iff the field at index is free.
 	 */
 	public boolean isFree(Index idx) {
 		return colorOfField(idx) == FieldColor.EMPTY;
@@ -328,8 +335,8 @@ public class Grid {
 		catch(Exception e) {}
     }
 
-    public static Grid readFromFile(String filename, int size) throws FileNotFoundException, IOException {
-        Grid grid = new Grid(size, size);
+    public static Grid readFromFile(String filename, int size, GoGameType gameType) throws FileNotFoundException, IOException {
+        Grid grid = new Grid(size, size, gameType);
 		try (FileReader reader = new FileReader(filename)) {
 			for (int i = 0; i < size; i++) {
 				for (int j = 0; j < size; j++) {
@@ -352,7 +359,7 @@ public class Grid {
     }
 	
 	public Grid deepcopy() {
-		Grid newGrid = new Grid(height, width);
+		Grid newGrid = new Grid(height, width, gameType);
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				newGrid.grid[i][j] = this.grid[i][j];
@@ -363,7 +370,7 @@ public class Grid {
 	}
 
     public double distanceFromBorder(FieldColor color) {
-		int r = 10;
+		int r = width + height;
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				Index idx = new Index(i, j);
@@ -486,4 +493,16 @@ public class Grid {
 		}
 		return null;
 	}
+
+	/**
+     * Check whether the given placement is a valid move.
+     * @param idx
+     * @param color
+     * @return
+     */
+    public boolean isPlacementValid(Index idx, FieldColor color) {
+    	// TODO: if the current game is GO, you should also check that the move was not
+    	// seen previously
+    	return colorOfField(idx).equals(FieldColor.EMPTY);
+    }
 }
