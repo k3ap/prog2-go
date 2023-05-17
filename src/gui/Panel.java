@@ -29,6 +29,12 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	private Window window;
 	private Index shadow;
 	private int leftEdge, topEdge, widthStep, heightStep, sideLength;
+	
+	/**
+	 * The size (in grid intersections) of the current game.
+	 * null if there is no game
+	 */
+	private Integer gameSize;
 
 	public Panel(int width, int height, Window window) {
 		super();
@@ -38,6 +44,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		style = new Style();
 		game = null;
 		shadow = null;
+		gameSize = null;
 		addMouseListener(this);
 		addMouseMotionListener(this);
 	}
@@ -254,7 +261,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	 * Do not call this method directly.
 	 */
 	private void drawAbstractStone(Graphics2D g2, int i, int j, Color center, Color edge) {
-		int d = style.stoneDiameter * sideLength / 500;
+		int d = style.stoneDiameter * sideLength * 9 / 500 / gameSize;
 		// sideLength is 500 if the window hasn't been resized
 		int y = topEdge + i * heightStep - d / 2;
 		int x = leftEdge + j * widthStep - d / 2;
@@ -285,6 +292,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		// ManagedGame needs access to the window to update the board 
 		// once the computer has decided what to play
 		game = new ManagedGame(GameType.HUMHUM, window, gameType, gameSize);
+		this.gameSize = gameSize;
 		repaint();
 	}
 	
@@ -299,6 +307,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		assert type == GameType.HUMCOM || type == GameType.COMHUM;
 		game = new ManagedGame(type, window, gameType, gameSize);
 		game.setIntelligence(intelligence);
+		this.gameSize = gameSize;
 		repaint();
 	}
 	
@@ -311,6 +320,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		// once the computer has decided what to play
 		game = new ManagedGame(GameType.COMCOM, window, gameType, gameSize);
 		game.setIntelligences(intelligences);
+		this.gameSize = gameSize;
 		repaint();
 	}
 
