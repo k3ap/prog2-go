@@ -198,7 +198,7 @@ public class Grid {
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				Index idx = new Index(i, j);
-				if (connectedCompoents.get(idx).liberties.size() == 0) {
+				if (connectedComponents.get(idx).liberties.size() == 0) {
 					out.add(idx);
 				}
 			}
