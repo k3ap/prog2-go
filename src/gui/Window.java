@@ -52,7 +52,7 @@ public class Window extends JFrame implements ActionListener {
 		add(statusBar);
 		
 		// Add the panel for games
-		panel = new Panel(500, 600, this);
+		panel = new Panel(1000, 600, this);
 		GridBagConstraints consPanel = new GridBagConstraints();
 		consPanel.gridx = 0;
 		consPanel.weighty = 1.0;
