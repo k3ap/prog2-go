@@ -12,15 +12,22 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
 import inteligenca.Inteligenca;
+import logika.GoGameType;
 import vodja.GameType;
 
 
 public class Window extends JFrame implements ActionListener {
 	private static final long serialVersionUID = -3977009338403276682L;
+	
 	private GridBagLayout grid;
 	private Panel panel;
 	private JLabel statusBar;
-	private JMenuItem humCom, comHum, humHum, comCom, compDelayOption;
+	private JMenu allGamesMenu, firstCaptureMenu, goMenu, optionsMenu;
+	private JMenuItem fcHumCom, fcComHum, fcHumHum, fcComCom;
+	private JMenuItem goHumCom, goComHum, goHumHum, goComCom;
+	private JMenuItem compDelayOption;
+	private JMenuBar menubar;
+	
 	private float fontSize = (float) 20.0;
 	/**
 	 * @see #getCompDelay
@@ -29,10 +36,12 @@ public class Window extends JFrame implements ActionListener {
 	
 	public Window() {
 		super();
-		setTitle("Igra Capture Go");
+		setTitle("Igra Go");
+		
 		grid = new GridBagLayout();
 		setLayout(grid);
 		
+		// Add the status bar
 		statusBar = new JLabel("Izberite tip igre", JLabel.CENTER);
 		statusBar.setFont(statusBar.getFont().deriveFont(fontSize));
 		GridBagConstraints consBar = new GridBagConstraints();
@@ -41,6 +50,8 @@ public class Window extends JFrame implements ActionListener {
 		consBar.fill = GridBagConstraints.HORIZONTAL;
 		grid.setConstraints(statusBar, consBar);
 		add(statusBar);
+		
+		// Add the panel for games
 		panel = new Panel(500, 600, this);
 		GridBagConstraints consPanel = new GridBagConstraints();
 		consPanel.gridx = 0;
@@ -50,26 +61,34 @@ public class Window extends JFrame implements ActionListener {
 		grid.setConstraints(panel, consPanel);
 		add(panel);
 		
-		JMenuBar menubar = new JMenuBar();
+		// Add the menu bar, submenus and items
+		menubar = new JMenuBar();
 		setJMenuBar(menubar);
 		
-		JMenu igre = newMenu(menubar, "Igre");
-		humCom = newMenuItem(igre, "Človek vs. računalnik...");
-		comHum = newMenuItem(igre, "Računalnik vs. človek...");
-		humHum = newMenuItem(igre, "Človek vs. človek");
-		comCom = newMenuItem(igre, "Računalnik vs. računalnik...");
+		allGamesMenu = new JMenu("Igraj");
+		menubar.add(allGamesMenu);
+		firstCaptureMenu = new JMenu("First Capture Go");
+		goMenu = new JMenu("Go");
 		
-		JMenu options = newMenu(menubar, "Nastavitve");
-		compDelayOption = newMenuItem(options, "Hitrost računalnika...");
+		fcHumCom = newMenuItem(firstCaptureMenu, "Človek - računalnik");
+		fcComHum = newMenuItem(firstCaptureMenu, "Računalnik - človek");
+		fcHumHum = newMenuItem(firstCaptureMenu, "Človek - človek");
+		fcComCom = newMenuItem(firstCaptureMenu, "Računalnik - računalnik");
+		
+		goHumCom = newMenuItem(goMenu, "Človek - računalnik");
+		goComHum = newMenuItem(goMenu, "Računalnik - človek");
+		goHumHum = newMenuItem(goMenu, "Človek - človek");
+		goComCom = newMenuItem(goMenu, "Računalnik - računalnik");
+		
+		allGamesMenu.add(firstCaptureMenu);
+		allGamesMenu.add(goMenu);
+		
+		optionsMenu = new JMenu("Nastavitve");
+		menubar.add(optionsMenu);
+		compDelayOption = newMenuItem(optionsMenu, "Hitrost računalnika...");
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		update();
-	}
-	
-	private JMenu newMenu(JMenuBar menubar, String name) {
-		JMenu newMenu = new JMenu(name);
-		menubar.add(newMenu);
-		return newMenu;
 	}
 	
 	private JMenuItem newMenuItem(JMenu menu, String name) {
@@ -129,32 +148,41 @@ public class Window extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		// A click on the menu bar at the top of the window.
 		Object source = e.getSource();
-		if (source == humCom) {
+		if (source == fcHumCom) {
 			Inteligenca selected = Popups.getIntelligenceChoice();
 			if (selected != null) {
-				panel.newComGame(GameType.HUMCOM, selected, this);
+				panel.newComGame(GameType.HUMCOM, selected, this, 9, GoGameType.FCGO);
 			}
 		}
-		else if (source == comHum) {
+		else if (source == fcComHum) {
 			Inteligenca selected = Popups.getIntelligenceChoice();
 			if (selected != null) {
-				panel.newComGame(GameType.COMHUM, selected, this);
+				panel.newComGame(GameType.COMHUM, selected, this, 9, GoGameType.FCGO);
 			}
 		}
-		else if (source == humHum) {
-			panel.newHumHumGame(this);
+		else if (source == fcHumHum) {
+			panel.newHumHumGame(this, 19, GoGameType.FCGO);
 		}
-		else if (source == comCom) {
+		else if (source == fcComCom) {
 			IntelligencePair selected = Popups.getIntelligencePairChoice();
 			if (selected != null) {
-				panel.newComComGame(selected, this);
+				panel.newComComGame(selected, this, 9, GoGameType.FCGO);
 			}
+		}
+		else if (source == goHumCom) {
+			// NYI
+		}
+		else if (source == goComHum) {
+			// NYI
+		}
+		else if (source == goHumHum) {
+			// NYI
+		}
+		else if (source == goComCom) {
+			// NYI
 		}
 		else if (source == compDelayOption) {
 			compDelay = Popups.getDelayOption(compDelay);
-		}
-		else {
-			assert false;
 		}
 		
 		update();

@@ -1,6 +1,7 @@
 package testiranje;
 
 import logika.FieldColor;
+import logika.GoGameType;
 import logika.Grid;
 import logika.Index;
 import logika.PlayerColor;
@@ -55,7 +56,7 @@ public class CompleteSearch {
 		
 		Grid grid = null;
 		try {
-			grid = Grid.readFromFile("autogen-primeri/1.m9", 9);
+			grid = Grid.readFromFile("autogen-primeri/1.m9", 9, GoGameType.FCGO);
 		} catch (Exception e) {
 			System.out.println("error");
 			System.exit(1);

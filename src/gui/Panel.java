@@ -14,6 +14,7 @@ import java.awt.event.MouseMotionListener;
 import logika.PlayerColor;
 import vodja.ManagedGame;
 import logika.FieldColor;
+import logika.GoGameType;
 import logika.Index;
 import splosno.Poteza;
 import vodja.MoveResult;
@@ -264,16 +265,6 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		g2.drawOval(x, y, d, d);
 	}
 	
-	/**
-	 * Starts a new game with the type HUMHUM.
-	 */
-	protected void newHumHumGame(Window window) {
-		// ManagedGame needs access to the window to update the board 
-		// once the computer has decided what to play
-		game = new ManagedGame(GameType.HUMHUM, window);
-		repaint();
-	}
-	
 	private Poteza moveFromXY(int x, int y) {
 		calculateDimensions();
 		
@@ -288,15 +279,26 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	}
 	
 	/**
+	 * Starts a new game with the type HUMHUM.
+	 */
+	protected void newHumHumGame(Window window, int gameSize, GoGameType gameType) {
+		// ManagedGame needs access to the window to update the board 
+		// once the computer has decided what to play
+		game = new ManagedGame(GameType.HUMHUM, window, gameType, gameSize);
+		repaint();
+	}
+	
+	/**
 	 * Starts a new game with the given type with intelligence playing one of the sides.
 	 * @param type Game type being played, has to be either HUMCOM or COMHUM.
 	 * @param intelligence The intelligence playing.
 	 */
-	protected void newComGame(GameType type, Inteligenca intelligence, Window window) {
+	protected void newComGame(GameType type, Inteligenca intelligence, Window window, int gameSize, GoGameType gameType) {
 		// ManagedGame needs access to the window to update the board 
 		// once the computer has decided what to play
-		assert(type == GameType.HUMCOM || type == GameType.COMHUM);
-		game = new ManagedGame(type, intelligence, window);
+		assert type == GameType.HUMCOM || type == GameType.COMHUM;
+		game = new ManagedGame(type, window, gameType, gameSize);
+		game.setIntelligence(intelligence);
 		repaint();
 	}
 	
@@ -304,10 +306,11 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	 * Starts a new game of the type COMCOM.
 	 * @param intelligences The pair of intelligences playing against each other.
 	 */
-	protected void newComComGame(IntelligencePair intelligences, Window window) {
+	protected void newComComGame(IntelligencePair intelligences, Window window, int gameSize, GoGameType gameType) {
 		// ManagedGame needs access to the window to update the board 
 		// once the computer has decided what to play
-		game = new ManagedGame(GameType.COMCOM, intelligences, window);
+		game = new ManagedGame(GameType.COMCOM, window, gameType, gameSize);
+		game.setIntelligences(intelligences);
 		repaint();
 	}
 

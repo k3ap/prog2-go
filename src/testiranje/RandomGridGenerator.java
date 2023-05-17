@@ -5,6 +5,7 @@ import java.util.Random;
 import java.util.Set;
 
 import logika.FieldColor;
+import logika.GoGameType;
 import logika.Grid;
 import logika.Index;
 
@@ -30,7 +31,7 @@ public class RandomGridGenerator {
 	}
 	
 	public static Grid randomGrid(int n, double fullness) {
-		Grid grid = new Grid(n, n);
+		Grid grid = new Grid(n, n, GoGameType.FCGO);
 		HashSet<Index> taken = new HashSet<Index>();
 		int polja = n*n;
 		int c = 0;
