@@ -18,6 +18,10 @@ public class WeightedGridEstimator extends GridEstimator {
 	private double theirBorderDistanceWeight = -0.2;
 	private double myMinLibertySizeWeight = 2;
 	private double theirMinLibertySizeWeight = -2;
+	private double myOnlyOneLiberty = -10;
+	private double myOnlyTwoLiberties = -5;
+	private double theirOnlyOneLiberty = 100;
+	private double theirOnlyTwoLiberties = 10;
 
 	public WeightedGridEstimator() {
 		super("weighted");
@@ -25,7 +29,7 @@ public class WeightedGridEstimator extends GridEstimator {
 	
 	public WeightedGridEstimator(double[] weights) throws InvalidWeightNumberException {
 		super("weighted-custom");
-		if (weights.length != 10) 
+		if (weights.length != 14) 
 			throw new InvalidWeightNumberException();
 		
 		myComponentNumberWeight = weights[0];
@@ -38,6 +42,10 @@ public class WeightedGridEstimator extends GridEstimator {
 		theirBorderDistanceWeight = weights[7];
 		myMinLibertySizeWeight = weights[8];
 		theirMinLibertySizeWeight = weights[9];
+		myOnlyOneLiberty = weights[10];
+		myOnlyTwoLiberties = weights[11];
+		theirOnlyOneLiberty = weights[12];
+		theirOnlyTwoLiberties = weights[13];
 	}
 
 	@Override
@@ -53,6 +61,17 @@ public class WeightedGridEstimator extends GridEstimator {
 		s += theirBorderDistanceWeight * grid.distanceFromBorder(player.next().field());
 		s += myMinLibertySizeWeight * grid.minLibertiesSize(player.field());
 		s += theirMinLibertySizeWeight * grid.minLibertiesSize(player.next().field());
+		
+		// special modifiers
+		if (grid.minimumNumberOfLiberties(player.field()) == 1)
+			s += myOnlyOneLiberty;
+		else if (grid.minimumNumberOfLiberties(player.field()) == 2)
+			s += myOnlyTwoLiberties;
+		if (grid.minimumNumberOfLiberties(player.next().field()) == 1)
+			s += theirOnlyOneLiberty;
+		else if (grid.minimumNumberOfLiberties(player.next().field()) == 2)
+			s += theirOnlyTwoLiberties;
+		
 		return s;
 	}
 
