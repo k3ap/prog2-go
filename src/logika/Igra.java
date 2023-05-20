@@ -84,6 +84,15 @@ public class Igra {
 		assert res.size() >= 1;
 		return res;
 	}
+	
+	/**
+	 * A forced move is one that either wins the game if made or
+	 * prevents you from immediately looses the game if not played.
+	 * @return A Poteza of the forced move, null if there is none.
+	 */
+	public Poteza forcedMove() {
+		return grid.forcedMove(nextPlayer);
+	}
 
 	public int width() { return grid.width(); }
 	public int height() { return grid.height(); }
