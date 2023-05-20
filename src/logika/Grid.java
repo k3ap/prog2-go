@@ -234,6 +234,58 @@ public class Grid {
 		}
 		return free;
 	}
+	
+	/**
+	 * Finds all interesting fields.
+	 * @return A list of all free field in the grid.
+	 */
+	public List<Index> interestingFields() {
+		List<Index> out = new ArrayList<Index>();
+		int range = 2;
+
+		int stones = 0;
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				if (!isFree(new Index(i, j)))
+					stones++;
+			}
+		}
+		if (stones == 0) {
+			out.add(new Index(height / 2, width / 2));
+			return out;
+		}
+		if (stones <= 3) {
+			range = 3;
+		}
+		
+		Set<Index> interesting = new HashSet<Index>();
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				if (!isFree(new Index(i, j))) {
+					// for each placed stone
+					for (int di = -range; di <= range; di++) {
+						for (int dj = -range; dj <= range; dj++) {
+							// only check inside a range radius circle around placed stones
+							if (Math.abs(di) + Math.abs(dj) > range)
+								continue;
+							if (i+di < 0 || i+di >= height || j+dj < 0 || j+dj >= width)
+								continue;
+							Index idx = new Index(i+di, j+dj);
+							if (isFree(idx)) {
+								interesting.add(idx);
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		for (Index idx : interesting) {
+			out.add(idx);
+		}
+		assert out.size() >= 1;
+		return out;
+	}
 
     @Override
     public String toString() {

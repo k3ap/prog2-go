@@ -32,7 +32,7 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 		if (depth >= maxDepth) return estimator.estimateGrid(grid, player);
 		
 		Double najbolje = null;
-		for (Index move : grid.freeFields()) {
+		for (Index move : grid.interestingFields()) {
 			Grid newGrid = grid.deepcopy();
 			newGrid.placeColor(move, player.field());
 			double value;
@@ -56,10 +56,11 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 
 	@Override
 	public Poteza chooseMove(Igra igra) {
+		double before = System.nanoTime();
 		Poteza best = null;
 		double bestEst = 0;
 		double alpha = Double.NEGATIVE_INFINITY, beta = Double.POSITIVE_INFINITY;
-		for (Poteza poteza : igra.validMoves()) {
+		for (Poteza poteza : igra.interestingMoves()) {
 			Grid newGrid = igra.grid.deepcopy();
 			newGrid.placeColor(new Index(poteza), igra.playerTurn().field());
 			double ocena = -alphabetaEstimate(newGrid, 1, igra.playerTurn().next(), -beta, -alpha);
@@ -70,6 +71,8 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 			if (alpha < ocena)
 				alpha = ocena;
 		}
+		double timeTaken = (System.nanoTime() - before) / 1000000000;
+		// System.out.println("Apha: " + alpha + "\nTime taken: " + timeTaken + "s\nDepth: " + maxDepth + "\n------");
 		return best;
 	}
 
