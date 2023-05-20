@@ -31,6 +31,12 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 		
 		if (depth >= maxDepth) return estimator.estimateGrid(grid, player);
 		
+		Poteza forcedMove = grid.forcedMove(player);
+		if (forcedMove != null) {
+			grid.placeColor(new Index(forcedMove), player.field());
+			return -alphabetaEstimate(grid, depth, player.next(), -beta, -alpha);
+		}
+		
 		Double najbolje = null;
 		for (Index move : grid.interestingFields()) {
 			Grid newGrid = grid.deepcopy();
@@ -56,23 +62,29 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 
 	@Override
 	public Poteza chooseMove(Igra igra) {
-		double before = System.nanoTime();
-		Poteza best = null;
-		double bestEst = 0;
-		double alpha = Double.NEGATIVE_INFINITY, beta = Double.POSITIVE_INFINITY;
-		for (Poteza poteza : igra.interestingMoves()) {
-			Grid newGrid = igra.grid.deepcopy();
-			newGrid.placeColor(new Index(poteza), igra.playerTurn().field());
-			double ocena = -alphabetaEstimate(newGrid, 1, igra.playerTurn().next(), -beta, -alpha);
-			if (best == null || bestEst < ocena) {
-				best = poteza;
-				bestEst = ocena;
+		// double before = System.nanoTime();
+		Poteza best = igra.forcedMove();
+		// boolean forced = true;
+		double alpha = Double.NEGATIVE_INFINITY;
+		if (best == null) {
+			// forced = false;
+			// there are no forced moves
+			double bestEst = 0;
+			double beta = Double.POSITIVE_INFINITY;
+			for (Poteza poteza : igra.interestingMoves()) {
+				Grid newGrid = igra.grid.deepcopy();
+				newGrid.placeColor(new Index(poteza), igra.playerTurn().field());
+				double ocena = -alphabetaEstimate(newGrid, 1, igra.playerTurn().next(), -beta, -alpha);
+				if (best == null || bestEst < ocena) {
+					best = poteza;
+					bestEst = ocena;
+				}
+				if (alpha < ocena)
+					alpha = ocena;
 			}
-			if (alpha < ocena)
-				alpha = ocena;
 		}
-		double timeTaken = (System.nanoTime() - before) / 1000000000;
-		// System.out.println("Apha: " + alpha + "\nTime taken: " + timeTaken + "s\nDepth: " + maxDepth + "\n------");
+		// double timeTaken = (System.nanoTime() - before) / 1000000000;
+		// System.out.println("Forced: " + forced + "\nAlpha: " + alpha + "\nTime taken: " + timeTaken + "s\nDepth: " + maxDepth + "\n------");
 		return best;
 	}
 

@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import splosno.Poteza;
+
 /**
  * Representation of the playing field.
  */
@@ -436,4 +438,37 @@ public class Grid {
     	}
     	return m;
     }
+    
+    /**
+     * Find a component that only has one liberty.
+     * @param color The color we're interested in.
+     * @return The Index if the only liberty if such a component exists, null otherwise.
+     */
+    public Index oneLibertyComponent(FieldColor color) {
+    	
+		for (Index idx : connectedComponents.getToplevels()) {
+			if (colorOfField(idx).equals(color) && connectedComponents.get(idx).liberties.size() == 1) {
+				return connectedComponents.get(idx).liberties.iterator().next();
+			}
+		}
+		return null;
+    }
+    
+    /**
+	 * Check, if nextPlayer has a foced move.
+	 * @param nextPlayer the player who's turn it is.
+	 * @return A Poteza of the forced move, null if there is none.
+	 */
+	public Poteza forcedMove(PlayerColor nextPlayer) {
+		Index immediateWin = oneLibertyComponent(nextPlayer.next().field());
+		if (immediateWin != null) {
+			// the opponent has a component with only one liberty
+			return immediateWin.poteza();
+		}
+		Index immediateLoss = oneLibertyComponent(nextPlayer.field());
+		if (immediateLoss != null) {
+			return immediateLoss.poteza();
+		}
+		return null;
+	}
 }
