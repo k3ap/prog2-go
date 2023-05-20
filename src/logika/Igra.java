@@ -71,6 +71,19 @@ public class Igra {
 		}
 		return res;
 	}
+	
+	/**
+	 * Search for all interesting moves that nextPlayer can make.
+	 * @return A list of valid moves.
+	 */
+	public List<Poteza> interestingMoves() {
+		ArrayList<Poteza> res = new ArrayList<>();
+		for (Index idx : grid.interestingFields()) {
+			res.add(idx.poteza());
+		}
+		assert res.size() >= 1;
+		return res;
+	}
 
 	public int width() { return grid.width(); }
 	public int height() { return grid.height(); }
