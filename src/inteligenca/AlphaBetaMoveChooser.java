@@ -29,7 +29,8 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 			return Double.NEGATIVE_INFINITY;
 		}
 		
-		if (depth >= maxDepth) return estimator.estimateGrid(grid, player);
+		if (depth >= maxDepth)
+			return estimator.estimateGrid(grid, player);
 		
 		Poteza forcedMove = grid.forcedMove(player);
 		if (forcedMove != null) {
@@ -39,8 +40,7 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 		
 		Double najbolje = null;
 		for (Index move : grid.interestingFields()) {
-			Grid newGrid = grid.deepcopy();
-			newGrid.placeColor(move, player.field());
+			Grid newGrid = grid.placeColorAndCopy(move, player.field());
 			double value;
 			if (grid.hasColorLost(player.next().field())) {
 				value = Double.POSITIVE_INFINITY;
@@ -59,10 +59,10 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 		}
 		return najbolje;
 	}
-
+	
 	@Override
 	public Poteza chooseMove(Igra igra) {
-		// double before = System.nanoTime();
+		// double startTime = System.nanoTime();
 		Poteza best = igra.forcedMove();
 		// boolean forced = true;
 		double alpha = Double.NEGATIVE_INFINITY;
@@ -72,8 +72,7 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 			double bestEst = 0;
 			double beta = Double.POSITIVE_INFINITY;
 			for (Poteza poteza : igra.interestingMoves()) {
-				Grid newGrid = igra.grid.deepcopy();
-				newGrid.placeColor(new Index(poteza), igra.playerTurn().field());
+				Grid newGrid = igra.grid.placeColorAndCopy(new Index(poteza), igra.playerTurn().field());
 				double ocena = -alphabetaEstimate(newGrid, 1, igra.playerTurn().next(), -beta, -alpha);
 				if (best == null || bestEst < ocena) {
 					best = poteza;
@@ -83,7 +82,7 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 					alpha = ocena;
 			}
 		}
-		// double timeTaken = (System.nanoTime() - before) / 1000000000;
+		// double timeTaken = (System.nanoTime() - startTime) / 1000000000;
 		// System.out.println("Forced: " + forced + "\nAlpha: " + alpha + "\nTime taken: " + timeTaken + "s\nDepth: " + maxDepth + "\n------");
 		return best;
 	}
