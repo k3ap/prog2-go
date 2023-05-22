@@ -464,15 +464,15 @@ public class Grid {
 	 * @param nextPlayer the player who's turn it is.
 	 * @return A Poteza of the forced move, null if there is none.
 	 */
-	public Poteza forcedMove(PlayerColor nextPlayer) {
+	public Index forcedMove(PlayerColor nextPlayer) {
 		Index immediateWin = oneLibertyComponent(nextPlayer.next().field());
 		if (immediateWin != null) {
 			// the opponent has a component with only one liberty
-			return immediateWin.poteza();
+			return immediateWin;
 		}
 		Index immediateLoss = oneLibertyComponent(nextPlayer.field());
 		if (immediateLoss != null) {
-			return immediateLoss.poteza();
+			return immediateLoss;
 		}
 		return null;
 	}

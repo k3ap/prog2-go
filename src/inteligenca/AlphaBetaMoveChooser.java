@@ -34,9 +34,9 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 		if (depth >= maxDepth)
 			return estimator.estimateGrid(grid, player);
 		
-		Poteza forcedMove = grid.forcedMove(player);
+		Index forcedMove = grid.forcedMove(player);
 		if (forcedMove != null) {
-			grid.placeColor(new Index(forcedMove), player.field());
+			grid.placeColor(forcedMove, player.field());
 			return -alphabetaEstimate(grid, depth, player.next(), -beta, -alpha);
 		}
 		
