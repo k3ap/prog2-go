@@ -11,6 +11,8 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 	private int maxDepth;
 	private GridEstimator estimator;
 	
+	private final double INFINITY = 1e6;
+	
 	public AlphaBetaMoveChooser(int maxDepth, GridEstimator estimator) {
 		super();
 		this.maxDepth = maxDepth;
@@ -24,9 +26,9 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 	
 	private double alphabetaEstimate(Grid grid, int depth, PlayerColor player, double alpha, double beta) {
 		if (grid.hasColorLost(player.next().field())) {
-			return Double.POSITIVE_INFINITY;
+			return INFINITY-depth;
 		} else if (grid.hasColorLost(player.field())) {
-			return Double.NEGATIVE_INFINITY;
+			return -INFINITY+depth;
 		}
 		
 		if (depth >= maxDepth)
@@ -43,9 +45,9 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 			Grid newGrid = grid.placeColorAndCopy(move, player.field());
 			double value;
 			if (grid.hasColorLost(player.next().field())) {
-				value = Double.POSITIVE_INFINITY;
+				value = INFINITY-depth;
 			} else if (grid.hasColorLost(player.field())) {
-				value = Double.NEGATIVE_INFINITY;
+				value = -INFINITY+depth;
 			} else {
 				value = -alphabetaEstimate(newGrid, depth+1, player.next(), -beta, -alpha);
 			}
@@ -59,18 +61,15 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 		}
 		return najbolje;
 	}
-	
+
 	@Override
 	public Poteza chooseMove(Igra igra) {
-		// double startTime = System.nanoTime();
 		Poteza best = igra.forcedMove();
-		// boolean forced = true;
-		double alpha = Double.NEGATIVE_INFINITY;
+		double alpha = -INFINITY;
 		if (best == null) {
-			// forced = false;
 			// there are no forced moves
 			double bestEst = 0;
-			double beta = Double.POSITIVE_INFINITY;
+			double beta = INFINITY;
 			for (Poteza poteza : igra.interestingMoves()) {
 				Grid newGrid = igra.grid.placeColorAndCopy(new Index(poteza), igra.playerTurn().field());
 				double ocena = -alphabetaEstimate(newGrid, 1, igra.playerTurn().next(), -beta, -alpha);
@@ -82,8 +81,6 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 					alpha = ocena;
 			}
 		}
-		// double timeTaken = (System.nanoTime() - startTime) / 1000000000;
-		// System.out.println("Forced: " + forced + "\nAlpha: " + alpha + "\nTime taken: " + timeTaken + "s\nDepth: " + maxDepth + "\n------");
 		return best;
 	}
 
