@@ -91,7 +91,9 @@ public class Igra {
 	 * @return A Poteza of the forced move, null if there is none.
 	 */
 	public Poteza forcedMove() {
-		return grid.forcedMove(nextPlayer);
+		Index idx = grid.forcedMove(nextPlayer);
+		if (idx == null) return null;
+		return idx.poteza();
 	}
 
 	public int width() { return grid.width(); }
