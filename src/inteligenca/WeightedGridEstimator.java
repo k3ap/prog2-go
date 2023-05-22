@@ -50,11 +50,15 @@ public class WeightedGridEstimator extends GridEstimator {
 
 	@Override
 	double estimateGrid(Grid grid, PlayerColor player) {
+		
+		int minLibNum1 = grid.minimumNumberOfLiberties(player.field());
+		int minLibNum2 = grid.minimumNumberOfLiberties(player.next().field());
+		
 		double s = 0;
 		s += myComponentNumberWeight * grid.numberOfComponents(player.field());
 		s += theirComponentNumberWeight * grid.numberOfComponents(player.next().field());
-		s += myWorstLibertyNumberWeight * grid.minimumNumberOfLiberties(player.field());
-		s += theirWorstLibertyNumberWeight * grid.minimumNumberOfLiberties(player.next().field());
+		s += myWorstLibertyNumberWeight * minLibNum1;
+		s += theirWorstLibertyNumberWeight * minLibNum2;
 		s += myAverageLibertyNumberWeight * grid.averageNumberOfLiberties(player.field());
 		s += theirAverageLibertyNumberWeight * grid.averageNumberOfLiberties(player.next().field());
 		s += myBorderDistanceWeiht * grid.distanceFromBorder(player.field());
@@ -63,13 +67,13 @@ public class WeightedGridEstimator extends GridEstimator {
 		s += theirMinLibertySizeWeight * grid.minLibertiesSize(player.next().field());
 		
 		// special modifiers
-		if (grid.minimumNumberOfLiberties(player.field()) == 1)
+		if (minLibNum1 == 1)
 			s += myOnlyOneLiberty;
-		else if (grid.minimumNumberOfLiberties(player.field()) == 2)
+		else if (minLibNum1 == 2)
 			s += myOnlyTwoLiberties;
-		if (grid.minimumNumberOfLiberties(player.next().field()) == 1)
+		if (minLibNum2 == 1)
 			s += theirOnlyOneLiberty;
-		else if (grid.minimumNumberOfLiberties(player.next().field()) == 2)
+		else if (minLibNum2 == 2)
 			s += theirOnlyTwoLiberties;
 		
 		return s;

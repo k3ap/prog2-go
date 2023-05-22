@@ -18,6 +18,8 @@ import splosno.Poteza;
  */
 public class Grid {
 	
+	private final int[][] NEIGHBOURS = new int[][] {{0, 1}, {1, 0}, {-1, 0}, {0, -1}};
+	
 	/**
 	 * Helper class for keeping track of the liberties of a component 
 	 */
@@ -137,17 +139,19 @@ public class Grid {
 		FieldColor oldColor = grid[idx.i()][idx.j()];
 		grid[idx.i()][idx.j()] = color;
 		
+		// this is here for the competition only
+		// remove for GO
+		stoneCount++;
+		
 		// The component directly adjacent to the field we've just painted over may be invalidated
 		// by this, so we need to rerun the BFS
-		
-		final int[][] d = new int[][] {{0, 1}, {1, 0}, {-1, 0}, {0, -1}};
 		
 		graphSearch.data.clear();
 		graphSearch.run(idx);
 		
 		for (int didx = 0; didx < 4; didx++) {
-			int di = d[didx][0];
-			int dj = d[didx][1];
+			int di = NEIGHBOURS[didx][0];
+			int dj = NEIGHBOURS[didx][1];
 			
 			if (idx.i() + di < 0 || idx.j() + dj < 0 || idx.i() + di >= height || idx.j() + dj >= width)
 				continue;
@@ -161,8 +165,8 @@ public class Grid {
 		
 		// this used to be a blank field; we need to remove it from any liberties it may be in
 		for (int didx = 0; didx < 4; didx++) {
-			int di = d[didx][0];
-			int dj = d[didx][1];
+			int di = NEIGHBOURS[didx][0];
+			int dj = NEIGHBOURS[didx][1];
 			
 			if (idx.i() + di < 0 || idx.j() + dj < 0 || idx.i() + di >= height || idx.j() + dj >= width)
 				continue;
@@ -237,6 +241,11 @@ public class Grid {
 	}
 	
 	/**
+	 * For use in optimizing the interestingFields() method
+	 */
+	private int stoneCount = 0;
+	
+	/**
 	 * Finds all interesting fields.
 	 * @return A list of all free field in the grid.
 	 */
@@ -244,18 +253,12 @@ public class Grid {
 		List<Index> interesting = new ArrayList<Index>();
 		int range = 2;
 
-		int stones = 0;
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
-				if (!isFree(new Index(i, j)))
-					stones++;
-			}
-		}
-		if (stones == 0) {
+		if (stoneCount == 0) {
 			interesting.add(new Index(height / 2, width / 2));
 			return interesting;
 		}
-		if (stones <= 3) {
+		
+		if (stoneCount <= 3) {
 			range = 3;
 		}
 		
@@ -341,6 +344,11 @@ public class Grid {
 		}
 		newGrid.grid[idx.i()][idx.j()] = color;
 		newGrid.graphSearch.runAll();
+
+		// this is here for the competition only
+		// remove for GO
+		newGrid.stoneCount = stoneCount + 1;
+		
 		return newGrid;
 	}
 
