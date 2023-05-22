@@ -335,16 +335,17 @@ public class Grid {
 		grid.graphSearch.runAll();
 		return grid;
     }
-
-	public Grid deepcopy() {
-		Grid m = new Grid(height, width);
+	
+	public Grid placeColorAndCopy(Index idx, FieldColor color) {
+		Grid newGrid = new Grid(height, width);
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-				m.grid[i][j] = grid[i][j];
+				newGrid.grid[i][j] = this.grid[i][j];
 			}
 		}
-		m.graphSearch.runAll();
-		return m;
+		newGrid.grid[idx.i()][idx.j()] = color;
+		newGrid.graphSearch.runAll();
+		return newGrid;
 	}
 
     public double distanceFromBorder(FieldColor color) {
