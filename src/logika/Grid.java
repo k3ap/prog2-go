@@ -193,7 +193,7 @@ public class Grid {
 	 * Get the component which has no liberties and has lost its owner the game.
 	 * @return An array of indices that the component occupies.
 	 */
-	public Index[] losingComponent() {
+	public Index[] losingComponent(FieldColor color) {
 		assert (hasColorLost(FieldColor.WHITE) || hasColorLost(FieldColor.BLACK));
 
 		LinkedList<Index> out = new LinkedList<Index>();
@@ -201,7 +201,7 @@ public class Grid {
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				Index idx = new Index(i, j);
-				if (connectedComponents.get(idx).liberties.size() == 0) {
+				if (colorOfField(idx).equals(color) && connectedComponents.get(idx).liberties.size() == 0) {
 					out.add(idx);
 				}
 			}

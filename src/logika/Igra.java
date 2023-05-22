@@ -106,5 +106,5 @@ public class Igra {
 	/**
 	 * @see Grid#losingComponent
 	 */
-	public Index[] losingComponent() { return grid.losingComponent(); }
+	public Index[] losingComponent() { return grid.losingComponent(winner.next().field()); }
 }
