@@ -272,8 +272,6 @@ public class Grid {
 					for (int di = -range; di <= range; di++) {
 						for (int dj = -range; dj <= range; dj++) {
 							// only check inside a range radius circle around placed stones
-							if (Math.abs(di) + Math.abs(dj) > range)
-								continue;
 							if (i+di < 0 || i+di >= height || j+dj < 0 || j+dj >= width)
 								continue;
 							Index idx = new Index(i+di, j+dj);
