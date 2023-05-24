@@ -1,5 +1,8 @@
 package inteligenca;
 
+import java.util.List;
+
+import logika.FieldColor;
 import logika.Grid;
 import logika.Igra;
 import logika.Index;
@@ -25,60 +28,97 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 	}
 	
 	private double alphabetaEstimate(Grid grid, int depth, PlayerColor player, double alpha, double beta) {
+		
 		if (grid.hasColorLost(player.next().field())) {
 			return INFINITY-depth;
 		} else if (grid.hasColorLost(player.field())) {
 			return -INFINITY+depth;
 		}
 		
-		if (depth >= maxDepth)
-			return estimator.estimateGrid(grid, player);
-		
-		Index forcedMove = grid.forcedMove(player);
-		if (forcedMove != null) {
-			grid.placeColor(forcedMove, player.field());
-			return -alphabetaEstimate(grid, depth, player.next(), -beta, -alpha);
+		if (depth >= maxDepth) {
+			double e = estimator.estimateGrid(grid, player);
+			return e;
 		}
 		
-		Double najbolje = null;
-		for (Index move : grid.interestingFields()) {
-			Grid newGrid = grid.placeColorAndCopy(move, player.field());
+		Index forcedMove = grid.forcedMove(player);
+		
+		if (forcedMove != null) {
+			grid.placeColor(forcedMove, player.field());
+			double estimate = -alphabetaEstimate(grid, depth, player.next(), -beta, -alpha);
+			grid.placeColor(forcedMove, FieldColor.EMPTY);
+			return estimate;
+		}
+		
+		Double bestValue = null;
+		
+		List<Index> interesting = grid.interestingFields();
+		
+		for (Index move : interesting) {
+			
+			grid.placeColor(move, player.field());
 			double value;
+			
 			if (grid.hasColorLost(player.next().field())) {
 				value = INFINITY-depth;
 			} else if (grid.hasColorLost(player.field())) {
 				value = -INFINITY+depth;
 			} else {
-				value = -alphabetaEstimate(newGrid, depth+1, player.next(), -beta, -alpha);
+				value = -alphabetaEstimate(grid, depth+1, player.next(), -beta, -alpha);
 			}
-			if (najbolje == null || value > najbolje)
-				najbolje = value;
+			
+			// undo the change
+			grid.placeColor(move, FieldColor.EMPTY);
+			
+			if (bestValue == null || value > bestValue)
+				bestValue = value;
 			
 			if (alpha < value)
 				alpha = value;
 			
-			if (beta < alpha) break;
+			if (beta < alpha) {
+				break;
+			}
 		}
-		return najbolje;
+		return bestValue;
 	}
-
+	
 	@Override
 	public Poteza chooseMove(Igra igra) {
+       
+        // check for forced moves
 		Poteza best = igra.forcedMove();
-		double alpha = -INFINITY;
-		if (best == null) {
-			// there are no forced moves
+		
+		if (best == null) { // there are no forced moves
+			
 			double bestEst = 0;
+			double alpha = -INFINITY;
 			double beta = INFINITY;
-			for (Poteza poteza : igra.interestingMoves()) {
-				Grid newGrid = igra.grid.placeColorAndCopy(new Index(poteza), igra.playerTurn().field());
-				double ocena = -alphabetaEstimate(newGrid, 1, igra.playerTurn().next(), -beta, -alpha);
-				if (best == null || bestEst < ocena) {
+			
+			// copy the grid to be used for move determining
+			Grid newGrid = igra.grid.deepcopy();
+			
+			// find interesting moves
+			var interesting = igra.interestingMoves();
+			
+			for (Poteza poteza : interesting) {
+				
+				// play the given move and recursievely estimate outcome
+				
+				newGrid.placeColor(new Index(poteza), igra.playerTurn().field());
+				
+				double estimate = 
+					-alphabetaEstimate(newGrid, 1, igra.playerTurn().next(), -beta, -alpha);
+				
+				// we should now undo the change
+				newGrid.placeColor(new Index(poteza), FieldColor.EMPTY);
+				
+				if (best == null || bestEst < estimate) {
 					best = poteza;
-					bestEst = ocena;
+					bestEst = estimate;
 				}
-				if (alpha < ocena)
-					alpha = ocena;
+				
+				if (alpha < estimate)
+					alpha = estimate;
 			}
 		}
 		return best;
