@@ -19,7 +19,7 @@ public class Window extends JFrame implements ActionListener {
 	private static final long serialVersionUID = -3977009338403276682L;
 	private GridBagLayout grid;
 	private Panel panel;
-	private JLabel statusBar;
+	private JLabelMultiLine statusBar;
 	private JMenuItem humCom, comHum, humHum, comCom, compDelayOption;
 	private float fontSize = (float) 20.0;
 	/**
@@ -32,8 +32,8 @@ public class Window extends JFrame implements ActionListener {
 		setTitle("Igra Capture Go");
 		grid = new GridBagLayout();
 		setLayout(grid);
-		
-		statusBar = new JLabel("Izberite tip igre", JLabel.CENTER);
+
+		statusBar = new JLabelMultiLine("Izberite tip igre", JLabel.CENTER);
 		statusBar.setFont(statusBar.getFont().deriveFont(fontSize));
 		GridBagConstraints consBar = new GridBagConstraints();
 		consBar.ipady = 20;
@@ -77,35 +77,6 @@ public class Window extends JFrame implements ActionListener {
 		menu.add(newItem);
 		newItem.addActionListener(this);
 		return newItem;
-	}
-	
-	protected void writeMessage(String message) {
-		// use <html> and <br /> to break the text into multiple lines
-		int charsPerLine = (int) (getWidth() * 2 / fontSize);
-		if (charsPerLine <= 0) {
-			charsPerLine = 10;
-		}
-		
-		String[] words = message.split(" ");
-		LinkedList<String> lines = new LinkedList<String>();
-		lines.add(words[0]);
-		for (int i = 1; i < words.length; i++) {
-			if (lines.getLast().length() + words[i].length() > charsPerLine) {
-				lines.add(words[i]);
-			}
-			else {
-				lines.set(lines.size() - 1, lines.getLast() + " " + words[i]);
-			}
-		}
-		
-		String brokenMessage = "<html>";
-		for (int i = 0; i < lines.size(); i++) {
-			if (i != 0)
-				brokenMessage += "<br />";
-			brokenMessage += lines.get(i);
-		}
-		brokenMessage += "</html>";
-		statusBar.setText(brokenMessage);
 	}
 
 	/**
@@ -158,5 +129,9 @@ public class Window extends JFrame implements ActionListener {
 		}
 		
 		update();
+	}
+
+	public void writeMessage(String message) {
+		statusBar.setText(message);
 	}
 }
