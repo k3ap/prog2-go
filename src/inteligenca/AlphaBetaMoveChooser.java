@@ -1,5 +1,8 @@
 package inteligenca;
 
+import java.util.List;
+
+import logika.FieldColor;
 import logika.Grid;
 import logika.Igra;
 import logika.Index;
@@ -25,6 +28,7 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 	}
 	
 	private double alphabetaEstimate(Grid grid, int depth, PlayerColor player, double alpha, double beta) {
+		
 		double before = System.nanoTime();
 		if (grid.hasColorLost(player.next().field())) {
 			hasLostTime += System.nanoTime() - before;
@@ -44,46 +48,57 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 		
 		before = System.nanoTime();
 		Index forcedMove = grid.forcedMove(player);
+		
 		if (forcedMove != null) {
-			Grid newGrid = grid.placeColorAndReference(forcedMove, player.field());
+			grid.placeColor(forcedMove, player.field());
 			forcedTime += System.nanoTime() - before;
-			double estimate = -alphabetaEstimate(newGrid, depth, player.next(), -beta, -alpha);
-			newGrid.undoMove(forcedMove);
+			double estimate = -alphabetaEstimate(grid, depth, player.next(), -beta, -alpha);
+			grid.placeColor(forcedMove, FieldColor.EMPTY);
 			return estimate;
 		}
+		
 		forcedTime += System.nanoTime() - before;
 		
-		Double najbolje = null;
+		Double bestValue = null;
+		
 		before = System.nanoTime();
-		var interesting = grid.interestingFields();
+		List<Index> interesting = grid.interestingFields();
 		interestingTime += System.nanoTime() - before;
+		
 		for (Index move : interesting) {
+			
 			before = System.nanoTime();
-			Grid newGrid = grid.placeColorAndReference(move, player.field());
+			grid.placeColor(move, player.field());
 			copyTime += System.nanoTime() - before;
+			
 			double value;
+			
 			before = System.nanoTime();
-			if (newGrid.hasColorLost(player.next().field())) {
+			if (grid.hasColorLost(player.next().field())) {
 				value = INFINITY-depth;
 				hasLostTime += System.nanoTime() - before;
-			} else if (newGrid.hasColorLost(player.field())) {
+			} else if (grid.hasColorLost(player.field())) {
 				value = -INFINITY+depth;
 				hasLostTime += System.nanoTime() - before;
 			} else {
 				hasLostTime += System.nanoTime() - before;
-				value = -alphabetaEstimate(newGrid, depth+1, player.next(), -beta, -alpha);
+				value = -alphabetaEstimate(grid, depth+1, player.next(), -beta, -alpha);
 			}
-			if (najbolje == null || value > najbolje)
-				najbolje = value;
+			
+			// undo the change
+			grid.placeColor(move, FieldColor.EMPTY);
+			
+			if (bestValue == null || value > bestValue)
+				bestValue = value;
 			
 			if (alpha < value)
 				alpha = value;
-
-			newGrid.undoMove(move);
 			
-			if (beta < alpha) break;
+			if (beta < alpha) {
+				break;
+			}
 		}
-		return najbolje;
+		return bestValue;
 	}
 
 	private double allTime;
@@ -95,6 +110,8 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 	
 	@Override
 	public Poteza chooseMove(Igra igra) {
+		
+		// timers
         allTime = 0.0;
         copyTime = 0.0;
         forcedTime = 0.0;
@@ -102,29 +119,46 @@ public class AlphaBetaMoveChooser extends MoveChooser {
         estimateTime = 0.0;
         hasLostTime = 0.0;
         
+        // check for forced moves
         double fb = System.nanoTime();
 		Poteza best = igra.forcedMove();
 		forcedTime += System.nanoTime() - fb;
-		double alpha = -INFINITY;
-		if (best == null) {
-			// there are no forced moves
+		
+		if (best == null) { // there are no forced moves
+			
 			double bestEst = 0;
+			double alpha = -INFINITY;
 			double beta = INFINITY;
+			
+			// copy the grid to be used for move determining
+			double cb = System.nanoTime();
+			Grid newGrid = igra.grid.deepcopy();
+			copyTime += System.nanoTime() - cb;
+			
+			// find interesting moves
 			double ib = System.nanoTime();
 			var interesting = igra.interestingMoves();
 			interestingTime += System.nanoTime() - ib;
-			System.out.println(interesting.size() + " interesting.");
+			
 			for (Poteza poteza : interesting) {
-				double cb = System.nanoTime();
-				Grid newGrid = igra.grid.placeColorAndCopy(new Index(poteza), igra.playerTurn().field());
-				copyTime += System.nanoTime() - cb;
-				double ocena = -alphabetaEstimate(newGrid, 1, igra.playerTurn().next(), -beta, -alpha);
-				if (best == null || bestEst < ocena) {
+				
+				// play the given move and recursievely estimate outcome
+				
+				newGrid.placeColor(new Index(poteza), igra.playerTurn().field());
+				
+				double estimate = 
+					-alphabetaEstimate(newGrid, 1, igra.playerTurn().next(), -beta, -alpha);
+				
+				// we should now undo the change
+				newGrid.placeColor(new Index(poteza), FieldColor.EMPTY);
+				
+				if (best == null || bestEst < estimate) {
 					best = poteza;
-					bestEst = ocena;
+					bestEst = estimate;
 				}
-				if (alpha < ocena)
-					alpha = ocena;
+				
+				if (alpha < estimate)
+					alpha = estimate;
 			}
 		}
 		allTime += System.nanoTime() - fb;
