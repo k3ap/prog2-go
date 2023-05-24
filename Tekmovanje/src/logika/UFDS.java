@@ -39,14 +39,26 @@ public class UFDS<T, M extends SetMapping> {
 	}
 	
 	/**
-	 * Get the representative element of the set. Changes the structure.
+	 * Get the representative element of the set.
+	 * This method does NOT perform path compression
 	 * @param element Element of the disjoint set structure
-	 * @return The indirect parent of element
+	 * @return The toplevel parent of element
 	 */
 	private T getRepresentative(T element) {
 		if (parent.get(element).equals(element)) return element;
+		else return getRepresentative(parent.get(element));
+	}
+	
+	/**
+	 * Get the representative element of the set.
+	 * This method performs path compression.
+	 * @param element
+	 * @return
+	 */
+	private T pathcompress(T element) {
+		if (parent.get(element).equals(element)) return element;
 		else {
-			T par = getRepresentative(parent.get(element));
+			T par = pathcompress(parent.get(element));
 			parent.put(element, par);
 			return par;
 		}
@@ -62,31 +74,33 @@ public class UFDS<T, M extends SetMapping> {
 	}
 	
 	/**
-	 * Perform a union of two sets.
+	 * Perform a union of two sets. Does not perform memory operations.
+	 * Changes structure non-recoverably.
 	 * @param el1
 	 * @param el2
 	 */
+	@SuppressWarnings("unchecked")
 	public void doUnion(T el1, T el2) {
 		if (isSameSet(el1, el2)) return;
 		
-		T p1 = getRepresentative(el1);
-		T p2 = getRepresentative(el2);
+		T p1 = pathcompress(el1);
+		T p2 = pathcompress(el2);
 		int r1 = rank.get(p1);
 		int r2 = rank.get(p2);
 		
 		if (r1 < r2) {
 			parent.put(p1, p2);
-			toplevels.get(p2).joinWith(toplevels.get(p1));
+			toplevels.put(p2, (M) toplevels.get(p2).joinWith(toplevels.get(p1)));
 			toplevels.remove(p1);
 			sizes.put(p2, sizes.get(p2) + sizes.get(p1));
 		} else if (r2 < r1) {
 			parent.put(p2, p1);
-			toplevels.get(p1).joinWith(toplevels.get(p2));
+			toplevels.put(p1, (M) toplevels.get(p1).joinWith(toplevels.get(p2)));
 			toplevels.remove(p2);
 			sizes.put(p1, sizes.get(p1) + sizes.get(p2));
 		} else { // r2 == r1
 			parent.put(p1, p2);
-			toplevels.get(p2).joinWith(toplevels.get(p1));
+			toplevels.put(p2, (M) toplevels.get(p2).joinWith(toplevels.get(p1)));
 			toplevels.remove(p1);
 			sizes.put(p2, sizes.get(p2) + sizes.get(p1));
 			rank.put(p2, r2+1);

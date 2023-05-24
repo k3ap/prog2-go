@@ -30,9 +30,12 @@ public class Grid {
 		}
 
 		@Override
-		public void joinWith(SetMapping other) {
+		public SetMapping joinWith(SetMapping other) {
 			LibertiesSetMapping o = (LibertiesSetMapping) other;
-			liberties.addAll(o.liberties);
+			LibertiesSetMapping newMapping = new LibertiesSetMapping();
+			newMapping.liberties.addAll(liberties);
+			newMapping.liberties.addAll(o.liberties);
+			return newMapping;
 		}
 	}
 	
@@ -105,6 +108,16 @@ public class Grid {
 		graphSearch.runAll();
 	}
 	
+	public Grid(int height, int width, FieldColor[][] grid) {
+		this.grid = grid;
+		connectedComponents = new UFDS<>();
+		this.height = height;
+		this.width = width;
+		graphSearch = new ComponentLibertySearch(this, new SearchData());
+		// graph search must be called separately
+		// graphSearch.runAll();
+	}
+	
 	public int height() { return height; }
 	public int width() { return width; }
 	
@@ -129,18 +142,12 @@ public class Grid {
 	
 	/**
 	 * Place a stone of the given color on the given index.
-	 * Assumes the previous color at the given index is a EMPTY and 
-	 * that we're setting a non-EMPTY color
 	 * @param idx Index in the grid.
 	 * @param color Color of the new stone.
 	 */
 	public void placeColor(Index idx, FieldColor color) {
 		FieldColor oldColor = grid[idx.i()][idx.j()];
 		grid[idx.i()][idx.j()] = color;
-		
-		// this is here for the competition only
-		// remove for GO
-		stoneCount++;
 		
 		// The component directly adjacent to the field we've just painted over may be invalidated
 		// by this, so we need to rerun the BFS
@@ -162,16 +169,35 @@ public class Grid {
 			}
 		}
 		
-		// this used to be a blank field; we need to remove it from any liberties it may be in
-		for (int didx = 0; didx < 4; didx++) {
-			int di = NEIGHBOURS[didx][0];
-			int dj = NEIGHBOURS[didx][1];
+		if (oldColor.equals(FieldColor.EMPTY)) {
+			// this used to be a blank field; we need to remove it from any liberties it may be in
+			for (int didx = 0; didx < 4; didx++) {
+				int di = NEIGHBOURS[didx][0];
+				int dj = NEIGHBOURS[didx][1];
+				
+				if (idx.i() + di < 0 || idx.j() + dj < 0 || idx.i() + di >= height || idx.j() + dj >= width)
+					continue;
+				
+				Index neighbour = new Index(idx.i() + di, idx.j() + dj);
+				connectedComponents.get(neighbour).liberties.remove(idx);
+			}
 			
-			if (idx.i() + di < 0 || idx.j() + dj < 0 || idx.i() + di >= height || idx.j() + dj >= width)
-				continue;
+		} else if (color.equals(FieldColor.EMPTY)) {
 			
-			Index neighbour = new Index(idx.i() + di, idx.j() + dj);
-			connectedComponents.get(neighbour).liberties.remove(idx);
+			// we need to add this field to any liberties it could be in
+			for (int didx = 0; didx < 4; didx++) {
+				int di = NEIGHBOURS[didx][0];
+				int dj = NEIGHBOURS[didx][1];
+				
+				if (idx.i() + di < 0 || idx.j() + dj < 0 || idx.i() + di >= height || idx.j() + dj >= width)
+					continue;
+				
+				if (grid[idx.i()+di][idx.j()+dj].equals(FieldColor.EMPTY)) 
+					continue;
+				
+				Index neighbour = new Index(idx.i() + di, idx.j() + dj);
+				connectedComponents.get(neighbour).liberties.add(idx);
+			}
 		}
 	}
 	
@@ -240,30 +266,12 @@ public class Grid {
 	}
 	
 	/**
-	 * For use in optimizing the interestingFields() method
-	 */
-	private int stoneCount = 0;
-	
-	/**
 	 * Finds all interesting fields.
 	 * @return A list of all free field in the grid.
 	 */
 	public List<Index> interestingFields() {
-		List<Index> interesting = new ArrayList<Index>();
+		HashSet<Index> intermediate = new HashSet<Index>();
 		int range = 2;
-
-		if (stoneCount == 0) {
-			interesting.add(new Index(height / 2, width / 2));
-			return interesting;
-		}
-		
-		if (stoneCount <= 3) {
-			range = 3;
-		}
-		
-		if (stoneCount > 10) {
-			range = 1;
-		}
 		
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
@@ -272,11 +280,13 @@ public class Grid {
 					for (int di = -range; di <= range; di++) {
 						for (int dj = -range; dj <= range; dj++) {
 							// only check inside a range radius circle around placed stones
+							if (Math.abs(di) + Math.abs(dj) > range)
+								continue;
 							if (i+di < 0 || i+di >= height || j+dj < 0 || j+dj >= width)
 								continue;
 							Index idx = new Index(i+di, j+dj);
 							if (isFree(idx)) {
-								interesting.add(idx);
+								intermediate.add(idx);
 							}
 						}
 					}
@@ -284,7 +294,13 @@ public class Grid {
 			}
 		}
 		
-		Collections.shuffle(interesting);
+		List<Index> interesting = new ArrayList<Index>();
+		if (intermediate.size() == 0) {
+			interesting.add(new Index(height / 2, width / 2));
+		} else {
+			interesting.addAll(intermediate);
+			Collections.shuffle(interesting);
+		}
 		return interesting;
 	}
 
@@ -335,20 +351,14 @@ public class Grid {
 		return grid;
     }
 	
-	public Grid placeColorAndCopy(Index idx, FieldColor color) {
+	public Grid deepcopy() {
 		Grid newGrid = new Grid(height, width);
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				newGrid.grid[i][j] = this.grid[i][j];
 			}
 		}
-		newGrid.grid[idx.i()][idx.j()] = color;
 		newGrid.graphSearch.runAll();
-
-		// this is here for the competition only
-		// remove for GO
-		newGrid.stoneCount = stoneCount + 1;
-		
 		return newGrid;
 	}
 

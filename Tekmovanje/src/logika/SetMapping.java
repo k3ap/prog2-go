@@ -6,8 +6,8 @@ package logika;
 public interface SetMapping {
 	
 	/**
-	 * Merge the other object's data with this object's data, invalidating the other object 
-	 * @param other The object whose data we're merging into this' data
+	 * Merge the other object's data with this object's data, returning the result 
+	 * @param other
 	 */
-	public void joinWith(SetMapping other);
+	public SetMapping joinWith(SetMapping other);
 }
