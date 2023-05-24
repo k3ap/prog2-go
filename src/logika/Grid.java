@@ -241,7 +241,7 @@ public class Grid {
 	 * @return A list of all free field in the grid.
 	 */
 	public List<Index> interestingFields() {
-		List<Index> out = new ArrayList<Index>();
+		List<Index> interesting = new ArrayList<Index>();
 		int range = 2;
 
 		int stones = 0;
@@ -252,14 +252,13 @@ public class Grid {
 			}
 		}
 		if (stones == 0) {
-			out.add(new Index(height / 2, width / 2));
-			return out;
+			interesting.add(new Index(height / 2, width / 2));
+			return interesting;
 		}
 		if (stones <= 3) {
 			range = 3;
 		}
 		
-		Set<Index> interesting = new HashSet<Index>();
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				if (!isFree(new Index(i, j))) {
@@ -281,12 +280,9 @@ public class Grid {
 			}
 		}
 		
-		for (Index idx : interesting) {
-			out.add(idx);
-		}
-		assert out.size() >= 1;
-		Collections.shuffle(out);
-		return out;
+		assert interesting.size() >= 1;
+		Collections.shuffle(interesting);
+		return interesting;
 	}
 
     @Override
