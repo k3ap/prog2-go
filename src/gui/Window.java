@@ -3,7 +3,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.LinkedList;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -15,9 +14,18 @@ import inteligenca.Inteligenca;
 import vodja.GameType;
 
 
+/**
+ * The main window of the GUI in which everything is contained.
+ */
 public class Window extends JFrame implements ActionListener {
 	private static final long serialVersionUID = -3977009338403276682L;
+	/**
+	 * The layout used for the elements of this window.
+	 */
 	private GridBagLayout grid;
+	/**
+	 * The panel in which the game is drawn.
+	 */
 	private Panel panel;
 	private JLabelMultiLine statusBar;
 	private JMenuItem humCom, comHum, humHum, comCom, compDelayOption;
@@ -37,8 +45,8 @@ public class Window extends JFrame implements ActionListener {
 		statusBar.setFont(statusBar.getFont().deriveFont(fontSize));
 		GridBagConstraints consBar = new GridBagConstraints();
 		consBar.ipady = 20;
-		consBar.weighty = 0.0;
-		consBar.fill = GridBagConstraints.HORIZONTAL;
+		consBar.weighty = 0.0; // give all extra vertical space to the panel
+		consBar.fill = GridBagConstraints.HORIZONTAL; // be as wide as possible
 		grid.setConstraints(statusBar, consBar);
 		add(statusBar);
 		panel = new Panel(500, 600, this);

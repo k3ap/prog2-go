@@ -4,6 +4,10 @@ import java.awt.Stroke;
 import java.awt.BasicStroke;
 import java.awt.Color;
 
+/**
+ * Dictates the some aspects of the game's look,
+ * mostly what color things are.
+ */
 public class Style {
 	public Stroke grid;
 	public Stroke stoneEdge;
@@ -19,8 +23,10 @@ public class Style {
 	public int stoneDiameter;
 	public Color losingHighlight;
 
+	/**
+	 * The default look of the game.
+	 */
 	public Style() {
-		// Default look
 		// grid
 		grid = new BasicStroke(1);
 		gridColor = new Color(0, 0, 0);

@@ -16,6 +16,9 @@ import inteligenca.RandomMoveChooser;
 import inteligenca.WeightedGridEstimator;
 
 public class Popups {
+	/**
+	 * The options for the AI to be presented to the user.
+	 */
 	private final static Inteligenca[] intelligenceOptions = {
 			new Inteligenca(new AlphaBetaMoveChooser(4, new WeightedGridEstimator())),
 			new Inteligenca(new AlphaBetaMoveChooser(3, new WeightedGridEstimator())),
@@ -75,12 +78,13 @@ public class Popups {
 	 * @return The chosen time in milliseconds.
 	 */
 	protected static int getDelayOption(int currentDelay) { return getDelayOption(currentDelay, false); }
-	protected static int getDelayOption(int currentDelay, boolean error) {
+	private static int getDelayOption(int currentDelay, boolean error) { // error here is used to report errors via recursion
 		NumberFormat intFormat = NumberFormat.getIntegerInstance();
 		JFormattedTextField amountField = new JFormattedTextField(intFormat);
 		amountField.setText(Integer.toString(currentDelay));
 		JComponent[] inputs = null;
 		if (error) {
+			// the user has inputed an invalid value, let them know
 			inputs = new JComponent[] {
 					new JLabel("Če bo računalnik izbral potezo v manj kot toliko milisekundah, "
 							+ "bo počakal, da je minilo toliko časa."),

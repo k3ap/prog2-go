@@ -20,13 +20,25 @@ import vodja.MoveResult;
 import vodja.GameType;
 
 
+/**
+ * The main palen on which the game is drawn. 
+ */
 class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	private static final long serialVersionUID = 7693008210122811280L;
 	private ManagedGame game;
 	private Dimension dimensions;
 	private Style style;
 	private Window window;
+	/**
+	 * The field which has a shadow, null if there is none.
+	 * When the player moves their mouse over an open field, a shadow of a
+	 * stone (transparent stone) appears in that field.
+	 * @see Index
+	 */
 	private Index shadow;
+	/**
+	 * All of these are measured in pixels on the panel.
+	 */
 	private int leftEdge, topEdge, widthStep, heightStep, sideLength;
 
 	public Panel(int width, int height, Window window) {
@@ -88,7 +100,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		assert gridWidth > 1;
 		assert gridHeight > 1;
 
-		// grid
+		// the lines of the grid
 		g2.setStroke(style.grid);
 		g2.setColor(style.gridColor);
 		for (int i = 0; i < gridHeight; i++) {
@@ -108,7 +120,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			);
 		}
 		
-		// stones
+		// the stones placed on the grid
 		for (int i = 0; i < gridHeight; i++) {
 			for (int j = 0; j < gridWidth; j++) {
 				switch (game.fieldColor(new Index(i, j))) {
@@ -124,15 +136,17 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			}
 		}
 		
-		// shadow stone
+		// shadow stone (if it should be drawn)
 		if (shadow != null) {
 			drawShadowStone(g2, shadow.i(), shadow.j(), game.playerTurn());
 		}
 		
-		// draw game status
+		// Write game status, the text is displayed by the window
+		// in which this panel is contained.
 		switch (game.gameStatus()) {
 		case INVALID:
 		case PLAY:
+			// in either of these cases the game is waiting for player input
 			if (game.gameType().mixedGame()) {
 				// mixedGame => there is only one human player
 				window.writeMessage("Na vrsti ste.");
@@ -185,6 +199,11 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		}
 	}
 	
+	/**
+	 * Highlight the component which was surrounded
+	 * and has lost it's owner the game.
+	 * @param g2 The graphics on which to draw.
+	 */
 	private void highlightLoser(Graphics2D g2) {
 		Index[] loser = game.losingComponent();
 		g2.setColor(style.losingHighlight);
@@ -251,6 +270,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	
 	/**
 	 * Do not call this method directly.
+	 * Contains the drawing shared by both drawStone and drawShadowStone
 	 */
 	private void drawAbstractStone(Graphics2D g2, int i, int j, Color center, Color edge) {
 		int d = style.stoneDiameter * sideLength / 500;
@@ -274,6 +294,37 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		repaint();
 	}
 	
+	/**
+	 * Starts a new game with the given type with intelligence playing one of the sides.
+	 * @param type Game type being played, has to be either HUMCOM or COMHUM.
+	 * @param intelligence The intelligence playing.
+	 * @param window ManagedGame needs access to the window to update the board
+	 * once the computer has decided what to play
+	 */
+	protected void newComGame(GameType type, Inteligenca intelligence, Window window) {
+		assert(type == GameType.HUMCOM || type == GameType.COMHUM);
+		game = new ManagedGame(type, intelligence, window);
+		repaint();
+	}
+	
+	/**
+	 * Starts a new game of the type COMCOM.
+	 * @param intelligences The pair of intelligences playing against each other.
+	 * @param window ManagedGame needs access to the window to update the board
+	 * once the computer has decided what to play
+	 */
+	protected void newComComGame(IntelligencePair intelligences, Window window) {
+		game = new ManagedGame(GameType.COMCOM, intelligences, window);
+		repaint();
+	}
+	
+	/**
+	 * Convert the x and y coordinates from a click
+	 * on the panel to a Poteza object.
+	 * @param x The x coordinate (in pixels) on the panel.
+	 * @param y The y coordinate (in pixels) on the panel.
+	 * @return Poteza object with the row and column.
+	 */
 	private Poteza moveFromXY(int x, int y) {
 		calculateDimensions();
 		
@@ -285,30 +336,6 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			return null;
 		
 		return new Poteza(i, j);
-	}
-	
-	/**
-	 * Starts a new game with the given type with intelligence playing one of the sides.
-	 * @param type Game type being played, has to be either HUMCOM or COMHUM.
-	 * @param intelligence The intelligence playing.
-	 */
-	protected void newComGame(GameType type, Inteligenca intelligence, Window window) {
-		// ManagedGame needs access to the window to update the board 
-		// once the computer has decided what to play
-		assert(type == GameType.HUMCOM || type == GameType.COMHUM);
-		game = new ManagedGame(type, intelligence, window);
-		repaint();
-	}
-	
-	/**
-	 * Starts a new game of the type COMCOM.
-	 * @param intelligences The pair of intelligences playing against each other.
-	 */
-	protected void newComComGame(IntelligencePair intelligences, Window window) {
-		// ManagedGame needs access to the window to update the board 
-		// once the computer has decided what to play
-		game = new ManagedGame(GameType.COMCOM, intelligences, window);
-		repaint();
 	}
 
 	@Override
@@ -326,7 +353,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		if (game == null) { return; }
-		// Ignore clicks if the player is not allowed to play a move.
+		// do not draw the shadow of a stone if the player is not allowed to play a move
 		if (game.gameStatus() != MoveResult.INVALID
 			&& game.gameStatus() != MoveResult.PLAY) { return; }
 		
@@ -335,7 +362,9 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			shadow = null;
 		}
 		else {
+			// the player is hovering over a field
 			Index hovered = new Index(hoveredMaybe);
+			// if there is no stone already on the field, draw a shadow
 			if (game.fieldColor(hovered) == FieldColor.EMPTY) {
 				shadow = hovered;
 			}
@@ -348,6 +377,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	
 	@Override
 	public void mouseExited(MouseEvent e) {
+		// remove the shadow if the mouse leaves the panel
 		shadow = null;
 		window.update();
 	}
