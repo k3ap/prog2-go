@@ -100,7 +100,7 @@ public class Igra {
 	public int height() { return grid.height(); }
 	public FieldColor fieldColor(Index idx) { return grid.colorOfField(idx); }
 	/**
-	 * Who's turn is it.
+	 * Whose turn is it.
 	 * @return The color of the player whose turn it is.
 	 */
 	public PlayerColor playerTurn() { return nextPlayer; }

@@ -142,8 +142,6 @@ public class Grid {
 	
 	/**
 	 * Place a stone of the given color on the given index.
-	 * Assumes the previous color at the given index is a EMPTY and 
-	 * that we're setting a non-EMPTY color
 	 * @param idx Index in the grid.
 	 * @param color Color of the new stone.
 	 */
@@ -171,16 +169,35 @@ public class Grid {
 			}
 		}
 		
-		// this used to be a blank field; we need to remove it from any liberties it may be in
-		for (int didx = 0; didx < 4; didx++) {
-			int di = NEIGHBOURS[didx][0];
-			int dj = NEIGHBOURS[didx][1];
+		if (oldColor.equals(FieldColor.EMPTY)) {
+			// this used to be a blank field; we need to remove it from any liberties it may be in
+			for (int didx = 0; didx < 4; didx++) {
+				int di = NEIGHBOURS[didx][0];
+				int dj = NEIGHBOURS[didx][1];
+				
+				if (idx.i() + di < 0 || idx.j() + dj < 0 || idx.i() + di >= height || idx.j() + dj >= width)
+					continue;
+				
+				Index neighbour = new Index(idx.i() + di, idx.j() + dj);
+				connectedComponents.get(neighbour).liberties.remove(idx);
+			}
 			
-			if (idx.i() + di < 0 || idx.j() + dj < 0 || idx.i() + di >= height || idx.j() + dj >= width)
-				continue;
+		} else if (color.equals(FieldColor.EMPTY)) {
 			
-			Index neighbour = new Index(idx.i() + di, idx.j() + dj);
-			connectedComponents.get(neighbour).liberties.remove(idx);
+			// we need to add this field to any liberties it could be in
+			for (int didx = 0; didx < 4; didx++) {
+				int di = NEIGHBOURS[didx][0];
+				int dj = NEIGHBOURS[didx][1];
+				
+				if (idx.i() + di < 0 || idx.j() + dj < 0 || idx.i() + di >= height || idx.j() + dj >= width)
+					continue;
+				
+				if (grid[idx.i()+di][idx.j()+dj].equals(FieldColor.EMPTY)) 
+					continue;
+				
+				Index neighbour = new Index(idx.i() + di, idx.j() + dj);
+				connectedComponents.get(neighbour).liberties.add(idx);
+			}
 		}
 	}
 	
@@ -253,7 +270,6 @@ public class Grid {
 	 * @return A list of all free field in the grid.
 	 */
 	public List<Index> interestingFields() {
-		List<Index> interesting = new ArrayList<Index>();
 		HashSet<Index> intermediate = new HashSet<Index>();
 		int range = 2;
 		
@@ -278,15 +294,13 @@ public class Grid {
 			}
 		}
 		
-
+		List<Index> interesting = new ArrayList<Index>();
 		if (intermediate.size() == 0) {
 			interesting.add(new Index(height / 2, width / 2));
-			return interesting;
+		} else {
+			interesting.addAll(intermediate);
+			Collections.shuffle(interesting);
 		}
-		for (Index idx : intermediate) {
-			interesting.add(idx);
-		}
-		Collections.shuffle(interesting);
 		return interesting;
 	}
 
@@ -337,37 +351,14 @@ public class Grid {
 		return grid;
     }
 	
-    /**
-     * Place `color` at `index` on a new Grid object.
-     * The grid object uses the same grid array to store stones, so
-     * after the returned grid is not needed anymore the placement of the color
-     * needs to be undone.
-     * @param idx Index of the move to be played.
-     * @param color Color of the player playing the move.
-     * @return A new Grid object with with the given move played.
-     */
-	public Grid placeColorAndReference(Index idx, FieldColor color) {
-		Grid newGrid = new Grid(height, width, this.grid);
-		newGrid.grid[idx.i()][idx.j()] = color;
-		newGrid.graphSearch.runAll();
-		
-		return newGrid;
-	}
-	
-	public void undoMove(Index idx) {
-		grid[idx.i()][idx.j()] = FieldColor.EMPTY;
-	}
-	
-	public Grid placeColorAndCopy(Index idx, FieldColor color) {
+	public Grid deepcopy() {
 		Grid newGrid = new Grid(height, width);
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				newGrid.grid[i][j] = this.grid[i][j];
 			}
 		}
-		newGrid.grid[idx.i()][idx.j()] = color;
 		newGrid.graphSearch.runAll();
-
 		return newGrid;
 	}
 

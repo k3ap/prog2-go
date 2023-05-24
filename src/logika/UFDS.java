@@ -31,17 +31,11 @@ public class UFDS<T, M extends SetMapping> {
 	 */
 	private Map<T, M> toplevels;
 	
-	/**
-	 * A helper map for restoring old data in case of an undo operation.
-	 */
-	private Map<T, M> memory;
-	
 	public UFDS() {
 		parent = new HashMap<>();
 		sizes = new HashMap<>();
 		rank = new HashMap<>();
 		toplevels = new HashMap<>();
-		memory = new HashMap<>();
 	}
 	
 	/**
@@ -81,6 +75,7 @@ public class UFDS<T, M extends SetMapping> {
 	
 	/**
 	 * Perform a union of two sets. Does not perform memory operations.
+	 * Changes structure non-recoverably.
 	 * @param el1
 	 * @param el2
 	 */
@@ -88,8 +83,8 @@ public class UFDS<T, M extends SetMapping> {
 	public void doUnion(T el1, T el2) {
 		if (isSameSet(el1, el2)) return;
 		
-		T p1 = getRepresentative(el1);
-		T p2 = getRepresentative(el2);
+		T p1 = pathcompress(el1);
+		T p2 = pathcompress(el2);
 		int r1 = rank.get(p1);
 		int r2 = rank.get(p2);
 		
@@ -110,27 +105,6 @@ public class UFDS<T, M extends SetMapping> {
 			sizes.put(p2, sizes.get(p2) + sizes.get(p1));
 			rank.put(p2, r2+1);
 		}
-	}
-	
-	/**
-	 * Perform a manual union operation, leaving greater's toplevel as a toplevel,
-	 * and removing lesser's toplevel from toplevels
-	 * @param greater
-	 * @param lesser
-	 */
-	public void manualUnion(T greater, T lesser) {
-		T p1 = getRepresentative(greater);
-		T p2 = getRepresentative(lesser);
-		
-		if (p1.equals(p2)) return;
-		
-		parent.put(p2, p1);
-		memory.put(p2, toplevels.get(p2));
-		memory.put(p1, toplevels.get(p1));
-		toplevels.put(p1, (M) toplevels.get(p1).joinWith(toplevels.get(p2)));
-		toplevels.remove(p2);
-		sizes.put(p1, sizes.get(p1) + sizes.get(p2));
-		rank.put(p1, Math.max(rank.get(p1), rank.get(p2)+1));
 	}
 	
 	/**
@@ -175,7 +149,7 @@ public class UFDS<T, M extends SetMapping> {
 	/**
 	 * Manually reset the parent of a specific node.
 	 * If the new parent is the same as the element, the new mapping is 
-	 * located in memory, or set to null if not present there.
+	 * set to null.
 	 * Careful when using this method, as it may invalidate other mappings!
 	 * @param element
 	 * @param newParent
@@ -191,7 +165,7 @@ public class UFDS<T, M extends SetMapping> {
 		if (rank.get(newParent) < 1) rank.put(newParent, 1);
 		
 		if (newParent.equals(element)) {
-			toplevels.put(element, memory.getOrDefault(element, null));
+			toplevels.put(element, null);
 		}
 	}
 }
