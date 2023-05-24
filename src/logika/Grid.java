@@ -30,9 +30,12 @@ public class Grid {
 		}
 
 		@Override
-		public void joinWith(SetMapping other) {
+		public SetMapping joinWith(SetMapping other) {
 			LibertiesSetMapping o = (LibertiesSetMapping) other;
-			liberties.addAll(o.liberties);
+			LibertiesSetMapping newMapping = new LibertiesSetMapping();
+			newMapping.liberties.addAll(liberties);
+			newMapping.liberties.addAll(o.liberties);
+			return newMapping;
 		}
 	}
 	
