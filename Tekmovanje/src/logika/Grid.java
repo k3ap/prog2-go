@@ -261,7 +261,7 @@ public class Grid {
 			range = 3;
 		}
 		
-		if (stoneCount > 20) {
+		if (stoneCount > 10) {
 			range = 1;
 		}
 		
