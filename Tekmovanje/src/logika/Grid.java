@@ -261,6 +261,10 @@ public class Grid {
 			range = 3;
 		}
 		
+		if (stoneCount > 20) {
+			range = 1;
+		}
+		
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				if (!isFree(new Index(i, j))) {
@@ -282,7 +286,6 @@ public class Grid {
 			}
 		}
 		
-		assert interesting.size() >= 1;
 		Collections.shuffle(interesting);
 		return interesting;
 	}
