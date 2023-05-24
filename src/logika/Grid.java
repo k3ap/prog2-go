@@ -108,6 +108,16 @@ public class Grid {
 		graphSearch.runAll();
 	}
 	
+	public Grid(int height, int width, FieldColor[][] grid) {
+		this.grid = grid;
+		connectedComponents = new UFDS<>();
+		this.height = height;
+		this.width = width;
+		graphSearch = new ComponentLibertySearch(this, new SearchData());
+		// graph search must be called separately
+		// graphSearch.runAll();
+	}
+	
 	public int height() { return height; }
 	public int width() { return width; }
 	
@@ -140,10 +150,6 @@ public class Grid {
 	public void placeColor(Index idx, FieldColor color) {
 		FieldColor oldColor = grid[idx.i()][idx.j()];
 		grid[idx.i()][idx.j()] = color;
-		
-		// this is here for the competition only
-		// remove for GO
-		stoneCount++;
 		
 		// The component directly adjacent to the field we've just painted over may be invalidated
 		// by this, so we need to rerun the BFS
@@ -243,26 +249,13 @@ public class Grid {
 	}
 	
 	/**
-	 * For use in optimizing the interestingFields() method
-	 */
-	private int stoneCount = 0;
-	
-	/**
 	 * Finds all interesting fields.
 	 * @return A list of all free field in the grid.
 	 */
 	public List<Index> interestingFields() {
 		List<Index> interesting = new ArrayList<Index>();
+		HashSet<Index> intermediate = new HashSet<Index>();
 		int range = 2;
-
-		if (stoneCount == 0) {
-			interesting.add(new Index(height / 2, width / 2));
-			return interesting;
-		}
-		
-		if (stoneCount <= 3) {
-			range = 3;
-		}
 		
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
@@ -277,7 +270,7 @@ public class Grid {
 								continue;
 							Index idx = new Index(i+di, j+dj);
 							if (isFree(idx)) {
-								interesting.add(idx);
+								intermediate.add(idx);
 							}
 						}
 					}
@@ -285,7 +278,14 @@ public class Grid {
 			}
 		}
 		
-		assert interesting.size() >= 1;
+
+		if (intermediate.size() == 0) {
+			interesting.add(new Index(height / 2, width / 2));
+			return interesting;
+		}
+		for (Index idx : intermediate) {
+			interesting.add(idx);
+		}
 		Collections.shuffle(interesting);
 		return interesting;
 	}
@@ -337,6 +337,27 @@ public class Grid {
 		return grid;
     }
 	
+    /**
+     * Place `color` at `index` on a new Grid object.
+     * The grid object uses the same grid array to store stones, so
+     * after the returned grid is not needed anymore the placement of the color
+     * needs to be undone.
+     * @param idx Index of the move to be played.
+     * @param color Color of the player playing the move.
+     * @return A new Grid object with with the given move played.
+     */
+	public Grid placeColorAndReference(Index idx, FieldColor color) {
+		Grid newGrid = new Grid(height, width, this.grid);
+		newGrid.grid[idx.i()][idx.j()] = color;
+		newGrid.graphSearch.runAll();
+		
+		return newGrid;
+	}
+	
+	public void undoMove(Index idx) {
+		grid[idx.i()][idx.j()] = FieldColor.EMPTY;
+	}
+	
 	public Grid placeColorAndCopy(Index idx, FieldColor color) {
 		Grid newGrid = new Grid(height, width);
 		for (int i = 0; i < height; i++) {
@@ -347,10 +368,6 @@ public class Grid {
 		newGrid.grid[idx.i()][idx.j()] = color;
 		newGrid.graphSearch.runAll();
 
-		// this is here for the competition only
-		// remove for GO
-		newGrid.stoneCount = stoneCount + 1;
-		
 		return newGrid;
 	}
 
