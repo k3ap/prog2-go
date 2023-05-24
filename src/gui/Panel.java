@@ -141,62 +141,13 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			drawShadowStone(g2, shadow.i(), shadow.j(), game.playerTurn());
 		}
 		
+		if (game.gameStatus().isWonGame()) {
+			highlightLoser(g2);
+		}
+		
 		// Write game status, the text is displayed by the window
 		// in which this panel is contained.
-		switch (game.gameStatus()) {
-		case INVALID:
-		case PLAY:
-			// in either of these cases the game is waiting for player input
-			if (game.gameType().mixedGame()) {
-				// mixedGame => there is only one human player
-				window.writeMessage("Na vrsti ste.");
-			}
-			else {
-				switch (game.playerTurn()) {
-				case WHITE:
-					window.writeMessage("Na vrsti je bel.");
-					break;
-				case BLACK:
-					window.writeMessage("Na vrsti je črn.");
-					break;
-				}
-			}
-			break;
-		case WAIT:
-			String ime = game.intelligenceName();
-			window.writeMessage("Algoritem " + ime + " izbira potezo...");
-			break;
-		case ERROR:
-			window.writeMessage("Program za izbiranje poteze se je sesul.");
-			break;
-		case WHITEWINS:
-		case BLACKWINS:
-			highlightLoser(g2);
-			switch (game.getOutcome()) {
-			case COMBLACKWON:
-				window.writeMessage("Algoritem " + game.intelligence1Name() + " (črni) je zmagal.");
-				break;
-			case COMWHITEWON:
-				window.writeMessage("Algoritem " + game.intelligence2Name() + " (beli) je zmagal.");
-				break;
-			case COMWON:
-				window.writeMessage("Zmagal je računalnik (" + game.intelligenceName() + ").");
-				break;
-			case HUMBLACKWON:
-				window.writeMessage("Zmagal je igralec črnih.");
-				break;
-			case HUMWHITEWON:
-				window.writeMessage("Zmagal je igralec belih.");
-				break;
-			case HUMWON:
-				window.writeMessage("Zmagali ste.");
-				break;
-			}
-			break;
-		case ALLCOMPUTERS:
-			window.writeMessage("Računalnik igra proti samemu sebi...");
-			break;
-		}
+		window.writeMessage(MessageWriter.getMessage(game));
 	}
 	
 	/**
