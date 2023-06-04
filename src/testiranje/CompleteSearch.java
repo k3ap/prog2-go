@@ -1,8 +1,7 @@
 package testiranje;
 
 import logika.FieldColor;
-import logika.GoGameType;
-import logika.Grid;
+import logika.GridFirstCapture;
 import logika.Index;
 import logika.PlayerColor;
 
@@ -14,7 +13,7 @@ public class CompleteSearch {
 	
 	private record TwoNumbers(int a, int b) {}
 	
-	private static TwoNumbers search(Grid grid, PlayerColor player, int depth, boolean doOutput) {
+	private static TwoNumbers search(GridFirstCapture grid, PlayerColor player, int depth, boolean doOutput) {
 		int victories = 0;
 		int losses = 0;
 		for (Index idx : grid.freeFields()) {
@@ -54,9 +53,9 @@ public class CompleteSearch {
 		/*Grid grid = RandomGridGenerator.randomGrid(9, 0.7);
 		grid.printToFile("autogen-primeri/najnovejsi.m9");*/
 		
-		Grid grid = null;
+		GridFirstCapture grid = null;
 		try {
-			grid = Grid.readFromFile("autogen-primeri/1.m9", 9, GoGameType.FCGO);
+			grid = GridFirstCapture.readFromFile("autogen-primeri/1.m9", 9);
 		} catch (Exception e) {
 			System.out.println("error");
 			System.exit(1);
