@@ -2,12 +2,9 @@ package logika;
 
 import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import logika.Grid.ComponentLibertySearch;
 
 public abstract class Grid {
 	
@@ -82,7 +79,7 @@ public abstract class Grid {
 	protected int width, height;
 	
 	/**
-	 * The current state of the playing field: which field are empty, have a black, or have a white stone.
+	 * The current state of the playing field: which fields are empty, have a black, or have a white stone.
 	 */
 	protected FieldColor grid[][];
 	
@@ -262,9 +259,6 @@ public abstract class Grid {
 			interesting.add(new Index(height / 2, width / 2));
 		} else {
 			interesting.addAll(intermediate);
-			
-			// TODO: this doesn't belong here. Move it to the move choosing algorithm 
-			Collections.shuffle(interesting);
 		}
 		return interesting;
 	}
