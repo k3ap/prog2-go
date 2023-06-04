@@ -1,5 +1,6 @@
 package inteligenca;
 
+import java.util.Collections;
 import java.util.List;
 
 import logika.FieldColor;
@@ -48,11 +49,11 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 			grid.placeColor(forcedMove, FieldColor.EMPTY);
 			return estimate;
 		}
-		
+
 		Double bestValue = null;
-		
+
 		List<Index> interesting = grid.interestingFields();
-		
+		Collections.shuffle(interesting);
 		for (Index move : interesting) {
 			
 			grid.placeColor(move, player.field());
@@ -99,7 +100,7 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 			
 			// find interesting moves
 			var interesting = igra.interestingMoves();
-			
+			Collections.shuffle(interesting);
 			for (Poteza poteza : interesting) {
 				
 				// play the given move and recursievely estimate outcome
