@@ -1,28 +1,20 @@
 package logika;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import logika.Grid.ComponentLibertySearch;
 
-/**
- * Representation of the playing field.
- */
-public class Grid {
-	
-	private final int[][] NEIGHBOURS = new int[][] {{0, 1}, {1, 0}, {-1, 0}, {0, -1}};
+public abstract class Grid {
 	
 	/**
 	 * Helper class for keeping track of the liberties of a component 
 	 */
-	private class LibertiesSetMapping implements SetMapping {
+	protected class LibertiesSetMapping implements SetMapping {
 		public Set<Index> liberties;
 		
 		public LibertiesSetMapping() {
@@ -39,7 +31,7 @@ public class Grid {
 		}
 	}
 	
-	private class ComponentLibertySearch extends BreadthFirstSearch {
+	protected class ComponentLibertySearch extends BreadthFirstSearch {
 
 		public ComponentLibertySearch(Grid grid, SearchData data) {
 			super(grid, data);
@@ -78,51 +70,40 @@ public class Grid {
 	}
 	
 	/**
-	 * The current state of the playing field: which field are empty, have a black, or have a white stone.
+	 * Keeps track of the connected components in the graph and the liberties associated with them
 	 */
-	private FieldColor grid[][];
+	protected UFDS<Index, LibertiesSetMapping> connectedComponents;
+	
+	protected ComponentLibertySearch graphSearch;
 	
 	/**
 	 * Height and width of the grid.
 	 */
-	private int height, width;
+	protected int width, height;
 	
 	/**
-	 * Keeps track of the connected components in the graph and the liberties associated with them
+	 * The current state of the playing field: which field are empty, have a black, or have a white stone.
 	 */
-	private UFDS<Index, LibertiesSetMapping> connectedComponents;
+	protected FieldColor grid[][];
 	
-	private ComponentLibertySearch graphSearch;
-	
-	private GoGameType gameType;
-	
-	public Grid(int height, int width, GoGameType gameType) {
-		this.gameType = gameType;
+	public Grid(int height, int width) {
+		this.height = height;
+		this.width = width;
+		
 		grid = new FieldColor[height][width];
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				grid[i][j] = FieldColor.EMPTY;
 			}
 		}
+		
 		connectedComponents = new UFDS<>();
-		this.height = height;
-		this.width = width;
 		graphSearch = new ComponentLibertySearch(this, new SearchData());
 		graphSearch.runAll();
 	}
 	
-	public Grid(int height, int width, FieldColor[][] grid) {
-		this.grid = grid;
-		connectedComponents = new UFDS<>();
-		this.height = height;
-		this.width = width;
-		graphSearch = new ComponentLibertySearch(this, new SearchData());
-		// graph search must be called separately
-		// graphSearch.runAll();
-	}
-	
-	public int height() { return height; }
 	public int width() { return width; }
+	public int height() { return height; }
 	
 	/**
 	 * Returns the current color of a stone on the given index.
@@ -149,6 +130,9 @@ public class Grid {
 	 * @param color Color of the new stone.
 	 */
 	public void placeColor(Index idx, FieldColor color) {
+		
+		final int[][] NEIGHBOURS = new int[][] {{0, 1}, {1, 0}, {-1, 0}, {0, -1}};
+		
 		FieldColor oldColor = grid[idx.i()][idx.j()];
 		grid[idx.i()][idx.j()] = color;
 		
@@ -203,61 +187,33 @@ public class Grid {
 			}
 		}
 	}
-	
+
 	/**
-	 * Check if the given color has lost the game (if any component has no liberties).
-	 * This is only valid for FCGO.
+	 * Check if the given color has lost the game.
 	 * @param color Color for which we are checking, only sensible for BLACKFIELD and WHITEFIELD.
 	 * @return true, if the given color has lost the game
 	 */
-	public boolean hasColorLost(FieldColor color) {
-		assert gameType.equals(GoGameType.FCGO);
-		for (Index idx : connectedComponents.getToplevels()) {
-			if (colorOfField(idx).equals(color)) {
-				LibertiesSetMapping mapping = connectedComponents.get(idx);
-				if (mapping.liberties.size() == 0) return true;
-			}
-		}
-		return false;
-	}
+	public abstract boolean hasColorLost(FieldColor field);
 	
 	/**
-	 * Get the component which has no liberties and has lost its owner the game.
-	 * Only valid for FCGO.
+	 * Return the indicies of all stones of the given color, which belong to a component with no liberties.
+	 * This is used to draw the losing stones in a FCGO game and not used in GO. 
 	 * @return An array of indices that the component occupies.
 	 */
-	public Index[] losingComponent(FieldColor color) {
-		assert (hasColorLost(FieldColor.WHITE) || hasColorLost(FieldColor.BLACK));
-		assert gameType.equals(GoGameType.FCGO);
-
-		LinkedList<Index> out = new LinkedList<Index>();
-
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
-				Index idx = new Index(i, j);
-				if (colorOfField(idx).equals(color) && connectedComponents.get(idx).liberties.size() == 0) {
-					out.add(idx);
-				}
-			}
-		}
-
-		Index[] outArr = new Index[out.size()];
-		out.toArray(outArr);
-		return outArr;
-	}
-
+	public abstract Index[] losingComponent(FieldColor field);
+	
 	/**
 	 * Check if the field with the given index is free.
 	 * @param idx Index
 	 * @return true iff the field at index is free.
 	 */
-	public boolean isFree(Index idx) {
+	private boolean isFree(Index idx) {
 		return colorOfField(idx) == FieldColor.EMPTY;
 	}
 	
 	/**
 	 * Finds all free fields.
-	 * @return A list of all free field in the grid.
+	 * @return A list of all free fields in the grid.
 	 */
 	public List<Index> freeFields() {
 		ArrayList<Index> free = new ArrayList<>();
@@ -273,8 +229,8 @@ public class Grid {
 	}
 	
 	/**
-	 * Finds all interesting fields.
-	 * @return A list of all free field in the grid.
+	 * Finds the interesting fields, i.e. the fields that an AI may wish to place stones upon.
+	 * @return A list of all interesting fields in the grid.
 	 */
 	public List<Index> interestingFields() {
 		HashSet<Index> intermediate = new HashSet<Index>();
@@ -306,11 +262,13 @@ public class Grid {
 			interesting.add(new Index(height / 2, width / 2));
 		} else {
 			interesting.addAll(intermediate);
+			
+			// TODO: this doesn't belong here. Move it to the move choosing algorithm 
 			Collections.shuffle(interesting);
 		}
 		return interesting;
 	}
-
+	
     @Override
     public String toString() {
 		String buf = "";
@@ -334,60 +292,33 @@ public class Grid {
 		}
 		catch(Exception e) {}
     }
-
-    public static Grid readFromFile(String filename, int size, GoGameType gameType) throws FileNotFoundException, IOException {
-        Grid grid = new Grid(size, size, gameType);
-		try (FileReader reader = new FileReader(filename)) {
-			for (int i = 0; i < size; i++) {
-				for (int j = 0; j < size; j++) {
-					char c = (char) reader.read();
-					switch(c) {
-					case 'o':
-						grid.grid[i][j] = FieldColor.WHITE;
-						break;
-					case '#':
-						grid.grid[i][j] = FieldColor.BLACK;
-						break;
-					default:
-					}
-				}
-				reader.read();  // newline
-			}
-		}
-		grid.graphSearch.runAll();
-		return grid;
-    }
-	
-	public Grid deepcopy() {
-		Grid newGrid = new Grid(height, width, gameType);
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
-				newGrid.grid[i][j] = this.grid[i][j];
-			}
-		}
-		newGrid.graphSearch.runAll();
-		return newGrid;
-	}
-
+    
+    /**
+     * Get the minimum distance of a stone of the given color from the border.
+     * Used in the weighted estimator.
+     */
     public double distanceFromBorder(FieldColor color) {
 		int r = width + height;
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				Index idx = new Index(i, j);
 				if (colorOfField(idx).equals(color)) {
-					r = Math.min(r,
-                                 Math.min(
-                                     Math.min(i, j),
-                                     Math.min(8-i, 8-j)
-                                     ));
+					r = Math.min(
+							r,
+							Math.min(
+                                Math.min(i, j),
+                                Math.min(8-i, 8-j)
+                            )
+					);
 				}
 			}
 		}
-		return r;
+		return (double) r;
     }
     
     /**
-     * Get the minimum number of liberties a certain connected component has
+     * Get the minimum number of liberties a certain connected component has.
+     * Used in the weighted estimator.
      * @param color The color we're interested in
      * @return The minimal number of liberties of any component of this color
      */
@@ -402,7 +333,8 @@ public class Grid {
     }
     
     /**
-     * Get the average number of liberties over all connected components of this color
+     * Get the average number of liberties over all connected components of this color.
+     * Used in the weighted estimator.
      * @param color The color we're interested in
      */
     public double averageNumberOfLiberties(FieldColor color) {
@@ -419,27 +351,29 @@ public class Grid {
     }
     
     /**
-     * Get the number of connected components a color has
+     * Get the number of connected components a color has.
+     * Used in the weighted estimator.
      * @param color The color we're interested in
      * @return The number of components belonging to this color.
      */
-    public int numberOfComponents(FieldColor color) {
+    public double numberOfComponents(FieldColor color) {
     	int c = 0;
 		for (Index idx : connectedComponents.getToplevels()) {
 			if (colorOfField(idx).equals(color)) {
 				c++;
 			}
 		}
-		return c;
+		return (double) c;
     }
     
     /**
      * Return the smallest size of a liberty component adjacent to any 
-     * field of the given color
+     * field of the given color.
+     * Used in the weighted estimator.
      * @param color The color we're interested in
      * @return As described
      */
-    public int minLibertiesSize(FieldColor color) {
+    public double minLibertiesSize(FieldColor color) {
     	int[][] d = new int[][] {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
     	int m = width*height;
     	for (int i = 0; i < height; i++) {
@@ -458,41 +392,22 @@ public class Grid {
     			}
     		}
     	}
-    	return m;
+    	return (double) m;
     }
     
     /**
-     * Find a component that only has one liberty.
-     * @param color The color we're interested in.
-     * @return The Index if the only liberty if such a component exists, null otherwise.
+     * Make a deep copy of the grid.
+     * @return
      */
-    public Index oneLibertyComponent(FieldColor color) {
-    	
-		for (Index idx : connectedComponents.getToplevels()) {
-			if (colorOfField(idx).equals(color) && connectedComponents.get(idx).liberties.size() == 1) {
-				return connectedComponents.get(idx).liberties.iterator().next();
-			}
-		}
-		return null;
-    }
-    
+    public abstract Grid deepcopy();
+
     /**
-	 * Check, if nextPlayer has a foced move.
-	 * @param nextPlayer the player who's turn it is.
-	 * @return A Poteza of the forced move, null if there is none.
+	 * Check if nextPlayer has a foced move.
+	 * Only valid for FCGO.
+	 * @param nextPlayer the player whose turn it is.
+	 * @return An Index of the forced move, null if there is none.
 	 */
-	public Index forcedMove(PlayerColor nextPlayer) {
-		Index immediateWin = oneLibertyComponent(nextPlayer.next().field());
-		if (immediateWin != null) {
-			// the opponent has a component with only one liberty
-			return immediateWin;
-		}
-		Index immediateLoss = oneLibertyComponent(nextPlayer.field());
-		if (immediateLoss != null) {
-			return immediateLoss;
-		}
-		return null;
-	}
+	public abstract Index forcedMove(PlayerColor player);
 
 	/**
      * Check whether the given placement is a valid move.
@@ -500,9 +415,5 @@ public class Grid {
      * @param color
      * @return
      */
-    public boolean isPlacementValid(Index idx, FieldColor color) {
-    	// TODO: if the current game is GO, you should also check that the move was not
-    	// seen previously
-    	return colorOfField(idx).equals(FieldColor.EMPTY);
-    }
+	protected abstract boolean isPlacementValid(Index idx, FieldColor field);
 }

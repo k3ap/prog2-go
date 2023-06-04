@@ -5,7 +5,7 @@ import java.util.LinkedList;
 /**
  * Abstract breadth first search
  * to use create a subclass that implements the other required methods.
- * @see Grid.java
+ * @see GridFirstCapture.java
  */
 public abstract class BreadthFirstSearch extends Search {
 	

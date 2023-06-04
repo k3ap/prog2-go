@@ -161,7 +161,7 @@ public class Window extends JFrame implements ActionListener {
 			}
 		}
 		else if (source == fcHumHum) {
-			panel.newHumHumGame(this, 19, GoGameType.FCGO);
+			panel.newHumHumGame(this, 9, GoGameType.FCGO);
 		}
 		else if (source == fcComCom) {
 			IntelligencePair selected = Popups.getIntelligencePairChoice();

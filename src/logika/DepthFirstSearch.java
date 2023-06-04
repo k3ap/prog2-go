@@ -30,7 +30,7 @@ public abstract class DepthFirstSearch extends Search {
 		return indiciesToSearch.removeLast();
 	}
 	
-	public DepthFirstSearch(Grid grid, SearchData data) {
+	public DepthFirstSearch(GridFirstCapture grid, SearchData data) {
 		super(grid, data);
 		this.indiciesToSearch = new LinkedList<Index>();
 	}

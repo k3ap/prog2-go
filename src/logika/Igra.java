@@ -28,8 +28,12 @@ public class Igra {
 	 * @param size Width and height of the new grid.
 	 */
 	public Igra(int size, GoGameType gameType) {
-		grid = new Grid(size, size, gameType);
 		this.gameType = gameType; 
+		grid = switch(gameType) {
+			case FCGO -> new GridFirstCapture(size, size);
+			case GO -> null;  // TODO: switch this to proper GO grid
+		};
+		
 		winner = null; // null means no one has won yet
 		nextPlayer = PlayerColor.BLACK;
 	}
@@ -76,6 +80,8 @@ public class Igra {
 	 */
 	public List<Poteza> validMoves() {
 		// TODO: comptibility with GO
+		// Should we make a validPlacements method in Grid, which functions like freeFields
+		// uses isPlacementValid instead of isFree?
 		ArrayList<Poteza> res = new ArrayList<>();
 		for (Index idx : grid.freeFields()) {
 			res.add(idx.poteza());
@@ -117,7 +123,7 @@ public class Igra {
 	public PlayerColor playerTurn() { return nextPlayer; }
 	public PlayerColor winner() { return winner; }
 	/**
-	 * @see Grid#losingComponent
+	 * @see GridFirstCapture#losingComponent
 	 */
 	public Index[] losingComponent() { return grid.losingComponent(winner.next().field()); }
 }

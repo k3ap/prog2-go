@@ -11,7 +11,6 @@ import javax.swing.JOptionPane;
 
 import inteligenca.AlphaBetaMoveChooser;
 import inteligenca.Inteligenca;
-import inteligenca.PrimitiveGridEstimator;
 import inteligenca.RandomMoveChooser;
 import inteligenca.WeightedGridEstimator;
 
@@ -20,7 +19,6 @@ public class Popups {
 			new Inteligenca(new AlphaBetaMoveChooser(4, new WeightedGridEstimator())),
 			new Inteligenca(new AlphaBetaMoveChooser(3, new WeightedGridEstimator())),
 			new Inteligenca(new AlphaBetaMoveChooser(2, new WeightedGridEstimator())),
-			new Inteligenca(new AlphaBetaMoveChooser(3, new PrimitiveGridEstimator())),
 			new Inteligenca(new RandomMoveChooser()),
 	};
 	
