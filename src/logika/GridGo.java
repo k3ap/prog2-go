@@ -149,7 +149,7 @@ public class GridGo extends Grid {
 	}
 
 	@Override
-	public Index[] losingComponent(FieldColor field) {
+	public Index[] libertylessFields(FieldColor field) {
 		LinkedList<Index> out = new LinkedList<Index>();
 
 		for (int i = 0; i < height; i++) {
@@ -187,14 +187,17 @@ public class GridGo extends Grid {
 	@Override
 	public boolean isValid(Index idx, FieldColor field) {
 		boolean empty = colorOfField(idx).equals(FieldColor.EMPTY);
-		boolean suicidal = false;
+		if (!empty)
+			return false; // this field is not empty
+
 		this.placeColor(idx, field);
 		if (NLibertiesComponent(field, 0) != null) {
-			suicidal = true;
+			this.placeColor(idx, FieldColor.EMPTY);
+			return false; // this field is suicidal
 		}
 		this.placeColor(idx, FieldColor.EMPTY);
 		
-		return empty && !suicidal;
+		return true;
 	}
 
 }
