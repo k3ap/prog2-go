@@ -44,7 +44,7 @@ public class UFDS<T, M extends SetMapping> {
 	 * @param element Element of the disjoint set structure
 	 * @return The toplevel parent of element
 	 */
-	private T getRepresentative(T element) {
+	public T getRepresentative(T element) {
 		if (parent.get(element).equals(element)) return element;
 		else return getRepresentative(parent.get(element));
 	}

@@ -1,7 +1,9 @@
 package logika;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import splosno.Poteza;
 
@@ -76,12 +78,17 @@ public class Igra {
 				winner = thisPlayer;
 				return true;
 			}
-			if (grid.hasColorLost( FieldColor.playersColor( PlayerColor.newColor(nextPlayer) ) )) {
+			if (grid.hasColorLost( FieldColor.playersColor( thisPlayer ) )) {
 				// tihisPlayer has made a suicidal Poteza
 				winner = nextPlayer;
 				return true;
 			}
-		} else if (grid.consecutivePasses()) {
+		} else {
+			// Because of the suicide rule a player can't play a move
+			// that would result in their own components being captured.
+			grid.captureComponentsOf(FieldColor.playersColor(nextPlayer));
+		}
+		if (grid.consecutivePasses()) {
 			// Passes are only allowed in Go.
 			// Once both players pass one after another the game is over.
 			// In Go, once the game is finished, one of the player has won.
