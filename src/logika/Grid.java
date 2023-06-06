@@ -88,6 +88,12 @@ public abstract class Grid {
 	 */
 	protected FieldColor grid[][];
 	
+	/**
+	 * How many black / white stones have been captured.
+	 * If black surrounds white's stones then whiteCaptured is increased.
+	 */
+	protected int blackCaptured, whiteCaptured;
+	
 	public Grid(int height, int width) {
 		this(height, width, false, false);
 	}
@@ -108,6 +114,7 @@ public abstract class Grid {
 		connectedComponents = new UFDS<>();
 		graphSearch = new ComponentLibertySearch(this, new SearchData());
 		graphSearch.runAll();
+		blackCaptured = whiteCaptured = 0;
 	}
 	
 	public int width() { return width; }
@@ -418,6 +425,24 @@ public abstract class Grid {
     		}
     	}
     	return (double) m;
+    }
+    
+    public void captureComponentsOf(FieldColor player) {
+    	assert !player.equals(FieldColor.EMPTY);
+    	
+    	Set<Index> captured = new HashSet<Index>();
+		while ((captured = NLibertiesComponent(player, 0)) != null) {
+			if (player.equals(FieldColor.BLACK))
+				blackCaptured += captured.size();
+			else
+				whiteCaptured += captured.size();
+			
+			for (Index idx : captured) {
+				grid[idx.i()][idx.j()] = FieldColor.EMPTY;
+			}
+		}
+		
+		graphSearch.runAll();
     }
     
     /**
