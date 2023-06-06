@@ -176,7 +176,7 @@ public class Window extends JFrame implements ActionListener {
 			// NYI
 		}
 		else if (source == goHumHum) {
-			// NYI
+			panel.newHumHumGame(this, 9, GoGameType.GO);
 		}
 		else if (source == goComCom) {
 			// NYI

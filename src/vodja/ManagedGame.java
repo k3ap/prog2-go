@@ -308,4 +308,5 @@ public class ManagedGame {
 	 * @return An array of indices that the component occupies.
 	 */
 	public Index[] losingComponent() { return game.losingComponent(); }
+	public boolean isValid(Index idx) { return game.isValid(idx); }
 }

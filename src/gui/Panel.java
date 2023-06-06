@@ -13,7 +13,6 @@ import java.awt.event.MouseMotionListener;
 
 import logika.PlayerColor;
 import vodja.ManagedGame;
-import logika.FieldColor;
 import logika.GoGameType;
 import logika.Index;
 import splosno.Poteza;
@@ -331,6 +330,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		if (game.gameStatus() != MoveResult.INVALID
 			&& game.gameStatus() != MoveResult.PLAY) { return; }
 		
+		System.out.println("Playing move...");
 		game.play(moveFromXY(e.getX(), e.getY()));
 		shadow = null; // remove the shadow once a stone is placed
 		window.update();
@@ -349,7 +349,8 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		}
 		else {
 			Index hovered = new Index(hoveredMaybe);
-			if (game.fieldColor(hovered) == FieldColor.EMPTY) {
+			if (game.isValid(hovered)) {
+				// TODO: isValid is quite resource intensive, this might have to be precalculated
 				shadow = hovered;
 			}
 			else {

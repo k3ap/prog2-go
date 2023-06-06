@@ -3,6 +3,7 @@ package logika;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -237,7 +238,24 @@ public abstract class Grid {
 	 * This is used to draw the losing stones in a FCGO game and not used in GO. 
 	 * @return An array of indices that the component occupies.
 	 */
-	public abstract Index[] losingComponent(FieldColor field);
+	public Index[] libertylessFields(FieldColor color) {
+		assert (hasColorLost(FieldColor.WHITE) || hasColorLost(FieldColor.BLACK));
+
+		LinkedList<Index> out = new LinkedList<Index>();
+
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				Index idx = new Index(i, j);
+				if (colorOfField(idx).equals(color) && connectedComponents.get(idx).liberties.size() == 0) {
+					out.add(idx);
+				}
+			}
+		}
+
+		Index[] outArr = new Index[out.size()];
+		out.toArray(outArr);
+		return outArr;
+	}
 	
 	/**
 	 * Check if the field with the given index is free.
@@ -430,20 +448,18 @@ public abstract class Grid {
     public void captureComponentsOf(FieldColor player) {
     	assert !player.equals(FieldColor.EMPTY);
     	
-    	Set<Index> captured = new HashSet<Index>();
-		while ((captured = NLibertiesComponent(player, 0)) != null) {
-			if (player.equals(FieldColor.BLACK))
-				blackCaptured += captured.size();
-			else
-				whiteCaptured += captured.size();
-			
-			for (Index idx : captured) {
-				grid[idx.i()][idx.j()] = FieldColor.EMPTY;
-			}
+    	Index[] captured = libertylessFields(player);
+    	if (player.equals(FieldColor.BLACK))
+			blackCaptured += captured.length;
+		else
+			whiteCaptured += captured.length;
+    	
+    	for (Index idx : captured) {
+			System.out.println("Capturing " + idx.i() + ", " + idx.j());
+			grid[idx.i()][idx.j()] = FieldColor.EMPTY;
 		}
-		
 		graphSearch.runAll();
-    }
+	}
     
     /**
      * Make a deep copy of the grid.

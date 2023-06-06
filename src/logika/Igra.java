@@ -1,9 +1,7 @@
 package logika;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import splosno.Poteza;
 
@@ -155,5 +153,7 @@ public class Igra {
 	/**
 	 * @see GridFirstCapture#losingComponent
 	 */
-	public Index[] losingComponent() { return grid.losingComponent(winner.next().field()); }
+	public Index[] losingComponent() { return grid.libertylessFields(winner.next().field()); }
+
+	public boolean isValid(Index idx) { return grid.isValid(idx, nextPlayer.field()); }
 }
