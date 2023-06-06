@@ -77,6 +77,11 @@ public abstract class Grid {
 	 * Height and width of the grid.
 	 */
 	protected int width, height;
+	/**
+	 * Whether black / white passed in the previous turn,
+	 * only needed for Go.
+	 */
+	public boolean blackPass, whitePass;
 	
 	/**
 	 * The current state of the playing field: which fields are empty, have a black, or have a white stone.
@@ -84,8 +89,14 @@ public abstract class Grid {
 	protected FieldColor grid[][];
 	
 	public Grid(int height, int width) {
+		this(height, width, false, false);
+	}
+	
+	public Grid(int height, int width, boolean blackPass, boolean whitePass) {
 		this.height = height;
 		this.width = width;
+		this.blackPass = blackPass;
+		this.whitePass = whitePass;
 		
 		grid = new FieldColor[height][width];
 		for (int i = 0; i < height; i++) {
@@ -101,6 +112,10 @@ public abstract class Grid {
 	
 	public int width() { return width; }
 	public int height() { return height; }
+
+	public boolean consecutivePasses() {
+		return blackPass && whitePass;
+	}
 	
 	/**
 	 * Returns the current color of a stone on the given index.
@@ -120,6 +135,24 @@ public abstract class Grid {
 	public boolean sameComponent(Index idx1, Index idx2) {
 		return connectedComponents.isSameSet(idx1, idx2);
 	}
+	
+	protected Set<Index> NLibertiesComponent(FieldColor color, int n) {
+		for (Index idx : connectedComponents.getToplevels()) {
+			if (colorOfField(idx).equals(color) && connectedComponents.get(idx).liberties.size() == n) {
+				return connectedComponents.get(idx).liberties;
+			}
+		}
+		return null;
+	}
+	
+	/**
+     * Find any component that only has one liberty.
+     * @param color The color we're interested in.
+     * @return The Index if the only liberty if such a component exists, null otherwise.
+     */
+    protected Index oneLibertyComponent(FieldColor color) {
+		return NLibertiesComponent(color, 1).iterator().next();
+    }
 	
 	/**
 	 * Place a stone of the given color on the given index.
@@ -204,38 +237,36 @@ public abstract class Grid {
 	 * @param idx Index
 	 * @return true iff the field at index is free.
 	 */
-	private boolean isFree(Index idx) {
-		return colorOfField(idx) == FieldColor.EMPTY;
-	}
+	public abstract boolean isValid(Index idx, FieldColor player);
 	
 	/**
 	 * Finds all free fields.
 	 * @return A list of all free fields in the grid.
 	 */
-	public List<Index> freeFields() {
-		ArrayList<Index> free = new ArrayList<>();
+	public List<Index> validFields(FieldColor player) {
+		ArrayList<Index> valid = new ArrayList<>();
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				Index idx = new Index(i, j);
-				if (isFree(idx)) {
-					free.add(idx);
+				if (isValid(idx, player)) {
+					valid.add(idx);
 				}
 			}
 		}
-		return free;
+		return valid;
 	}
 	
 	/**
 	 * Finds the interesting fields, i.e. the fields that an AI may wish to place stones upon.
 	 * @return A list of all interesting fields in the grid.
 	 */
-	public List<Index> interestingFields() {
+	public List<Index> interestingFields(FieldColor player) {
 		HashSet<Index> intermediate = new HashSet<Index>();
 		int range = 2;
 		
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-				if (!isFree(new Index(i, j))) {
+				if (!isValid(new Index(i, j), player)) {
 					// for each placed stone
 					for (int di = -range; di <= range; di++) {
 						for (int dj = -range; dj <= range; dj++) {
@@ -245,7 +276,7 @@ public abstract class Grid {
 							if (i+di < 0 || i+di >= height || j+dj < 0 || j+dj >= width)
 								continue;
 							Index idx = new Index(i+di, j+dj);
-							if (isFree(idx)) {
+							if (isValid(idx, player)) {
 								intermediate.add(idx);
 							}
 						}
@@ -402,12 +433,4 @@ public abstract class Grid {
 	 * @return An Index of the forced move, null if there is none.
 	 */
 	public abstract Index forcedMove(PlayerColor player);
-
-	/**
-     * Check whether the given placement is a valid move.
-     * @param idx
-     * @param color
-     * @return
-     */
-	protected abstract boolean isPlacementValid(Index idx, FieldColor field);
 }

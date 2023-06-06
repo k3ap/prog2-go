@@ -96,20 +96,6 @@ public class GridFirstCapture extends Grid {
 		return newGrid;
 	}
     
-    /**
-     * Find any component that only has one liberty.
-     * @param color The color we're interested in.
-     * @return The Index if the only liberty if such a component exists, null otherwise.
-     */
-    private Index oneLibertyComponent(FieldColor color) {
-		for (Index idx : connectedComponents.getToplevels()) {
-			if (colorOfField(idx).equals(color) && connectedComponents.get(idx).liberties.size() == 1) {
-				return connectedComponents.get(idx).liberties.iterator().next();
-			}
-		}
-		return null;
-    }
-    
     @Override
 	public Index forcedMove(PlayerColor nextPlayer) {
 		Index immediateWin = oneLibertyComponent(nextPlayer.next().field());
@@ -123,9 +109,14 @@ public class GridFirstCapture extends Grid {
 		}
 		return null;
 	}
-
+    
+    /**
+	 * Check if the field with the given index is free.
+	 * @param idx Index
+	 * @return true iff the field at index is free.
+	 */
     @Override
-    protected boolean isPlacementValid(Index idx, FieldColor color) {
-    	return colorOfField(idx).equals(FieldColor.EMPTY);
-    }
+	public boolean isValid(Index idx, FieldColor player) {
+		return colorOfField(idx) == FieldColor.EMPTY;
+	}
 }

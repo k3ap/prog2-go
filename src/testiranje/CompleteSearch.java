@@ -16,7 +16,7 @@ public class CompleteSearch {
 	private static TwoNumbers search(GridFirstCapture grid, PlayerColor player, int depth, boolean doOutput) {
 		int victories = 0;
 		int losses = 0;
-		for (Index idx : grid.freeFields()) {
+		for (Index idx : grid.validFields(player.field())) {
 			grid.placeColor(idx, player.field());
 			if (doOutput)
 				System.out.println(grid);

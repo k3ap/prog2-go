@@ -52,7 +52,7 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 
 		Double bestValue = null;
 
-		List<Index> interesting = grid.interestingFields();
+		List<Index> interesting = grid.interestingFields(player.field());
 		Collections.shuffle(interesting);
 		for (Index move : interesting) {
 			

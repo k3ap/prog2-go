@@ -31,7 +31,7 @@ public class Igra {
 		this.gameType = gameType; 
 		grid = switch(gameType) {
 			case FCGO -> new GridFirstCapture(size, size);
-			case GO -> null;  // TODO: switch this to proper GO grid
+			case GO -> new GridGo(size, size);
 		};
 		
 		winner = null; // null means no one has won yet
@@ -47,13 +47,26 @@ public class Igra {
 	 * @return Whether the move was valid.
 	 */
 	public boolean odigraj(Poteza poteza) {
-		Index idx = new Index(poteza);
-		
-		if (!grid.isPlacementValid(idx, nextPlayer.field())) {
-			return false;
+		// mark passes
+		switch (nextPlayer) {
+		case BLACK:
+			grid.blackPass = poteza.isPass();
+			break;
+		case WHITE:
+			grid.whitePass = poteza.isPass();
+			break;
 		}
 		
-		grid.placeColor(idx, nextPlayer.field());
+		if (!poteza.isPass()) {
+			// an actual move was played
+			Index idx = new Index(poteza);
+			
+			if (!grid.isValid(idx, nextPlayer.field())) {
+				return false;
+			}
+			
+			grid.placeColor(idx, nextPlayer.field());
+		}
 		PlayerColor thisPlayer = nextPlayer;
 		nextPlayer = nextPlayer.next();
 		
@@ -68,8 +81,18 @@ public class Igra {
 				winner = nextPlayer;
 				return true;
 			}
-		} else {
-			// TODO
+		} else if (grid.consecutivePasses()) {
+			// Passes are only allowed in Go.
+			// Once both players pass one after another the game is over.
+			// In Go, once the game is finished, one of the player has won.
+			if (grid.hasColorLost(FieldColor.BLACK)) {
+				winner = PlayerColor.WHITE;
+				return true;
+			}
+			else {
+				winner = PlayerColor.BLACK;
+				return true;
+			}
 		}
 		return true;
 	}
@@ -78,12 +101,12 @@ public class Igra {
 	 * Search for all valid moves that nextPlayer can make.
 	 * @return A list of valid moves.
 	 */
-	public List<Poteza> validMoves() {
+	public List<Poteza> validMoves(FieldColor player) {
 		// TODO: comptibility with GO
 		// Should we make a validPlacements method in Grid, which functions like freeFields
 		// uses isPlacementValid instead of isFree?
 		ArrayList<Poteza> res = new ArrayList<>();
-		for (Index idx : grid.freeFields()) {
+		for (Index idx : grid.validFields(player)) {
 			res.add(idx.poteza());
 		}
 		return res;
@@ -95,7 +118,7 @@ public class Igra {
 	 */
 	public List<Poteza> interestingMoves() {
 		ArrayList<Poteza> res = new ArrayList<>();
-		for (Index idx : grid.interestingFields()) {
+		for (Index idx : grid.interestingFields(nextPlayer.field())) {
 			res.add(idx.poteza());
 		}
 		assert res.size() >= 1;
