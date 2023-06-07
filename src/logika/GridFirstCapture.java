@@ -3,7 +3,7 @@ package logika;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.Set;
 
 
 /**
@@ -99,4 +99,10 @@ public class GridFirstCapture extends Grid {
 	public boolean isValid(Index idx, FieldColor player) {
 		return colorOfField(idx) == FieldColor.EMPTY;
 	}
+
+    // these are not used in FCGO.
+	@Override
+	public Set<Index> controlledZones(PlayerColor player) { return null; }
+	@Override
+	public Set<Index> prisonersOf(PlayerColor player) { return null; }
 }

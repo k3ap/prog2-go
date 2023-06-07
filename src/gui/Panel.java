@@ -136,21 +136,44 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			drawShadowStone(g2, shadow.i(), shadow.j(), game.playerTurn());
 		}
 		
+		// control & prisoners
+		for (PlayerColor player : PlayerColor.values()) {
+			if (game.controlledZones(player) == null)
+				continue;
+			for (Index idx : game.controlledZones(player)) {
+				markControl(g2, idx.i(), idx.j(), player);
+			}
+			for (Index idx : game.prisonersOf(player)) {
+				markPrisoner(g2, idx.i(), idx.j(), player);
+			}
+		}
+		
+		String passNotice = "";
+		switch (game.getGoGameType()) {
+		case FCGO:
+			passNotice = ".";
+			break;
+		case GO:
+			passNotice = ", desni klik za izpust.";
+			break;
+		
+		}
+		
 		// draw game status
 		switch (game.gameStatus()) {
 		case INVALID:
 		case PLAY:
 			if (game.gameType().mixedGame()) {
 				// mixedGame => there is only one human player
-				window.writeMessage("Na vrsti ste.");
+				window.writeMessage("Na vrsti ste" + passNotice);
 			}
 			else {
 				switch (game.playerTurn()) {
 				case WHITE:
-					window.writeMessage("Na vrsti je bel.");
+					window.writeMessage("Na vrsti je bel" + passNotice);
 					break;
 				case BLACK:
-					window.writeMessage("Na vrsti je črn.");
+					window.writeMessage("Na vrsti je črn" + passNotice);
 					break;
 				}
 			}
@@ -234,8 +257,8 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	 * Draw a shadow of a stone at the given coordinates.
 	 * A shadow is drawn when hovering over a valid spot for a stone.
 	 * @param g2 Graphics on which to draw.
-	 * @param x coordinate on the panel on which to draw the stone (not the grid index).
-	 * @param y coordinate on the panel on which to draw the stone (not the grid index).
+	 * @param i grid index on which to draw the stone.
+	 * @param j grid index on the panel on which to draw the stone.
 	 * @param color Player color to draw the stone with.
 	 */
 	private void drawShadowStone(Graphics2D g2, int i, int j, PlayerColor color) {
@@ -269,6 +292,65 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		g2.fillOval(x, y, d, d);
 		g2.setColor(edge);
 		g2.drawOval(x, y, d, d);
+	}
+	
+	/**
+	 * Draw a black or white cross symbolizing control over
+	 * an empty field.
+	 * @param g2 Graphics on which to draw.
+	 * @param i grid index on which to draw the cross.
+	 * @param j grid index on the panel on which to draw the cross.
+	 * @param color Player color to draw the cross with.
+	 */
+	private void markControl(Graphics2D g2, int i, int j, PlayerColor color) {
+		Color line = Color.PINK;
+		switch (color) {
+			case BLACK:
+				line = style.blackPrisonersControl;
+				break;
+			case WHITE:
+				line = style.whitePrisonersControl;
+			default:
+				assert false;
+		}
+		
+		int y = topEdge + i * heightStep;
+		int x = leftEdge + j * widthStep;
+
+		g2.setColor(line);
+		g2.setStroke(style.controlPrisonerStroke);
+		int r = widthStep / 6;
+		g2.drawLine(x - r, y - r, x + r, y + r);
+		g2.drawLine(x + r, y - r, x - r, y + r);
+	}
+	
+	/**
+	 * Draw a black or white cross symbolizing a stone being a prisoner.
+	 * @param g2 Graphics on which to draw.
+	 * @param i grid index on which to draw the cross.
+	 * @param j grid index on the panel on which to draw the cross.
+	 * @param color Player color to draw the cross with.
+	 */
+	private void markPrisoner(Graphics2D g2, int i, int j, PlayerColor color) {
+		Color line = Color.PINK;
+		switch (color) {
+			case BLACK:
+				line = style.blackPrisonersControl;
+				break;
+			case WHITE:
+				line = style.whitePrisonersControl;
+			default:
+				assert false;
+		}
+		
+		int y = topEdge + i * heightStep;
+		int x = leftEdge + j * widthStep;
+
+		g2.setColor(line);
+		g2.setStroke(style.controlPrisonerStroke);
+		int r = widthStep / 6;
+		g2.drawLine(x - r, y, x + r, y);
+		g2.drawLine(x, y - r, x, y + r);
 	}
 	
 	private Poteza moveFromXY(int x, int y) {
@@ -315,7 +397,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	 * @param intelligences The pair of intelligences playing against each other.
 	 */
 	protected void newComComGame(IntelligencePair intelligences, Window window, int gameSize, GoGameType gameType) {
-		// ManagedGame needs access to the window to update the board 
+		// ManagedGame needs access to the window to update the board
 		// once the computer has decided what to play
 		game = new ManagedGame(GameType.COMCOM, window, gameType, gameSize);
 		game.setIntelligences(intelligences);
@@ -330,10 +412,21 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		if (game.gameStatus() != MoveResult.INVALID
 			&& game.gameStatus() != MoveResult.PLAY) { return; }
 		
-		System.out.println("Playing move...");
-		game.play(moveFromXY(e.getX(), e.getY()));
-		shadow = null; // remove the shadow once a stone is placed
-		window.update();
+		Poteza move = null;
+		if (e.getButton() == MouseEvent.BUTTON1) {
+			move = moveFromXY(e.getX(), e.getY());
+		}
+		else if (e.getButton() == MouseEvent.BUTTON3) {
+			if (game.getGoGameType().equals(GoGameType.GO)) {
+				move = new Poteza(-1, -1);
+			}
+			// otherwise leave move as null, FCGO has no passes
+		}
+		if (move != null) {
+			game.play(move);
+			shadow = null; // remove the shadow once a stone is placed
+			window.update();
+		}
 	}
 	
 	@Override
@@ -350,7 +443,6 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		else {
 			Index hovered = new Index(hoveredMaybe);
 			if (game.isValid(hovered)) {
-				// TODO: isValid is quite resource intensive, this might have to be precalculated
 				shadow = hovered;
 			}
 			else {
