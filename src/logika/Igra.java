@@ -2,6 +2,7 @@ package logika;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import splosno.Poteza;
 
@@ -43,21 +44,23 @@ public class Igra {
 	 * Returns `true` if the move is valid, else `false`.
 	 * Where Poteza(0,0) is the upper left corner, Poteza(1,0) is in the second row,
 	 * Poteza(8,8) is the bottom right corner (in a 9x9 grid).
+	 * Poteza(-1,-1) means pass.
 	 * @param poteza Index for the move (row, col), counted from 0
 	 * @return Whether the move was valid.
 	 */
 	public boolean odigraj(Poteza poteza) {
 		// mark passes
+		boolean isPass = poteza.x() == -1 && poteza.y() == -1;
 		switch (nextPlayer) {
 		case BLACK:
-			grid.blackPass = poteza.isPass();
+			grid.blackPass = isPass;
 			break;
 		case WHITE:
-			grid.whitePass = poteza.isPass();
+			grid.whitePass = isPass;
 			break;
 		}
 		
-		if (!poteza.isPass()) {
+		if (!isPass) {
 			// an actual move was played
 			Index idx = new Index(poteza);
 			
@@ -156,4 +159,9 @@ public class Igra {
 	public Index[] losingComponent() { return grid.libertylessFields(winner.next().field()); }
 
 	public boolean isValid(Index idx) { return grid.isValid(idx, nextPlayer.field()); }
+	
+	public Set<Index> controlledZones(PlayerColor player) { return grid.controlledZones(player); }
+	public Set<Index> prisonersOf(PlayerColor player) { return grid.prisonersOf(player); }
+	
+	public GoGameType getGoGameType() { return gameType; }
 }

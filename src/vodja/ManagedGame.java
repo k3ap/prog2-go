@@ -1,5 +1,6 @@
 package vodja;
 
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -24,6 +25,10 @@ public class ManagedGame {
 	private Inteligenca intelligence;
 	private Inteligenca intelligence2; // only used when 2 computers are playing against each other
 	private MoveResult status;
+	/**
+	 * Which spaces can the player play on.
+	 */
+	private boolean[][] validity;
 	private Window window;
 	
 	class Sleeper extends Thread {
@@ -45,6 +50,12 @@ public class ManagedGame {
 	 */
 	public ManagedGame(GameType managedGameType, Window window, GoGameType goGameType, int gameSize) {
 		this.game = new Igra(gameSize, goGameType);
+		validity = new boolean[gameSize][gameSize];
+		for (int i = 0; i < gameSize; i++) {
+			for (int j = 0; j < gameSize; j++) {
+				validity[i][j] = true;
+			}
+		}
 		this.window = window;
 		handleType(managedGameType);
 	}
@@ -98,6 +109,14 @@ public class ManagedGame {
 			// If the given move is invalid we don't do anything else.
 			status = MoveResult.INVALID;
 			return;
+		}
+		
+		// update validity
+		for (int i = 0; i < height(); i++) {
+			for (int j = 0; j < width(); j++) {
+				validity[i][j] = game.isValid(new Index(i, j));
+				
+			}
 		}
 		
 		status = winnerToGameStatus(game.winner());
@@ -308,5 +327,10 @@ public class ManagedGame {
 	 * @return An array of indices that the component occupies.
 	 */
 	public Index[] losingComponent() { return game.losingComponent(); }
-	public boolean isValid(Index idx) { return game.isValid(idx); }
+	public boolean isValid(Index idx) { return validity[idx.i()][idx.j()]; }
+
+	public Set<Index> controlledZones(PlayerColor player) { return game.controlledZones(player); }
+	public Set<Index> prisonersOf(PlayerColor player) { return game.prisonersOf(player); }
+	
+	public GoGameType getGoGameType() { return game.getGoGameType(); }
 }

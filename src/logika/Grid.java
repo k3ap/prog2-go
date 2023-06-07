@@ -455,7 +455,6 @@ public abstract class Grid {
 			whiteCaptured += captured.length;
     	
     	for (Index idx : captured) {
-			System.out.println("Capturing " + idx.i() + ", " + idx.j());
 			grid[idx.i()][idx.j()] = FieldColor.EMPTY;
 		}
 		graphSearch.runAll();
@@ -474,4 +473,23 @@ public abstract class Grid {
 	 * @return An Index of the forced move, null if there is none.
 	 */
 	public abstract Index forcedMove(PlayerColor player);
+	
+	/**
+	 * Get the indices controlled by player.
+	 * A connected component of empty indices is controlled by a
+	 * player if the majority of the bounding stones of this component
+	 * are of the player's color.
+	 * Oonly valid for Go.  
+	 * @param player the player in question.
+	 * @return The empty fields controlled by player.
+	 */
+	public abstract Set<Index> controlledZones(PlayerColor player);
+	
+	/**
+	 * A prisoner is a small component of stones that is contained
+	 * in a zone controlled by the opposing player. 
+	 * @param player The owner of the prisoners.
+	 * @return The idicies of all of player's prisoners.
+	 */
+	public abstract Set<Index> prisonersOf(PlayerColor player);
 }

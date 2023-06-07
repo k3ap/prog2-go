@@ -18,6 +18,8 @@ public class Style {
 	public Color gridColor;
 	public int stoneDiameter;
 	public Color losingHighlight;
+	public Stroke controlPrisonerStroke;
+	public Color blackPrisonersControl, whitePrisonersControl;
 
 	public Style() {
 		// Default look
@@ -40,5 +42,10 @@ public class Style {
 
 		// color with which the losing component is highlighted
 		losingHighlight = new Color(200, 10, 10, 40);
+		
+		controlPrisonerStroke = new BasicStroke(3);
+		blackPrisonersControl = new Color(30, 30, 50);
+		whitePrisonersControl = new Color(210, 220, 210);
+		
 	}
 }
