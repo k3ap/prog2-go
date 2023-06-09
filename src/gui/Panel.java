@@ -424,7 +424,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		}
 		if (move != null) {
 			game.play(move);
-			shadow = null; // remove the shadow once a stone is placed
+			mouseMoved(e); // update the shadow once a stone is placed
 			window.update();
 		}
 	}
