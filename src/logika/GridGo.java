@@ -1,14 +1,16 @@
 package logika;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
 public class GridGo extends Grid {
 	private Set<Index> blackControl, blackPrisoners;
 	private Set<Index> whiteControl, whitePrisoners;
+	private int prevState, prevPrevState;
+	private int prevStateStored, prevPrevStateStored;
 	
 	public GridGo(int height, int width) {
 		this(height, width, false, false);
@@ -45,24 +47,6 @@ public class GridGo extends Grid {
 	}
 
 	@Override
-	public Index[] libertylessFields(FieldColor field) {
-		LinkedList<Index> out = new LinkedList<Index>();
-
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
-				Index idx = new Index(i, j);
-				if (!colorOfField(idx).equals(FieldColor.EMPTY) && connectedComponents.get(idx).liberties.size() == 0) {
-					out.add(idx);
-				}
-			}
-		}
-
-		Index[] outArr = new Index[out.size()];
-		out.toArray(outArr);
-		return outArr;
-	}
-
-	@Override
 	public Grid deepcopy() {
 		Grid newGrid = new GridGo(height, width, blackPass, whitePass);
 		for (int i = 0; i < height; i++) {
@@ -79,21 +63,35 @@ public class GridGo extends Grid {
 		// there are no forced moves in Go
 		return null;
 	}
+	
+	private int hash2D(Object[][] arr) {
+		int hash = 0;
+		for (Object[] line : arr) {
+			hash += Arrays.hashCode(line);
+		}
+		return hash;
+	}
 
 	@Override
 	public boolean isValid(Index idx, FieldColor field) {
 		boolean empty = colorOfField(idx).equals(FieldColor.EMPTY);
 		if (!empty)
 			return false; // this field is not empty
-
+		
+		saveState();
+		boolean toReturn = true;
 		this.placeColor(idx, field);
-		if (NLibertiesComponent(field, 0) != null) {
-			this.placeColor(idx, FieldColor.EMPTY);
-			return false; // this field is suicidal
+		if (NLibertiesComponent(field, 0) != null && NLibertiesComponent(field.next(), 0) == null) {
+			// you've created a libertyless component without capturing
+			// an enemy component, aka. suicide
+			toReturn = false;
+		}
+		else if (prevPrevState == hash2D(grid)) {
+			toReturn = false; // grid repetition
 		}
 		this.placeColor(idx, FieldColor.EMPTY);
-		
-		return true;
+		loadState();
+		return toReturn;
 	}
 	
 	private Map<Index, FieldColor> getZoneConrol() {
@@ -230,6 +228,20 @@ public class GridGo extends Grid {
 		return prisoners;
 	}
 	
+	/**
+	 * When used for testing purposes (to place a move that will be undone by
+	 * placing an FieldColor.EMPTY in the same spot) changes to prevState and
+	 * prevPrevState must be undone with saveState and loadState!
+	 * See isValid for an example.
+	 */
+	public void saveState() {
+		prevStateStored = prevState;
+		prevPrevStateStored = prevPrevState;
+	}
+	public void loadState() {
+		prevState = prevStateStored;
+		prevPrevState = prevPrevStateStored;
+	}
 	@Override
 	public void placeColor(Index idx, FieldColor color) {
 		super.placeColor(idx, color);
@@ -238,6 +250,11 @@ public class GridGo extends Grid {
 		whitePrisoners = calculatePrisonersOf(PlayerColor.WHITE, zoneControl);
 		blackControl = calculateControlledZones(PlayerColor.BLACK, zoneControl);
 		whiteControl = calculateControlledZones(PlayerColor.WHITE, zoneControl);
+		// prevState is captured before any stones are removed by capture,
+		// so that it works correctly in isValid. In isValid no stones are ever captured
+		// as that would unnecessarily complicate things.
+		prevPrevState = prevState;
+		prevState = hash2D(grid);
 	}
 
 	@Override

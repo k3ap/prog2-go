@@ -21,4 +21,16 @@ public enum FieldColor {
 		assert false;
 		return null;
 	}
+	
+	public FieldColor next() {
+		switch (this) {
+		case BLACK:
+			return WHITE;
+		case WHITE:
+			return BLACK;
+		case EMPTY:
+			break;
+		}
+		return null;
+	}
 }
