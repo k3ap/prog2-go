@@ -242,16 +242,14 @@ public abstract class Grid {
 		assert (hasColorLost(FieldColor.WHITE) || hasColorLost(FieldColor.BLACK));
 
 		LinkedList<Index> out = new LinkedList<Index>();
-
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				Index idx = new Index(i, j);
-				if (colorOfField(idx).equals(color) && connectedComponents.get(idx).liberties.size() == 0) {
+				if (colorOfField(idx).equals(color) && connectedComponents.get(idx).liberties.size() == 0)
 					out.add(idx);
-				}
 			}
 		}
-
+		
 		Index[] outArr = new Index[out.size()];
 		out.toArray(outArr);
 		return outArr;
