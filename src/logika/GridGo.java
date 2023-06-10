@@ -10,7 +10,6 @@ public class GridGo extends Grid {
 	private Set<Index> blackControl, blackPrisoners;
 	private Set<Index> whiteControl, whitePrisoners;
 	private int prevState, prevPrevState;
-	private int prevStateStored, prevPrevStateStored;
 	
 	public GridGo(int height, int width) {
 		this(height, width, false, false);
@@ -78,7 +77,7 @@ public class GridGo extends Grid {
 		if (!empty)
 			return false; // this field is not empty
 		
-		saveState();
+		GoState state = saveState();
 		boolean toReturn = true;
 		this.placeColor(idx, field);
 		if (NLibertiesComponent(field, 0) != null && NLibertiesComponent(field.next(), 0) == null) {
@@ -90,7 +89,7 @@ public class GridGo extends Grid {
 			toReturn = false; // grid repetition
 		}
 		this.placeColor(idx, FieldColor.EMPTY);
-		loadState();
+		loadState(state);
 		return toReturn;
 	}
 	
@@ -234,13 +233,12 @@ public class GridGo extends Grid {
 	 * prevPrevState must be undone with saveState and loadState!
 	 * See isValid for an example.
 	 */
-	public void saveState() {
-		prevStateStored = prevState;
-		prevPrevStateStored = prevPrevState;
+	public GoState saveState() {
+		return new GoState(prevState, prevPrevState);
 	}
-	public void loadState() {
-		prevState = prevStateStored;
-		prevPrevState = prevPrevStateStored;
+	public void loadState(GoState state) {
+		prevState = state.prevState();
+		prevPrevState = state.prevPrevState();
 	}
 	@Override
 	public void placeColor(Index idx, FieldColor color) {
