@@ -36,12 +36,15 @@ public class GridGo extends Grid {
 		blackPoints -= blackPrisoners.size();
 		whitePoints -= whitePrisoners.size();
 		
+		System.out.println("Points for black:   0 - " + blackCaptured + " + " + blackControl.size() + " - " + blackPrisoners.size() + " = " + blackPoints);
+		System.out.println("Points for white: 6.5 - " + whiteCaptured + " + " + whiteControl.size() + " - " + whitePrisoners.size() + " = " + whitePoints + ".5");
+		
 		if (blackPoints > whitePoints) {
 			// black won, white lost
 			return field.equals(FieldColor.WHITE);
 		}
 		// if blackPoints <= whitePoints
-		// again because of the komi rule white wins, black looses
+		// again because of the komi rule white wins, black loses
 		return field.equals(FieldColor.BLACK);
 	}
 
@@ -72,7 +75,7 @@ public class GridGo extends Grid {
 	}
 
 	@Override
-	public boolean isValid(Index idx, FieldColor field) {
+	public boolean isValidForPlayer(Index idx, FieldColor field) {
 		boolean empty = colorOfField(idx).equals(FieldColor.EMPTY);
 		if (!empty)
 			return false; // this field is not empty
@@ -144,13 +147,13 @@ public class GridGo extends Grid {
 			double size = (double) zonesSizes.get(zoneIdx);
 			double blockage = (double) Integer.max(black, white);
 			double gridAverage = (double) (height + width) / 2.0;
-			
-			// The zone is neutral.
-			// Either both sides have the same claim to the zone or
+
+			// The zone is neutral if
+			// either both sides have the same claim to the zone or
 			// the second formula is correct. In the 9x9 case the formula means,
 			// that you need to have at least 1 stone per 7.2 controlled empty fields.
 			// The second case is here mostly to avoid black having control over the
-			// entire board every second turn at the start of the game.
+			// entire board every other turn at the start of the game.
 			if (black == white ||
 				size >= (blockage * gridAverage) * 0.8) {
 				zoneControl.put(zoneIdx, FieldColor.EMPTY);
@@ -166,7 +169,18 @@ public class GridGo extends Grid {
 		return zoneControl;
 	}
 	
+	/**
+	 * Is the stone at the given index a prisoner.
+	 * A stone is a prisoner if its component is a prisoner.
+	 * A component is a prisoner, if most of its liberties are
+	 * in zones controlled by the opponent.
+	 * @param idx The index of the field to be checked.
+	 * @param zoneControl Must be precalculated with getZoneControl 
+	 * for optimization purposes.
+	 * @return True iff the stone is a prisoner.
+	 */
 	private boolean isPrisoner(Index idx, Map<Index, FieldColor> zoneControl) {
+		assert !colorOfField(idx).equals(FieldColor.EMPTY);
 		int friendly = 0, enemy = 0;
 		for (Index liberty : connectedComponents.get(idx).liberties) {
 			// Who is the controller of the zone (connected component of FieldColor.EMPTYs)

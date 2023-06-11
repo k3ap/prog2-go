@@ -239,8 +239,6 @@ public abstract class Grid {
 	 * @return An array of indices that the component occupies.
 	 */
 	public Index[] libertylessFields(FieldColor color) {
-		assert (hasColorLost(FieldColor.WHITE) || hasColorLost(FieldColor.BLACK));
-
 		LinkedList<Index> out = new LinkedList<Index>();
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
@@ -260,18 +258,18 @@ public abstract class Grid {
 	 * @param idx Index
 	 * @return true iff the field at index is free.
 	 */
-	public abstract boolean isValid(Index idx, FieldColor player);
+	public abstract boolean isValidForPlayer(Index idx, FieldColor player);
 	
 	/**
 	 * Finds all free fields.
 	 * @return A list of all free fields in the grid.
 	 */
-	public List<Index> validFields(FieldColor player) {
+	public List<Index> fieldsValidForPlayer(FieldColor player) {
 		ArrayList<Index> valid = new ArrayList<>();
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				Index idx = new Index(i, j);
-				if (isValid(idx, player)) {
+				if (isValidForPlayer(idx, player)) {
 					valid.add(idx);
 				}
 			}
@@ -289,7 +287,7 @@ public abstract class Grid {
 		
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-				if (!isValid(new Index(i, j), player)) {
+				if (grid[i][j] != FieldColor.EMPTY) {
 					// for each placed stone
 					for (int di = -range; di <= range; di++) {
 						for (int dj = -range; dj <= range; dj++) {
@@ -299,7 +297,7 @@ public abstract class Grid {
 							if (i+di < 0 || i+di >= height || j+dj < 0 || j+dj >= width)
 								continue;
 							Index idx = new Index(i+di, j+dj);
-							if (isValid(idx, player)) {
+							if (isValidForPlayer(idx, player)) {
 								intermediate.add(idx);
 							}
 						}

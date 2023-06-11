@@ -64,7 +64,7 @@ public class Igra {
 			// an actual move was played
 			Index idx = new Index(poteza);
 			
-			if (!grid.isValid(idx, nextPlayer.field())) {
+			if (!grid.isValidForPlayer(idx, nextPlayer.field())) {
 				return false;
 			}
 			
@@ -114,7 +114,7 @@ public class Igra {
 		// Should we make a validPlacements method in Grid, which functions like freeFields
 		// uses isPlacementValid instead of isFree?
 		ArrayList<Poteza> res = new ArrayList<>();
-		for (Index idx : grid.validFields(player)) {
+		for (Index idx : grid.fieldsValidForPlayer(player)) {
 			res.add(idx.poteza());
 		}
 		return res;
@@ -158,7 +158,7 @@ public class Igra {
 	 */
 	public Index[] losingComponent() { return grid.libertylessFields(winner.next().field()); }
 
-	public boolean isValid(Index idx) { return grid.isValid(idx, nextPlayer.field()); }
+	public boolean isValid(Index idx) { return grid.isValidForPlayer(idx, nextPlayer.field()); }
 	
 	public Set<Index> controlledZones(PlayerColor player) { return grid.controlledZones(player); }
 	public Set<Index> prisonersOf(PlayerColor player) { return grid.prisonersOf(player); }
