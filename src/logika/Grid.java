@@ -78,22 +78,11 @@ public abstract class Grid {
 	 * Height and width of the grid.
 	 */
 	protected int width, height;
-	/**
-	 * Whether black / white passed in the previous turn,
-	 * only needed for Go.
-	 */
-	public boolean blackPass, whitePass;
 	
 	/**
 	 * The current state of the playing field: which fields are empty, have a black, or have a white stone.
 	 */
 	protected FieldColor grid[][];
-	
-	/**
-	 * How many black / white stones have been captured.
-	 * If black surrounds white's stones then whiteCaptured is increased.
-	 */
-	protected int blackCaptured, whiteCaptured;
 	
 	public Grid(int height, int width) {
 		this(height, width, false, false);
@@ -102,8 +91,6 @@ public abstract class Grid {
 	public Grid(int height, int width, boolean blackPass, boolean whitePass) {
 		this.height = height;
 		this.width = width;
-		this.blackPass = blackPass;
-		this.whitePass = whitePass;
 		
 		grid = new FieldColor[height][width];
 		for (int i = 0; i < height; i++) {
@@ -115,15 +102,10 @@ public abstract class Grid {
 		connectedComponents = new UFDS<>();
 		graphSearch = new ComponentLibertySearch(this, new SearchData());
 		graphSearch.runAll();
-		blackCaptured = whiteCaptured = 0;
 	}
 	
 	public int width() { return width; }
 	public int height() { return height; }
-
-	public boolean consecutivePasses() {
-		return blackPass && whitePass;
-	}
 	
 	/**
 	 * Returns the current color of a stone on the given index.
@@ -159,7 +141,10 @@ public abstract class Grid {
      * @return The Index if the only liberty if such a component exists, null otherwise.
      */
     protected Index oneLibertyComponent(FieldColor color) {
-		return NLibertiesComponent(color, 1).iterator().next();
+    	Set<Index> noLiberties = NLibertiesComponent(color, 1);
+    	if (noLiberties == null)
+    		return null;
+		return noLiberties.iterator().next();
     }
 	
 	/**
@@ -234,26 +219,6 @@ public abstract class Grid {
 	public abstract boolean hasColorLost(FieldColor field);
 	
 	/**
-	 * Return the indicies of all stones of the given color, which belong to a component with no liberties.
-	 * This is used to draw the losing stones in a FCGO game and not used in GO. 
-	 * @return An array of indices that the component occupies.
-	 */
-	public Index[] libertylessFields(FieldColor color) {
-		LinkedList<Index> out = new LinkedList<Index>();
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
-				Index idx = new Index(i, j);
-				if (colorOfField(idx).equals(color) && connectedComponents.get(idx).liberties.size() == 0)
-					out.add(idx);
-			}
-		}
-		
-		Index[] outArr = new Index[out.size()];
-		out.toArray(outArr);
-		return outArr;
-	}
-	
-	/**
 	 * Check if the field with the given index is free.
 	 * @param idx Index
 	 * @return true iff the field at index is free.
@@ -313,6 +278,25 @@ public abstract class Grid {
 			interesting.addAll(intermediate);
 		}
 		return interesting;
+	}
+	
+	/**
+	 * Return the indices of all stones of the given color, which belong to a component with no liberties.
+	 * @return An array of indices that the component occupies.
+	 */
+	public Index[] libertylessFields(FieldColor color) {
+		LinkedList<Index> out = new LinkedList<Index>();
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				Index idx = new Index(i, j);
+				if (colorOfField(idx).equals(color) && connectedComponents.get(idx).liberties.size() == 0)
+					out.add(idx);
+			}
+		}
+		
+		Index[] outArr = new Index[out.size()];
+		out.toArray(outArr);
+		return outArr;
 	}
 	
     @Override
@@ -440,21 +424,6 @@ public abstract class Grid {
     	}
     	return (double) m;
     }
-    
-    public void captureComponentsOf(FieldColor player) {
-    	assert !player.equals(FieldColor.EMPTY);
-    	
-    	Index[] captured = libertylessFields(player);
-    	if (player.equals(FieldColor.BLACK))
-			blackCaptured += captured.length;
-		else
-			whiteCaptured += captured.length;
-    	
-    	for (Index idx : captured) {
-			grid[idx.i()][idx.j()] = FieldColor.EMPTY;
-		}
-		graphSearch.runAll();
-	}
     
     /**
      * Make a deep copy of the grid.
