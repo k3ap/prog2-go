@@ -51,13 +51,20 @@ public class Igra {
 	public boolean odigraj(Poteza poteza) {
 		// mark passes
 		boolean isPass = poteza.x() == -1 && poteza.y() == -1;
-		switch (nextPlayer) {
-		case BLACK:
-			grid.blackPass = isPass;
-			break;
-		case WHITE:
-			grid.whitePass = isPass;
-			break;
+		GridGo gridGo = null;
+		if (gameType == GoGameType.GO) {
+			gridGo = (GridGo) grid;
+		}
+		
+		if (gameType == GoGameType.GO) {
+			switch (nextPlayer) {
+			case BLACK:
+				gridGo.blackPass = isPass;
+				break;
+			case WHITE:
+				gridGo.whitePass = isPass;
+				break;
+			}
 		}
 		
 		if (!isPass) {
@@ -87,19 +94,19 @@ public class Igra {
 		} else {
 			// Because of the suicide rule a player can't play a move
 			// that would result in their own components being captured.
-			grid.captureComponentsOf(FieldColor.playersColor(nextPlayer));
-		}
-		if (grid.consecutivePasses()) {
-			// Passes are only allowed in Go.
-			// Once both players pass one after another the game is over.
-			// In Go, once the game is finished, one of the player has won.
-			if (grid.hasColorLost(FieldColor.BLACK)) {
-				winner = PlayerColor.WHITE;
-				return true;
-			}
-			else {
-				winner = PlayerColor.BLACK;
-				return true;
+			gridGo.captureComponentsOf(FieldColor.playersColor(nextPlayer));
+			if (gridGo.consecutivePasses()) {
+				// Passes are only allowed in Go.
+				// Once both players pass one after another the game is over.
+				// In Go, once the game is finished, one of the player has won.
+				if (grid.hasColorLost(FieldColor.BLACK)) {
+					winner = PlayerColor.WHITE;
+					return true;
+				}
+				else {
+					winner = PlayerColor.BLACK;
+					return true;
+				}
 			}
 		}
 		return true;

@@ -10,6 +10,15 @@ public class GridGo extends Grid {
 	private Set<Index> blackControl, blackPrisoners;
 	private Set<Index> whiteControl, whitePrisoners;
 	private int prevState, prevPrevState;
+	/**
+	 * Whether black / white passed in the previous turn.
+	 */
+	public boolean blackPass, whitePass;
+	/**
+	 * How many black / white stones have been captured.
+	 * If black surrounds white's stones then whiteCaptured is increased.
+	 */
+	protected int blackCaptured, whiteCaptured;
 	
 	public GridGo(int height, int width) {
 		this(height, width, false, false);
@@ -17,6 +26,28 @@ public class GridGo extends Grid {
 	
 	public GridGo(int height, int width, boolean blackPass, boolean whitePass) {
 		super(height, width, blackPass, whitePass);
+		this.blackPass = blackPass;
+		this.whitePass = whitePass;
+		blackCaptured = whiteCaptured = 0;
+	}
+
+	public boolean consecutivePasses() {
+		return blackPass && whitePass;
+	}
+	
+	public void captureComponentsOf(FieldColor player) {
+    	assert !player.equals(FieldColor.EMPTY);
+    	
+    	Index[] captured = libertylessFields(player);
+    	if (player.equals(FieldColor.BLACK))
+			blackCaptured += captured.length;
+		else
+			whiteCaptured += captured.length;
+    	
+    	for (Index idx : captured) {
+			grid[idx.i()][idx.j()] = FieldColor.EMPTY;
+		}
+		graphSearch.runAll();
 	}
 
 	@Override
