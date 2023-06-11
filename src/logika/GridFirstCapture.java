@@ -96,7 +96,7 @@ public class GridFirstCapture extends Grid {
 	 * @return true iff the field at index is free.
 	 */
     @Override
-	public boolean isValid(Index idx, FieldColor player) {
+	public boolean isValidForPlayer(Index idx, FieldColor player) {
 		return colorOfField(idx) == FieldColor.EMPTY;
 	}
 
