@@ -28,6 +28,10 @@ public class GridGo extends Grid {
 		super(height, width, blackPass, whitePass);
 		this.blackPass = blackPass;
 		this.whitePass = whitePass;
+		this.blackControl = new HashSet<>();
+		this.whiteControl = new HashSet<>();
+		this.blackPrisoners = new HashSet<>();
+		this.whitePrisoners = new HashSet<>();
 		blackCaptured = whiteCaptured = 0;
 	}
 
@@ -273,9 +277,6 @@ public class GridGo extends Grid {
 		whitePrisoners = calculatePrisonersOf(PlayerColor.WHITE, zoneControl);
 		blackControl = calculateControlledZones(PlayerColor.BLACK, zoneControl);
 		whiteControl = calculateControlledZones(PlayerColor.WHITE, zoneControl);
-		// prevState is captured before any stones are removed by capture,
-		// so that it works correctly in isValid. In isValid no stones are ever captured
-		// as that would unnecessarily complicate things.
 		prevPrevState = prevState;
 		prevState = hash2D(grid);
 	}

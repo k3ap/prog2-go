@@ -33,6 +33,14 @@ public class AlphaBetaGOMoveChooser extends MoveChooser {
 	
 	private double alphabetaEstimate(GridGo grid, int depth, PlayerColor player, double alpha, double beta) {
 		
+		if (grid.consecutivePasses()) {
+			if (grid.hasColorLost(player.field())) {
+				return -INFINITY;
+			} else {
+				return INFINITY;
+			}
+		}
+		
 		if (depth >= maxDepth) {
 			return estimator.estimateGrid(grid, player);
 		}
@@ -46,8 +54,8 @@ public class AlphaBetaGOMoveChooser extends MoveChooser {
 			GridGo newGrid = (GridGo) grid.deepcopy();
 			
 			newGrid.placeColor(move, player.field());
-			double value;
-			value = -alphabetaEstimate(newGrid, depth+1, player.next(), -beta, -alpha);
+			newGrid.captureComponentsOf(player.next().field());
+			double value = -alphabetaEstimate(newGrid, depth+1, player.next(), -beta, -alpha);
 			
 			if (bestValue == null || value > bestValue)
 				bestValue = value;
@@ -59,6 +67,20 @@ public class AlphaBetaGOMoveChooser extends MoveChooser {
 				break;
 			}
 		}
+		
+		// pass move
+		switch(player) {
+		case BLACK:
+			grid.blackPass = true;
+			break;
+		case WHITE:
+			grid.whitePass = true;
+			break;
+		}
+		double value = -alphabetaEstimate(grid, depth+1, player.next(), -beta, -alpha);
+		if (value > bestValue)
+			bestValue = value;
+		
 		return bestValue;
 	}
 	
@@ -89,6 +111,21 @@ public class AlphaBetaGOMoveChooser extends MoveChooser {
 			if (alpha < estimate)
 				alpha = estimate;
 		}
+
+		// pass move
+		GridGo newGrid = (GridGo) igra.grid.deepcopy();
+		switch(igra.playerTurn()) {
+		case BLACK:
+			newGrid.blackPass = true;
+			break;
+		case WHITE:
+			newGrid.whitePass = true;
+			break;
+		}
+		double value = -alphabetaEstimate(newGrid, 1, igra.playerTurn().next(), -beta, -alpha);
+		if (value > bestEst)
+			best = new Poteza(-1, -1);
+		
 		return best;
 	}
 }
