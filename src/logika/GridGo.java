@@ -90,12 +90,6 @@ public class GridGo extends Grid {
 		newGrid.graphSearch.runAll();
 		return newGrid;
 	}
-
-	@Override
-	public Index forcedMove(PlayerColor player) {
-		// there are no forced moves in Go
-		return null;
-	}
 	
 	private int hash2D(Object[][] arr) {
 		int hash = 0;
@@ -300,24 +294,40 @@ public class GridGo extends Grid {
 		prevState = hash2D(grid);
 	}
 
-	@Override
-	public Set<Index> controlledZones(PlayerColor player) {
-		switch (player) {
+	/**
+	 * Get the indices controlled by player.
+	 * A connected component of empty indices is controlled by a
+	 * player if the majority of the bounding stones of this component
+	 * are of the player's color.
+	 * @param fieldColor the player in question.
+	 * @return The empty fields controlled by player.
+	 */
+	public Set<Index> controlledZones(FieldColor fieldColor) {
+		switch (fieldColor) {
 		case BLACK:
 			return blackControl;
 		case WHITE:
 			return whiteControl;
+		default:
+			break;
 		}
 		return null;
 	}
 
-	@Override
-	public Set<Index> prisonersOf(PlayerColor player) {
+	/**
+	 * A prisoner is a small component of stones that is contained
+	 * in a zone controlled by the opposing player. 
+	 * @param player The owner of the prisoners.
+	 * @return The idicies of all of player's prisoners.
+	 */
+	public Set<Index> prisonersOf(FieldColor player) {
 		switch (player) {
 		case BLACK:
 			return blackPrisoners;
 		case WHITE:
 			return whitePrisoners;
+		default:
+			break;
 		}
 		return null;
 	}

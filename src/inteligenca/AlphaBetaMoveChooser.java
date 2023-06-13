@@ -5,11 +5,16 @@ import java.util.List;
 
 import logika.FieldColor;
 import logika.Grid;
+import logika.GridFirstCapture;
 import logika.Igra;
 import logika.Index;
 import logika.PlayerColor;
 import splosno.Poteza;
 
+/**
+ * A move chooser using the alphabeta algorithm.
+ * Only works for FCGO.
+ */
 public class AlphaBetaMoveChooser extends MoveChooser {
 	
 	private int maxDepth;
@@ -28,7 +33,7 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 		return "betago-alphabeta-"+maxDepth+"-"+estimator.name;
 	}
 	
-	private double alphabetaEstimate(Grid grid, int depth, PlayerColor player, double alpha, double beta) {
+	private double alphabetaEstimate(GridFirstCapture grid, int depth, PlayerColor player, double alpha, double beta) {
 		
 		if (grid.hasColorLost(player.next().field())) {
 			return INFINITY-depth;
@@ -41,7 +46,7 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 			return e;
 		}
 		
-		Index forcedMove = grid.forcedMove(player);
+		Index forcedMove = grid.forcedMove(player.field());
 		
 		if (forcedMove != null) {
 			grid.placeColor(forcedMove, player.field());
@@ -87,7 +92,7 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 	public Poteza chooseMove(Igra igra) {
        
         // check for forced moves
-		Poteza best = igra.forcedMove();
+		Poteza best = ((GridFirstCapture)igra.grid).forcedMove(igra.playerTurn().field()).poteza();
 		
 		if (best == null) { // there are no forced moves
 			
@@ -96,7 +101,7 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 			double beta = INFINITY;
 			
 			// copy the grid to be used for move determining
-			Grid newGrid = igra.grid.deepcopy();
+			GridFirstCapture newGrid = (GridFirstCapture) igra.grid.deepcopy();
 			
 			// find interesting moves
 			var interesting = igra.interestingMoves();

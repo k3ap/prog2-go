@@ -76,14 +76,18 @@ public class GridFirstCapture extends Grid {
 		return newGrid;
 	}
     
-    @Override
-	public Index forcedMove(PlayerColor nextPlayer) {
-		Index immediateWin = oneLibertyComponent(nextPlayer.next().field());
+    /**
+	 * Check if nextPlayer has a foced move.
+	 * @param nextPlayer the player whose turn it is.
+	 * @return An Index of the forced move, null if there is none.
+	 */
+	public Index forcedMove(FieldColor nextPlayer) {
+		Index immediateWin = oneLibertyComponent(nextPlayer.next());
 		if (immediateWin != null) {
 			// the opponent has a component with only one liberty
 			return immediateWin;
 		}
-		Index immediateLoss = oneLibertyComponent(nextPlayer.field());
+		Index immediateLoss = oneLibertyComponent(nextPlayer);
 		if (immediateLoss != null) {
 			return immediateLoss;
 		}
@@ -99,10 +103,4 @@ public class GridFirstCapture extends Grid {
 	public boolean isValidForPlayer(Index idx, FieldColor player) {
 		return colorOfField(idx) == FieldColor.EMPTY;
 	}
-
-    // these are not used in FCGO.
-	@Override
-	public Set<Index> controlledZones(PlayerColor player) { return null; }
-	@Override
-	public Set<Index> prisonersOf(PlayerColor player) { return null; }
 }
