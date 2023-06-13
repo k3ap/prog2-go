@@ -13,6 +13,7 @@ import inteligenca.AlphaBetaFCMoveChooser;
 import inteligenca.AlphaBetaGOMoveChooser;
 import inteligenca.GoGridEstimator;
 import inteligenca.Inteligenca;
+import inteligenca.MCTSMoveChooser;
 import inteligenca.RandomMoveChooser;
 import inteligenca.WeightedGridEstimator;
 
@@ -25,6 +26,7 @@ public class Popups {
 	};
 	
 	private final static Inteligenca[] intelligenceOptionsGO = {
+			new Inteligenca(new MCTSMoveChooser()),
 			new Inteligenca(new AlphaBetaGOMoveChooser(3, new GoGridEstimator())),
 			new Inteligenca(new AlphaBetaGOMoveChooser(2, new GoGridEstimator())),
 			new Inteligenca(new RandomMoveChooser()),

@@ -53,23 +53,33 @@ public class GridGo extends Grid {
 		}
 		graphSearch.runAll();
 	}
+	
+	public int calculatePoints(FieldColor color) {
+		int score = 0;
+		switch(color) {
+		case BLACK:
+			score -= blackCaptured;
+			score += blackControl.size();
+			score -= blackPrisoners.size();
+			break;
+		case WHITE:
+			score += 6;
+			score -= whiteCaptured;
+			score += whiteControl.size();
+			score -= whitePrisoners.size();
+			break;
+		default:
+			assert false;
+		}
+		return score;
+	}
 
 	@Override
 	public boolean hasColorLost(FieldColor field) {
 		assert !field.equals(FieldColor.EMPTY);
-		int blackPoints = 0, whitePoints = 6; // white = 6 because of the komi rule
-
-		// subtract points for captured stones
-		blackPoints -= blackCaptured;
-		whitePoints -= whiteCaptured;
 		
-		// add points for controlled zones
-		blackPoints += blackControl.size();
-		whitePoints += whiteControl.size();
-				
-		// subtract points for prisoners
-		blackPoints -= blackPrisoners.size();
-		whitePoints -= whitePrisoners.size();
+		int blackPoints = calculatePoints(FieldColor.BLACK);
+		int whitePoints = calculatePoints(FieldColor.WHITE);
 		
 		System.out.println("Points for black:   0 - " + blackCaptured + " + " + blackControl.size() + " - " + blackPrisoners.size() + " = " + blackPoints);
 		System.out.println("Points for white: 6.5 - " + whiteCaptured + " + " + whiteControl.size() + " - " + whitePrisoners.size() + " = " + whitePoints + ".5");
