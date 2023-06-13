@@ -15,8 +15,7 @@ public class UFDS<T, M extends SetMapping> {
 	private Map<T, T> parent;
 	
 	/**
-	 * Keeps track of the size of a certain component.
-	 * Only valid for top-level nodes   
+	 * Keeps track of the size of a certain component.   
 	 */
 	private Map<T, Integer> sizes;
 	
@@ -58,8 +57,11 @@ public class UFDS<T, M extends SetMapping> {
 	private T pathcompress(T element) {
 		if (parent.get(element).equals(element)) return element;
 		else {
-			T par = pathcompress(parent.get(element));
+			T prevParent = parent.get(element);
+			T par = pathcompress(prevParent);
 			parent.put(element, par);
+			if (!prevParent.equals(par))
+				sizes.put(prevParent, sizes.get(prevParent) - sizes.get(element));
 			return par;
 		}
 	}
@@ -111,11 +113,16 @@ public class UFDS<T, M extends SetMapping> {
 	 * Insert an element into the structure.
 	 * If it already exists, reparent to itself and set the new mapping.
 	 * This may invalidate other mappings, so be careful!
+	 * Any (possibly indirect) child nodes of the element will be kept as children. 
 	 * @param element
 	 */
 	public void insert(T element, M property) {
 		if (parent.containsKey(element)) {
-			setParent(element, element);
+			if (!parent.get(element).equals(element)) {
+				T prevParent = pathcompress(element);
+				parent.put(element, element);
+				sizes.put(prevParent, sizes.get(prevParent) - sizes.get(element));
+			}
 		} else {
 			parent.put(element, element);
 			sizes.put(element, 1);
@@ -144,28 +151,5 @@ public class UFDS<T, M extends SetMapping> {
 	 */
 	public int getSize(T element) {
 		return sizes.get(getRepresentative(element));
-	}
-	
-	/**
-	 * Manually reset the parent of a specific node.
-	 * If the new parent is the same as the element, the new mapping is 
-	 * set to null.
-	 * Careful when using this method, as it may invalidate other mappings!
-	 * @param element
-	 * @param newParent
-	 */
-	public void setParent(T element, T newParent) {
-		T oldParent = getRepresentative(element);
-		
-		if (oldParent.equals(newParent)) return;
-		parent.put(element, newParent);
-		sizes.put(oldParent, sizes.get(oldParent) - 1);
-		sizes.put(newParent, sizes.get(newParent) + 1);
-		rank.put(element, 0);
-		if (rank.get(newParent) < 1) rank.put(newParent, 1);
-		
-		if (newParent.equals(element)) {
-			toplevels.put(element, null);
-		}
 	}
 }

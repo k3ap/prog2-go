@@ -126,7 +126,10 @@ public class GridGo extends Grid {
 		
 		// Find all connected empty zones and all the stones bordering those zones.
 		Map<Index, Set<Index>> zonesNeighbours = new HashMap<Index, Set<Index>>();
+		
+		// TODO: remove this when you're feeling confident enough that UFDS.getSize() works properly
 		Map<Index, Integer> zonesSizes = new HashMap<Index, Integer>();
+		
 		for (Index idx : connectedComponents.getToplevels()) {
 			if (colorOfField(idx).equals(FieldColor.EMPTY)) {
 				zonesNeighbours.put(idx, new HashSet<Index>());
@@ -164,12 +167,10 @@ public class GridGo extends Grid {
 					black++;
 				}
 				else {
-					assert colorOfField(border).equals(FieldColor.WHITE);
 					white++;
 				}
 			}
 			
-			double size = (double) zonesSizes.get(zoneIdx);
 			double blockage = (double) Integer.max(black, white);
 			double gridAverage = (double) (height + width) / 2.0;
 
@@ -180,7 +181,7 @@ public class GridGo extends Grid {
 			// The second case is here mostly to avoid black having control over the
 			// entire board every other turn at the start of the game.
 			if (black == white ||
-				size >= (blockage * gridAverage) * 0.8) {
+				connectedComponents.getSize(zoneIdx) >= (blockage * gridAverage) * 0.8) {
 				zoneControl.put(zoneIdx, FieldColor.EMPTY);
 			}
 			else if (black > white) {
