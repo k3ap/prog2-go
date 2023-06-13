@@ -101,14 +101,14 @@ public class GridGo extends Grid {
 
 	@Override
 	public boolean isValidForPlayer(Index idx, FieldColor field) {
-		boolean empty = colorOfField(idx).equals(FieldColor.EMPTY);
-		if (!empty)
+		if (!colorOfField(idx).equals(FieldColor.EMPTY))
 			return false; // this field is not empty
 		
-		GoState state = saveState();
+		GridGo g = (GridGo) deepcopy();
+		
 		boolean toReturn = true;
-		this.placeColor(idx, field);
-		if (NLibertiesComponent(field, 0) != null && NLibertiesComponent(field.next(), 0) == null) {
+		g.placeColor(idx, field);
+		if (g.NLibertiesComponent(field, 0) != null && g.NLibertiesComponent(field.next(), 0) == null) {
 			// you've created a libertyless component without capturing
 			// an enemy component, aka. suicide
 			toReturn = false;
@@ -116,8 +116,6 @@ public class GridGo extends Grid {
 		else if (prevPrevState == hash2D(grid)) {
 			toReturn = false; // grid repetition
 		}
-		this.placeColor(idx, FieldColor.EMPTY);
-		loadState(state);
 		return toReturn;
 	}
 	
@@ -267,19 +265,6 @@ public class GridGo extends Grid {
 		return prisoners;
 	}
 	
-	/**
-	 * When used for testing purposes (to place a move that will be undone by
-	 * placing an FieldColor.EMPTY in the same spot) changes to prevState and
-	 * prevPrevState must be undone with saveState and loadState!
-	 * See isValid for an example.
-	 */
-	public GoState saveState() {
-		return new GoState(prevState, prevPrevState);
-	}
-	public void loadState(GoState state) {
-		prevState = state.prevState();
-		prevPrevState = state.prevPrevState();
-	}
 	@Override
 	public void placeColor(Index idx, FieldColor color) {
 		super.placeColor(idx, color);

@@ -25,6 +25,7 @@ public class Popups {
 	};
 	
 	private final static Inteligenca[] intelligenceOptionsGO = {
+			new Inteligenca(new AlphaBetaGOMoveChooser(3, new GoGridEstimator())),
 			new Inteligenca(new AlphaBetaGOMoveChooser(2, new GoGridEstimator())),
 			new Inteligenca(new RandomMoveChooser()),
 	};
