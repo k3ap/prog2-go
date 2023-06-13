@@ -149,13 +149,13 @@ public class Window extends JFrame implements ActionListener {
 		// A click on the menu bar at the top of the window.
 		Object source = e.getSource();
 		if (source == fcHumCom) {
-			Inteligenca selected = Popups.getIntelligenceChoice();
+			Inteligenca selected = Popups.getFCIntelligenceChoice();
 			if (selected != null) {
 				panel.newComGame(GameType.HUMCOM, selected, this, 9, GoGameType.FCGO);
 			}
 		}
 		else if (source == fcComHum) {
-			Inteligenca selected = Popups.getIntelligenceChoice();
+			Inteligenca selected = Popups.getFCIntelligenceChoice();
 			if (selected != null) {
 				panel.newComGame(GameType.COMHUM, selected, this, 9, GoGameType.FCGO);
 			}
@@ -164,22 +164,31 @@ public class Window extends JFrame implements ActionListener {
 			panel.newHumHumGame(this, 9, GoGameType.FCGO);
 		}
 		else if (source == fcComCom) {
-			IntelligencePair selected = Popups.getIntelligencePairChoice();
+			IntelligencePair selected = Popups.getFCIntelligencePairChoice();
 			if (selected != null) {
 				panel.newComComGame(selected, this, 9, GoGameType.FCGO);
 			}
 		}
 		else if (source == goHumCom) {
-			// NYI
+			Inteligenca selected = Popups.getGOIntelligenceChoice();
+			if (selected != null) {
+				panel.newComGame(GameType.HUMCOM, selected, this, 9, GoGameType.GO);
+			}
 		}
 		else if (source == goComHum) {
-			// NYI
+			Inteligenca selected = Popups.getGOIntelligenceChoice();
+			if (selected != null) {
+				panel.newComGame(GameType.COMHUM, selected, this, 9, GoGameType.GO);
+			}
 		}
 		else if (source == goHumHum) {
 			panel.newHumHumGame(this, 9, GoGameType.GO);
 		}
 		else if (source == goComCom) {
-			// NYI
+			IntelligencePair selected = Popups.getGOIntelligencePairChoice();
+			if (selected != null) {
+				panel.newComComGame(selected, this, 9, GoGameType.GO);
+			}
 		}
 		else if (source == compDelayOption) {
 			compDelay = Popups.getDelayOption(compDelay);

@@ -18,7 +18,7 @@ public class GridGo extends Grid {
 	 * How many black / white stones have been captured.
 	 * If black surrounds white's stones then whiteCaptured is increased.
 	 */
-	protected int blackCaptured, whiteCaptured;
+	public int blackCaptured, whiteCaptured;
 	
 	public GridGo(int height, int width) {
 		this(height, width, false, false);

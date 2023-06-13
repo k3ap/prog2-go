@@ -13,16 +13,16 @@ import splosno.Poteza;
 
 /**
  * A move chooser using the alphabeta algorithm.
- * Only works for FCGO.
+ * Assumes we're playing FCGO.
  */
-public class AlphaBetaMoveChooser extends MoveChooser {
+public class AlphaBetaFCMoveChooser extends MoveChooser {
 	
 	private int maxDepth;
 	private GridEstimator estimator;
 	
 	private final double INFINITY = 1e6;
 	
-	public AlphaBetaMoveChooser(int maxDepth, GridEstimator estimator) {
+	public AlphaBetaFCMoveChooser(int maxDepth, GridEstimator estimator) {
 		super();
 		this.maxDepth = maxDepth;
 		this.estimator = estimator;
@@ -92,10 +92,10 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 	public Poteza chooseMove(Igra igra) {
        
         // check for forced moves
-		Poteza best = ((GridFirstCapture)igra.grid).forcedMove(igra.playerTurn().field()).poteza();
-		
-		if (best == null) { // there are no forced moves
+		Index forced = ((GridFirstCapture)igra.grid).forcedMove(igra.playerTurn().field());
+		if (forced == null) {// there are no forced moves
 			
+			Poteza best = null;
 			double bestEst = 0;
 			double alpha = -INFINITY;
 			double beta = INFINITY;
@@ -126,8 +126,10 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 				if (alpha < estimate)
 					alpha = estimate;
 			}
+			return best;
+		} else {
+			return forced.poteza();
 		}
-		return best;
 	}
 
 }
