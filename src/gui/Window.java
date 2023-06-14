@@ -11,10 +11,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
-import inteligenca.Inteligenca;
-import logika.GoGameType;
-import vodja.GameType;
-
 
 public class Window extends JFrame implements ActionListener {
 	private static final long serialVersionUID = -3977009338403276682L;
@@ -22,9 +18,8 @@ public class Window extends JFrame implements ActionListener {
 	private GridBagLayout grid;
 	private Panel panel;
 	private JLabel statusBar;
-	private JMenu allGamesMenu, firstCaptureMenu, goMenu, optionsMenu;
-	private JMenuItem fcHumCom, fcComHum, fcHumHum, fcComCom;
-	private JMenuItem goHumCom, goComHum, goHumHum, goComCom;
+	private JMenu gameMenu, optionsMenu;
+	private JMenuItem newGame;
 	private JMenuItem compDelayOption;
 	private JMenuBar menubar;
 	
@@ -65,23 +60,10 @@ public class Window extends JFrame implements ActionListener {
 		menubar = new JMenuBar();
 		setJMenuBar(menubar);
 		
-		allGamesMenu = new JMenu("Igraj");
-		menubar.add(allGamesMenu);
-		firstCaptureMenu = new JMenu("First Capture Go");
-		goMenu = new JMenu("Go");
+		gameMenu = new JMenu("Igraj");
+		menubar.add(gameMenu);
 		
-		fcHumCom = newMenuItem(firstCaptureMenu, "Človek - računalnik");
-		fcComHum = newMenuItem(firstCaptureMenu, "Računalnik - človek");
-		fcHumHum = newMenuItem(firstCaptureMenu, "Človek - človek");
-		fcComCom = newMenuItem(firstCaptureMenu, "Računalnik - računalnik");
-		
-		goHumCom = newMenuItem(goMenu, "Človek - računalnik");
-		goComHum = newMenuItem(goMenu, "Računalnik - človek");
-		goHumHum = newMenuItem(goMenu, "Človek - človek");
-		goComCom = newMenuItem(goMenu, "Računalnik - računalnik");
-		
-		allGamesMenu.add(firstCaptureMenu);
-		allGamesMenu.add(goMenu);
+		newGame = newMenuItem(gameMenu, "Nova igra...");
 		
 		optionsMenu = new JMenu("Nastavitve");
 		menubar.add(optionsMenu);
@@ -148,52 +130,35 @@ public class Window extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		// A click on the menu bar at the top of the window.
 		Object source = e.getSource();
-		if (source == fcHumCom) {
-			Inteligenca selected = Popups.getFCIntelligenceChoice();
-			if (selected != null) {
-				panel.newComGame(GameType.HUMCOM, selected, this, 9, GoGameType.FCGO);
-			}
-		}
-		else if (source == fcComHum) {
-			Inteligenca selected = Popups.getFCIntelligenceChoice();
-			if (selected != null) {
-				panel.newComGame(GameType.COMHUM, selected, this, 9, GoGameType.FCGO);
-			}
-		}
-		else if (source == fcHumHum) {
-			panel.newHumHumGame(this, 9, GoGameType.FCGO);
-		}
-		else if (source == fcComCom) {
-			IntelligencePair selected = Popups.getFCIntelligencePairChoice();
-			if (selected != null) {
-				panel.newComComGame(selected, this, 9, GoGameType.FCGO);
-			}
-		}
-		else if (source == goHumCom) {
-			Inteligenca selected = Popups.getGOIntelligenceChoice();
-			if (selected != null) {
-				panel.newComGame(GameType.HUMCOM, selected, this, 9, GoGameType.GO);
-			}
-		}
-		else if (source == goComHum) {
-			Inteligenca selected = Popups.getGOIntelligenceChoice();
-			if (selected != null) {
-				panel.newComGame(GameType.COMHUM, selected, this, 9, GoGameType.GO);
-			}
-		}
-		else if (source == goHumHum) {
-			panel.newHumHumGame(this, 9, GoGameType.GO);
-		}
-		else if (source == goComCom) {
-			IntelligencePair selected = Popups.getGOIntelligencePairChoice();
-			if (selected != null) {
-				panel.newComComGame(selected, this, 9, GoGameType.GO);
-			}
+		if (source == newGame) {
+			newGame();
 		}
 		else if (source == compDelayOption) {
 			compDelay = Popups.getDelayOption(compDelay);
 		}
 		
 		update();
+	}
+	
+	private void newGame() {
+		GameParams params = Popups.getGameChoice();
+		
+		if (params == null)
+			return; // the cancel button was pressed
+		
+		switch (params.gameType()) {
+		case COMCOM:
+			panel.newComComGame(params.ip(), this, 9, params.goGameType());
+			break;
+		case COMHUM:
+			panel.newComGame(params.gameType(), params.ip().i1(), this, 9, params.goGameType());
+			break;
+		case HUMCOM:
+			panel.newComGame(params.gameType(), params.ip().i2(), this, 9, params.goGameType());
+			break;
+		case HUMHUM:
+			panel.newHumHumGame(this, 9, params.goGameType());
+			break;
+		}
 	}
 }

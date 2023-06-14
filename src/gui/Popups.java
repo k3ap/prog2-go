@@ -16,9 +16,13 @@ import inteligenca.Inteligenca;
 import inteligenca.MCTSMoveChooser;
 import inteligenca.RandomMoveChooser;
 import inteligenca.WeightedGridEstimator;
+import logika.GoGameType;
+import vodja.GameType;
+import vodja.ManagedGame;
 
 public class Popups {
 	private final static Inteligenca[] intelligenceOptionsFC = {
+			new Inteligenca("Človek", true),
 			new Inteligenca(new AlphaBetaFCMoveChooser(4, new WeightedGridEstimator())),
 			new Inteligenca(new AlphaBetaFCMoveChooser(3, new WeightedGridEstimator())),
 			new Inteligenca(new AlphaBetaFCMoveChooser(2, new WeightedGridEstimator())),
@@ -26,22 +30,23 @@ public class Popups {
 	};
 	
 	private final static Inteligenca[] intelligenceOptionsGO = {
+			new Inteligenca("Človek", true),
 			new Inteligenca(new MCTSMoveChooser()),
 			new Inteligenca(new AlphaBetaGOMoveChooser(3, new GoGridEstimator())),
 			new Inteligenca(new AlphaBetaGOMoveChooser(2, new GoGridEstimator())),
 			new Inteligenca(new RandomMoveChooser()),
 	};
 	
-	/**
-	 * Show a pop up to choose the pair of intelligences to be played against each other.
-	 * @return The IntelligencePair of the selected intelligences.
-	 */
-	protected static IntelligencePair getFCIntelligencePairChoice() {
+	protected static GameParams getGameChoice() {
+		JComboBox<GoGameType> type = new JComboBox<GoGameType>(new GoGameType[] {GoGameType.FCGO, GoGameType.GO});
 		JComboBox<Inteligenca> izbira = new JComboBox<Inteligenca>(intelligenceOptionsFC);
 		izbira.setSelectedIndex(0);
 		JComboBox<Inteligenca> izbira2 = new JComboBox<Inteligenca>(intelligenceOptionsFC);
 		izbira2.setSelectedIndex(0);
+		type.addItemListener(new GameTypeListener(izbira, izbira2, intelligenceOptionsFC, intelligenceOptionsGO));
 		final JComponent[] inputs = new JComponent[] {
+				new JLabel("Igra:"),
+				type,
 				new JLabel("Igralec črnih kamnov:"),
 				izbira,
 				new JLabel("Igralec belih kamnov:"),
@@ -49,74 +54,22 @@ public class Popups {
 		};
 		int result = JOptionPane.showConfirmDialog(null, inputs, "Izberite odločevalca potez", JOptionPane.OK_CANCEL_OPTION);
 		if (result == JOptionPane.OK_OPTION) {
-			return new IntelligencePair(
-					intelligenceOptionsFC[izbira.getSelectedIndex()],
-					intelligenceOptionsFC[izbira2.getSelectedIndex()]
+			Inteligenca black = (Inteligenca) izbira.getSelectedItem();
+			Inteligenca white = (Inteligenca) izbira2.getSelectedItem();
+			
+			GameType gameType = GameType.COMCOM;
+			if (black.isHuman() && white.isHuman())
+				gameType = GameType.HUMHUM;
+			if (black.isHuman() && !white.isHuman())
+				gameType = GameType.HUMCOM;
+			if (!black.isHuman() && white.isHuman())
+				gameType = GameType.COMHUM;
+			
+			return new GameParams(
+					(GoGameType) type.getSelectedItem(),
+					gameType,
+					new IntelligencePair(black, white)
 			);
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Shows a pop up for choosing the intelligence that will be the users opponent.
-	 * @return The chosen intelligence.
-	 */
-	protected static Inteligenca getFCIntelligenceChoice() {
-		JComboBox<Inteligenca> izbira = new JComboBox<Inteligenca>(intelligenceOptionsFC);
-		izbira.setSelectedIndex(0);
-		final JComponent[] inputs = new JComponent[] {
-				new JLabel("Nasprotnik:"),
-				izbira,
-		};
-		int result = JOptionPane.showConfirmDialog(null, inputs, "Izberite tip nasprotnika", JOptionPane.OK_CANCEL_OPTION);
-		if (result == JOptionPane.OK_OPTION) {
-			return intelligenceOptionsFC[izbira.getSelectedIndex()];
-		} else {
-			return null;
-		}
-	}
-	
-	/**
-	 * Show a pop up to choose the pair of intelligences to be played against each other.
-	 * @return The IntelligencePair of the selected intelligences.
-	 */
-	protected static IntelligencePair getGOIntelligencePairChoice() {
-		JComboBox<Inteligenca> izbira = new JComboBox<Inteligenca>(intelligenceOptionsGO);
-		izbira.setSelectedIndex(0);
-		JComboBox<Inteligenca> izbira2 = new JComboBox<Inteligenca>(intelligenceOptionsGO);
-		izbira2.setSelectedIndex(0);
-		final JComponent[] inputs = new JComponent[] {
-				new JLabel("Igralec črnih kamnov:"),
-				izbira,
-				new JLabel("Igralec belih kamnov:"),
-				izbira2,
-		};
-		int result = JOptionPane.showConfirmDialog(null, inputs, "Izberite odločevalca potez", JOptionPane.OK_CANCEL_OPTION);
-		if (result == JOptionPane.OK_OPTION) {
-			return new IntelligencePair(
-					intelligenceOptionsGO[izbira.getSelectedIndex()],
-					intelligenceOptionsGO[izbira2.getSelectedIndex()]
-			);
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Shows a pop up for choosing the intelligence that will be the users opponent.
-	 * @return The chosen intelligence.
-	 */
-	protected static Inteligenca getGOIntelligenceChoice() {
-		JComboBox<Inteligenca> izbira = new JComboBox<Inteligenca>(intelligenceOptionsGO);
-		izbira.setSelectedIndex(0);
-		final JComponent[] inputs = new JComponent[] {
-				new JLabel("Nasprotnik:"),
-				izbira,
-		};
-		int result = JOptionPane.showConfirmDialog(null, inputs, "Izberite tip nasprotnika", JOptionPane.OK_CANCEL_OPTION);
-		if (result == JOptionPane.OK_OPTION) {
-			return intelligenceOptionsGO[izbira.getSelectedIndex()];
 		} else {
 			return null;
 		}
