@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -22,6 +23,7 @@ public class Window extends JFrame implements ActionListener {
 	private JMenuItem newGame;
 	private JMenuItem compDelayOption;
 	private JMenuBar menubar;
+	private JButton newGameButton;
 	
 	private float fontSize = (float) 20.0;
 	/**
@@ -46,10 +48,20 @@ public class Window extends JFrame implements ActionListener {
 		grid.setConstraints(statusBar, consBar);
 		add(statusBar);
 		
+		// add the new game button
+		newGameButton = new JButton("Nova igra...");
+		newGameButton.addActionListener(this);
+		GridBagConstraints consButton = new GridBagConstraints();
+		consButton.weighty = 0.0;
+		consButton.gridy = 1;
+		grid.setConstraints(newGameButton, consButton);
+		add(newGameButton);
+		
 		// Add the panel for games
 		panel = new Panel(1000, 600, this);
 		GridBagConstraints consPanel = new GridBagConstraints();
 		consPanel.gridx = 0;
+		consPanel.gridy = 2;
 		consPanel.weighty = 1.0;
 		consPanel.weightx = 1.0;
 		consPanel.fill = GridBagConstraints.BOTH;
@@ -130,8 +142,9 @@ public class Window extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		// A click on the menu bar at the top of the window.
 		Object source = e.getSource();
-		if (source == newGame) {
-			newGame();
+		if (source == newGame || source == newGameButton) {
+			if (newGame())
+				newGameButton.setVisible(false);
 		}
 		else if (source == compDelayOption) {
 			compDelay = Popups.getDelayOption(compDelay);
@@ -140,11 +153,11 @@ public class Window extends JFrame implements ActionListener {
 		update();
 	}
 	
-	private void newGame() {
+	private boolean newGame() {
 		GameParams params = Popups.getGameChoice();
 		
 		if (params == null)
-			return; // the cancel button was pressed
+			return false; // the cancel button was pressed
 		
 		switch (params.gameType()) {
 		case COMCOM:
@@ -160,5 +173,7 @@ public class Window extends JFrame implements ActionListener {
 			panel.newHumHumGame(this, 9, params.goGameType());
 			break;
 		}
+		
+		return true;
 	}
 }
