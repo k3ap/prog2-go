@@ -18,7 +18,6 @@ import inteligenca.RandomMoveChooser;
 import inteligenca.WeightedGridEstimator;
 import logika.GoGameType;
 import vodja.GameType;
-import vodja.ManagedGame;
 
 public class Popups {
 	private final static Inteligenca[] intelligenceOptionsFC = {

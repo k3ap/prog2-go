@@ -3,8 +3,6 @@ package inteligenca;
 import java.util.Collections;
 import java.util.List;
 
-import logika.FieldColor;
-import logika.GridFirstCapture;
 import logika.GridGo;
 import logika.Igra;
 import logika.Index;
