@@ -9,7 +9,7 @@ import java.util.Set;
 public class GridGo extends Grid {
 	private Set<Index> blackControl, blackPrisoners;
 	private Set<Index> whiteControl, whitePrisoners;
-	private int prevState, prevPrevState;
+	protected int prevState, prevPrevState;
 	/**
 	 * Whether black / white passed in the previous turn.
 	 */
@@ -21,13 +21,15 @@ public class GridGo extends Grid {
 	public int blackCaptured, whiteCaptured;
 	
 	public GridGo(int height, int width) {
-		this(height, width, false, false);
+		this(height, width, false, false, 0, 0);
 	}
 	
-	public GridGo(int height, int width, boolean blackPass, boolean whitePass) {
+	public GridGo(int height, int width, boolean blackPass, boolean whitePass, int prevState, int prevPrevState) {
 		super(height, width, blackPass, whitePass);
 		this.blackPass = blackPass;
 		this.whitePass = whitePass;
+		this.prevState = prevState;
+		this.prevPrevState = prevPrevState;
 		this.blackControl = new HashSet<>();
 		this.whiteControl = new HashSet<>();
 		this.blackPrisoners = new HashSet<>();
@@ -95,7 +97,7 @@ public class GridGo extends Grid {
 
 	@Override
 	public Grid deepcopy() {
-		Grid newGrid = new GridGo(height, width, blackPass, whitePass);
+		Grid newGrid = new GridGo(height, width, blackPass, whitePass, prevState, prevPrevState);
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				newGrid.grid[i][j] = this.grid[i][j];
@@ -127,7 +129,7 @@ public class GridGo extends Grid {
 			// an enemy component, aka. suicide
 			toReturn = false;
 		}
-		else if (prevPrevState == hash2D(grid)) {
+		else if (prevPrevState == hash2D(g.grid)) {
 			toReturn = false; // grid repetition
 		}
 		return toReturn;
