@@ -173,5 +173,5 @@ public class Igra {
 		}
 	}
 	
-	public GoGameType getGoGameType() { return gameType; }
+	public GoGameType goGameType() { return gameType; }
 }

@@ -12,6 +12,7 @@ import inteligenca.Inteligenca;
 import logika.PlayerColor;
 import logika.FieldColor;
 import logika.GoGameType;
+import logika.GridGo;
 import logika.Igra;
 import logika.Index;
 import splosno.Poteza;
@@ -329,8 +330,31 @@ public class ManagedGame {
 	public Index[] losingComponent() { return game.losingComponent(); }
 	public boolean isValid(Index idx) { return validity[idx.i()][idx.j()]; }
 
+	public int stoneCount(PlayerColor player) {
+		int count = 0;
+		for (int i = 0; i < game.height(); i++) {
+			for (int j = 0; j < game.width(); j++) {
+				if (game.grid.colorOfField(new Index(i, j)) == player.field())
+					count++;
+			}
+		}
+		return count;
+	}
+	public int captured(PlayerColor player) {
+		assert game.goGameType() == GoGameType.GO;
+		switch (player) {
+		case BLACK:
+			return ((GridGo) game.grid).blackCaptured;
+		case WHITE:
+			return ((GridGo) game.grid).whiteCaptured;
+		}
+		return -1;
+	}
+	public int calculatePoints(PlayerColor player) {
+		return ((GridGo) game.grid).calculatePoints(player.field());
+	}
 	public Set<Index> controlledZones(PlayerColor player) { return game.controlledZones(player); }
 	public Set<Index> prisonersOf(PlayerColor player) { return game.prisonersOf(player); }
 	
-	public GoGameType getGoGameType() { return game.getGoGameType(); }
+	public GoGameType goGameType() { return game.goGameType(); }
 }

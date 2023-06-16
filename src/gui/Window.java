@@ -11,6 +11,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JScrollPane;
 
 
 public class Window extends JFrame implements ActionListener {
@@ -19,6 +20,8 @@ public class Window extends JFrame implements ActionListener {
 	private GridBagLayout grid;
 	private Panel panel;
 	private JLabel statusBar;
+	private InfoTable infoTable;
+	private JScrollPane infoTableScrollPane;
 	private JMenu gameMenu, optionsMenu;
 	private JMenuItem newGame;
 	private JMenuItem compDelayOption;
@@ -44,6 +47,7 @@ public class Window extends JFrame implements ActionListener {
 		GridBagConstraints consBar = new GridBagConstraints();
 		consBar.ipady = 20;
 		consBar.weighty = 0.0;
+		consBar.weightx = 1.0;
 		consBar.fill = GridBagConstraints.HORIZONTAL;
 		grid.setConstraints(statusBar, consBar);
 		add(statusBar);
@@ -54,6 +58,7 @@ public class Window extends JFrame implements ActionListener {
 		GridBagConstraints consButton = new GridBagConstraints();
 		consButton.weighty = 0.0;
 		consButton.gridy = 1;
+		consButton.weightx = 1.0;
 		grid.setConstraints(newGameButton, consButton);
 		add(newGameButton);
 		
@@ -67,6 +72,21 @@ public class Window extends JFrame implements ActionListener {
 		consPanel.fill = GridBagConstraints.BOTH;
 		grid.setConstraints(panel, consPanel);
 		add(panel);
+		
+		infoTableScrollPane = new JScrollPane();
+		infoTable = new InfoTable();
+		infoTableScrollPane.setViewportView(infoTable.getTable());
+		infoTable.getTable().setFont(infoTable.getTable().getFont().deriveFont(fontSize));
+		infoTable.getTable().setRowHeight((int) fontSize * 2);
+		GridBagConstraints constTable = new GridBagConstraints();
+		constTable.gridy = 2;
+		constTable.gridx = 1;
+		constTable.ipadx = 100;
+		constTable.weightx = 0.5;
+		constTable.fill = GridBagConstraints.BOTH;
+		grid.setConstraints(infoTableScrollPane, constTable);
+		//infoTableScrollPane.setVisible(false);
+		add(infoTableScrollPane);
 		
 		// Add the menu bar, submenus and items
 		menubar = new JMenuBar();
@@ -125,6 +145,7 @@ public class Window extends JFrame implements ActionListener {
 	 * Update the entire GUI.
 	 */
 	public void update() {
+		infoTable.updateTable(panel.getGame());
 		repaint();
 		panel.repaint();
 	}
@@ -173,6 +194,9 @@ public class Window extends JFrame implements ActionListener {
 			panel.newHumHumGame(this, 9, params.goGameType());
 			break;
 		}
+		
+		infoTableScrollPane.setVisible(true);
+		update();
 		
 		return true;
 	}

@@ -48,6 +48,10 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		addMouseMotionListener(this);
 	}
 	
+	public ManagedGame getGame() {
+		return game;
+	}
+	
 	/**
 	 * Fills in some of the properties required to draw the grid.
 	 */
@@ -151,7 +155,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		*/
 		
 		String passNotice = "";
-		switch (game.getGoGameType()) {
+		switch (game.goGameType()) {
 		case FCGO:
 			passNotice = ".";
 			break;
@@ -419,7 +423,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			move = moveFromXY(e.getX(), e.getY());
 		}
 		else if (e.getButton() == MouseEvent.BUTTON3) {
-			if (game.getGoGameType().equals(GoGameType.GO)) {
+			if (game.goGameType().equals(GoGameType.GO)) {
 				move = new Poteza(-1, -1);
 			}
 			// otherwise leave move as null, FCGO has no passes
