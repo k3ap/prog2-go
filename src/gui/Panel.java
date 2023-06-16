@@ -424,13 +424,19 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		}
 		else if (e.getButton() == MouseEvent.BUTTON3) {
 			if (game.goGameType().equals(GoGameType.GO)) {
-				move = new Poteza(-1, -1);
+				move = Poteza.pass();
 			}
 			// otherwise leave move as null, FCGO has no passes
 		}
+		playMove(move);
+	}
+	
+	public void playMove(Poteza move) {
 		if (move != null) {
 			game.play(move);
-			mouseMoved(e); // update the shadow once a stone is placed
+			if (!move.isPass()) {
+				shadow = null;
+			}
 			window.update();
 		}
 	}

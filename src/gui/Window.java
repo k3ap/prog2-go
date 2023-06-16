@@ -13,6 +13,9 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
 
+import logika.GoGameType;
+import splosno.Poteza;
+
 
 public class Window extends JFrame implements ActionListener {
 	private static final long serialVersionUID = -3977009338403276682L;
@@ -26,7 +29,7 @@ public class Window extends JFrame implements ActionListener {
 	private JMenuItem newGame;
 	private JMenuItem compDelayOption;
 	private JMenuBar menubar;
-	private JButton newGameButton;
+	private JButton newGameButton, passButton;
 	
 	private float fontSize = (float) 20.0;
 	/**
@@ -61,6 +64,18 @@ public class Window extends JFrame implements ActionListener {
 		consButton.weightx = 1.0;
 		grid.setConstraints(newGameButton, consButton);
 		add(newGameButton);
+		
+		// pass button
+		passButton = new JButton("Izpusti potezo");
+		passButton.addActionListener(this);
+		GridBagConstraints consPassButton = new GridBagConstraints();
+		consPassButton.weighty = 0.0;
+		consPassButton.gridy = 1;
+		consPassButton.weightx = 1.0;
+		grid.setConstraints(passButton, consPassButton);
+		passButton.setVisible(false);
+		add(passButton);
+		
 		
 		// Add the panel for games
 		panel = new Panel(1000, 600, this);
@@ -146,6 +161,12 @@ public class Window extends JFrame implements ActionListener {
 	 */
 	public void update() {
 		infoTable.updateTable(panel.getGame());
+		if (panel.getGame() != null) {
+			if (panel.getGame().goGameType() == GoGameType.GO)
+				passButton.setVisible(true);
+			else 
+				passButton.setVisible(false);
+		}
 		repaint();
 		panel.repaint();
 	}
@@ -166,6 +187,9 @@ public class Window extends JFrame implements ActionListener {
 		if (source == newGame || source == newGameButton) {
 			if (newGame())
 				newGameButton.setVisible(false);
+		}
+		else if (source == passButton) {
+			panel.playMove(Poteza.pass());
 		}
 		else if (source == compDelayOption) {
 			compDelay = Popups.getDelayOption(compDelay);
