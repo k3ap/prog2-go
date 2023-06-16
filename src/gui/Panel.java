@@ -137,6 +137,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		}
 		
 		// control & prisoners
+		/*
 		for (PlayerColor player : PlayerColor.values()) {
 			if (game.controlledZones(player) == null)
 				continue;
@@ -147,6 +148,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 				markPrisoner(g2, idx.i(), idx.j(), player);
 			}
 		}
+		*/
 		
 		String passNotice = "";
 		switch (game.getGoGameType()) {

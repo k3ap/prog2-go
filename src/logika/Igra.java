@@ -139,17 +139,6 @@ public class Igra {
 		assert res.size() >= 1;
 		return res;
 	}
-	
-	/**
-	 * A forced move is one that either wins the game if made or
-	 * prevents you from immediately looses the game if not played.
-	 * @return A Poteza of the forced move, null if there is none.
-	 */
-	public Poteza forcedMove() {
-		Index idx = grid.forcedMove(nextPlayer);
-		if (idx == null) return null;
-		return idx.poteza();
-	}
 
 	public int width() { return grid.width(); }
 	public int height() { return grid.height(); }
@@ -167,8 +156,22 @@ public class Igra {
 
 	public boolean isValid(Index idx) { return grid.isValidForPlayer(idx, nextPlayer.field()); }
 	
-	public Set<Index> controlledZones(PlayerColor player) { return grid.controlledZones(player); }
-	public Set<Index> prisonersOf(PlayerColor player) { return grid.prisonersOf(player); }
+	public Set<Index> controlledZones(PlayerColor player) {
+		if (gameType.equals(GoGameType.GO)) {
+			return ((GridGo)grid).controlledZones(player.field());
+		} else {
+			return null;
+		}
+		 
+	}
+	
+	public Set<Index> prisonersOf(PlayerColor player) {
+		if (gameType.equals(GoGameType.GO)) {
+			return ((GridGo)grid).prisonersOf(player.field());
+		} else {
+			return null;
+		}
+	}
 	
 	public GoGameType getGoGameType() { return gameType; }
 }

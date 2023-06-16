@@ -5,19 +5,24 @@ import java.util.List;
 
 import logika.FieldColor;
 import logika.Grid;
+import logika.GridFirstCapture;
 import logika.Igra;
 import logika.Index;
 import logika.PlayerColor;
 import splosno.Poteza;
 
-public class AlphaBetaMoveChooser extends MoveChooser {
+/**
+ * A move chooser using the alphabeta algorithm.
+ * Assumes we're playing FCGO.
+ */
+public class AlphaBetaFCMoveChooser extends MoveChooser {
 	
 	private int maxDepth;
 	private GridEstimator estimator;
 	
 	private final double INFINITY = 1e6;
 	
-	public AlphaBetaMoveChooser(int maxDepth, GridEstimator estimator) {
+	public AlphaBetaFCMoveChooser(int maxDepth, GridEstimator estimator) {
 		super();
 		this.maxDepth = maxDepth;
 		this.estimator = estimator;
@@ -28,7 +33,7 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 		return "betago-alphabeta-"+maxDepth+"-"+estimator.name;
 	}
 	
-	private double alphabetaEstimate(Grid grid, int depth, PlayerColor player, double alpha, double beta) {
+	private double alphabetaEstimate(GridFirstCapture grid, int depth, PlayerColor player, double alpha, double beta) {
 		
 		if (grid.hasColorLost(player.next().field())) {
 			return INFINITY-depth;
@@ -41,7 +46,7 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 			return e;
 		}
 		
-		Index forcedMove = grid.forcedMove(player);
+		Index forcedMove = grid.forcedMove(player.field());
 		
 		if (forcedMove != null) {
 			grid.placeColor(forcedMove, player.field());
@@ -87,16 +92,16 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 	public Poteza chooseMove(Igra igra) {
        
         // check for forced moves
-		Poteza best = igra.forcedMove();
-		
-		if (best == null) { // there are no forced moves
+		Index forced = ((GridFirstCapture)igra.grid).forcedMove(igra.playerTurn().field());
+		if (forced == null) {// there are no forced moves
 			
+			Poteza best = null;
 			double bestEst = 0;
 			double alpha = -INFINITY;
 			double beta = INFINITY;
 			
 			// copy the grid to be used for move determining
-			Grid newGrid = igra.grid.deepcopy();
+			GridFirstCapture newGrid = (GridFirstCapture) igra.grid.deepcopy();
 			
 			// find interesting moves
 			var interesting = igra.interestingMoves();
@@ -121,8 +126,10 @@ public class AlphaBetaMoveChooser extends MoveChooser {
 				if (alpha < estimate)
 					alpha = estimate;
 			}
+			return best;
+		} else {
+			return forced.poteza();
 		}
-		return best;
 	}
 
 }

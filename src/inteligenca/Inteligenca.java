@@ -22,7 +22,7 @@ public class Inteligenca extends KdoIgra {
 	 * Je tu za namene tekmovanja.
 	 */
 	public Inteligenca() {
-		this(new AlphaBetaMoveChooser(4, new WeightedGridEstimator()));
+		this(new AlphaBetaFCMoveChooser(4, new WeightedGridEstimator()));
 		this.ime = "betago";
 	}
 	

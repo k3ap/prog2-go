@@ -12,7 +12,7 @@ public abstract class Grid {
 	/**
 	 * Helper class for keeping track of the liberties of a component 
 	 */
-	protected class LibertiesSetMapping implements SetMapping {
+	protected static class LibertiesSetMapping implements SetMapping {
 		public Set<Index> liberties;
 		
 		public LibertiesSetMapping() {
@@ -29,7 +29,7 @@ public abstract class Grid {
 		}
 	}
 	
-	protected class ComponentLibertySearch extends BreadthFirstSearch {
+	protected static class ComponentLibertySearch extends BreadthFirstSearch {
 
 		public ComponentLibertySearch(Grid grid, SearchData data) {
 			super(grid, data);
@@ -40,10 +40,10 @@ public abstract class Grid {
 		protected void entryAction(Index idx, Index startIdx) {
 			//System.out.format("entryAction at %d,%d with start %d,%d\n", idx.i(), idx.j(), startIdx.i(), startIdx.j());
 			// no need to fill out the set mapping here; we'll do that in noticeAction
-			connectedComponents.insert(idx, new LibertiesSetMapping());
+			grid.connectedComponents.insert(idx, new LibertiesSetMapping());
 			
 			// merge the new set with the connected component
-			connectedComponents.doUnion(idx, startIdx);
+			grid.connectedComponents.doUnion(idx, startIdx);
 		}
 
 		@Override
@@ -56,7 +56,7 @@ public abstract class Grid {
 			
 			if (grid.colorOfField(neighbor) == FieldColor.EMPTY) {
 				//System.out.format("liberty for %d,%d at %d,%d\n", parent.i(), parent.j(), neighbor.i(), neighbor.j());
-				connectedComponents.get(parent).liberties.add(neighbor);
+				grid.connectedComponents.get(parent).liberties.add(neighbor);
 			}
 		}
 		
@@ -430,31 +430,4 @@ public abstract class Grid {
      * @return
      */
     public abstract Grid deepcopy();
-
-    /**
-	 * Check if nextPlayer has a foced move.
-	 * Only valid for FCGO.
-	 * @param nextPlayer the player whose turn it is.
-	 * @return An Index of the forced move, null if there is none.
-	 */
-	public abstract Index forcedMove(PlayerColor player);
-	
-	/**
-	 * Get the indices controlled by player.
-	 * A connected component of empty indices is controlled by a
-	 * player if the majority of the bounding stones of this component
-	 * are of the player's color.
-	 * Oonly valid for Go.  
-	 * @param player the player in question.
-	 * @return The empty fields controlled by player.
-	 */
-	public abstract Set<Index> controlledZones(PlayerColor player);
-	
-	/**
-	 * A prisoner is a small component of stones that is contained
-	 * in a zone controlled by the opposing player. 
-	 * @param player The owner of the prisoners.
-	 * @return The idicies of all of player's prisoners.
-	 */
-	public abstract Set<Index> prisonersOf(PlayerColor player);
 }

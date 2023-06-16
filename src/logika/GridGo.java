@@ -9,7 +9,7 @@ import java.util.Set;
 public class GridGo extends Grid {
 	private Set<Index> blackControl, blackPrisoners;
 	private Set<Index> whiteControl, whitePrisoners;
-	private int prevState, prevPrevState;
+	protected int prevState, prevPrevState;
 	/**
 	 * Whether black / white passed in the previous turn.
 	 */
@@ -18,16 +18,22 @@ public class GridGo extends Grid {
 	 * How many black / white stones have been captured.
 	 * If black surrounds white's stones then whiteCaptured is increased.
 	 */
-	protected int blackCaptured, whiteCaptured;
+	public int blackCaptured, whiteCaptured;
 	
 	public GridGo(int height, int width) {
-		this(height, width, false, false);
+		this(height, width, false, false, 0, 0);
 	}
 	
-	public GridGo(int height, int width, boolean blackPass, boolean whitePass) {
+	public GridGo(int height, int width, boolean blackPass, boolean whitePass, int prevState, int prevPrevState) {
 		super(height, width, blackPass, whitePass);
 		this.blackPass = blackPass;
 		this.whitePass = whitePass;
+		this.prevState = prevState;
+		this.prevPrevState = prevPrevState;
+		this.blackControl = new HashSet<>();
+		this.whiteControl = new HashSet<>();
+		this.blackPrisoners = new HashSet<>();
+		this.whitePrisoners = new HashSet<>();
 		blackCaptured = whiteCaptured = 0;
 	}
 
@@ -49,23 +55,33 @@ public class GridGo extends Grid {
 		}
 		graphSearch.runAll();
 	}
+	
+	public int calculatePoints(FieldColor color) {
+		int score = 0;
+		switch(color) {
+		case BLACK:
+			score -= blackCaptured;
+			score += blackControl.size();
+			score -= blackPrisoners.size();
+			break;
+		case WHITE:
+			score += 6;
+			score -= whiteCaptured;
+			score += whiteControl.size();
+			score -= whitePrisoners.size();
+			break;
+		default:
+			assert false;
+		}
+		return score;
+	}
 
 	@Override
 	public boolean hasColorLost(FieldColor field) {
 		assert !field.equals(FieldColor.EMPTY);
-		int blackPoints = 0, whitePoints = 6; // white = 6 because of the komi rule
-
-		// subtract points for captured stones
-		blackPoints -= blackCaptured;
-		whitePoints -= whiteCaptured;
 		
-		// add points for controlled zones
-		blackPoints += blackControl.size();
-		whitePoints += whiteControl.size();
-				
-		// subtract points for prisoners
-		blackPoints -= blackPrisoners.size();
-		whitePoints -= whitePrisoners.size();
+		int blackPoints = calculatePoints(FieldColor.BLACK);
+		int whitePoints = calculatePoints(FieldColor.WHITE);
 		
 		System.out.println("Points for black:   0 - " + blackCaptured + " + " + blackControl.size() + " - " + blackPrisoners.size() + " = " + blackPoints);
 		System.out.println("Points for white: 6.5 - " + whiteCaptured + " + " + whiteControl.size() + " - " + whitePrisoners.size() + " = " + whitePoints + ".5");
@@ -81,7 +97,7 @@ public class GridGo extends Grid {
 
 	@Override
 	public Grid deepcopy() {
-		Grid newGrid = new GridGo(height, width, blackPass, whitePass);
+		Grid newGrid = new GridGo(height, width, blackPass, whitePass, prevState, prevPrevState);
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				newGrid.grid[i][j] = this.grid[i][j];
@@ -89,12 +105,6 @@ public class GridGo extends Grid {
 		}
 		newGrid.graphSearch.runAll();
 		return newGrid;
-	}
-
-	@Override
-	public Index forcedMove(PlayerColor player) {
-		// there are no forced moves in Go
-		return null;
 	}
 	
 	private int hash2D(Object[][] arr) {
@@ -107,23 +117,21 @@ public class GridGo extends Grid {
 
 	@Override
 	public boolean isValidForPlayer(Index idx, FieldColor field) {
-		boolean empty = colorOfField(idx).equals(FieldColor.EMPTY);
-		if (!empty)
+		if (!colorOfField(idx).equals(FieldColor.EMPTY))
 			return false; // this field is not empty
 		
-		GoState state = saveState();
+		GridGo g = (GridGo) deepcopy();
+		
 		boolean toReturn = true;
-		this.placeColor(idx, field);
-		if (NLibertiesComponent(field, 0) != null && NLibertiesComponent(field.next(), 0) == null) {
+		g.placeColor(idx, field);
+		if (g.NLibertiesComponent(field, 0) != null && g.NLibertiesComponent(field.next(), 0) == null) {
 			// you've created a libertyless component without capturing
 			// an enemy component, aka. suicide
 			toReturn = false;
 		}
-		else if (prevPrevState == hash2D(grid)) {
+		else if (prevPrevState == hash2D(g.grid)) {
 			toReturn = false; // grid repetition
 		}
-		this.placeColor(idx, FieldColor.EMPTY);
-		loadState(state);
 		return toReturn;
 	}
 	
@@ -132,7 +140,10 @@ public class GridGo extends Grid {
 		
 		// Find all connected empty zones and all the stones bordering those zones.
 		Map<Index, Set<Index>> zonesNeighbours = new HashMap<Index, Set<Index>>();
+		
+		// TODO: remove this when you're feeling confident enough that UFDS.getSize() works properly
 		Map<Index, Integer> zonesSizes = new HashMap<Index, Integer>();
+		
 		for (Index idx : connectedComponents.getToplevels()) {
 			if (colorOfField(idx).equals(FieldColor.EMPTY)) {
 				zonesNeighbours.put(idx, new HashSet<Index>());
@@ -170,12 +181,10 @@ public class GridGo extends Grid {
 					black++;
 				}
 				else {
-					assert colorOfField(border).equals(FieldColor.WHITE);
 					white++;
 				}
 			}
 			
-			double size = (double) zonesSizes.get(zoneIdx);
 			double blockage = (double) Integer.max(black, white);
 			double gridAverage = (double) (height + width) / 2.0;
 
@@ -186,7 +195,7 @@ public class GridGo extends Grid {
 			// The second case is here mostly to avoid black having control over the
 			// entire board every other turn at the start of the game.
 			if (black == white ||
-				size >= (blockage * gridAverage) * 0.8) {
+				connectedComponents.getSize(zoneIdx) >= (blockage * gridAverage) * 0.8) {
 				zoneControl.put(zoneIdx, FieldColor.EMPTY);
 			}
 			else if (black > white) {
@@ -272,19 +281,6 @@ public class GridGo extends Grid {
 		return prisoners;
 	}
 	
-	/**
-	 * When used for testing purposes (to place a move that will be undone by
-	 * placing an FieldColor.EMPTY in the same spot) changes to prevState and
-	 * prevPrevState must be undone with saveState and loadState!
-	 * See isValid for an example.
-	 */
-	public GoState saveState() {
-		return new GoState(prevState, prevPrevState);
-	}
-	public void loadState(GoState state) {
-		prevState = state.prevState();
-		prevPrevState = state.prevPrevState();
-	}
 	@Override
 	public void placeColor(Index idx, FieldColor color) {
 		super.placeColor(idx, color);
@@ -293,31 +289,44 @@ public class GridGo extends Grid {
 		whitePrisoners = calculatePrisonersOf(PlayerColor.WHITE, zoneControl);
 		blackControl = calculateControlledZones(PlayerColor.BLACK, zoneControl);
 		whiteControl = calculateControlledZones(PlayerColor.WHITE, zoneControl);
-		// prevState is captured before any stones are removed by capture,
-		// so that it works correctly in isValid. In isValid no stones are ever captured
-		// as that would unnecessarily complicate things.
 		prevPrevState = prevState;
 		prevState = hash2D(grid);
 	}
 
-	@Override
-	public Set<Index> controlledZones(PlayerColor player) {
-		switch (player) {
+	/**
+	 * Get the indices controlled by player.
+	 * A connected component of empty indices is controlled by a
+	 * player if the majority of the bounding stones of this component
+	 * are of the player's color.
+	 * @param fieldColor the player in question.
+	 * @return The empty fields controlled by player.
+	 */
+	public Set<Index> controlledZones(FieldColor fieldColor) {
+		switch (fieldColor) {
 		case BLACK:
 			return blackControl;
 		case WHITE:
 			return whiteControl;
+		default:
+			break;
 		}
 		return null;
 	}
 
-	@Override
-	public Set<Index> prisonersOf(PlayerColor player) {
+	/**
+	 * A prisoner is a small component of stones that is contained
+	 * in a zone controlled by the opposing player. 
+	 * @param player The owner of the prisoners.
+	 * @return The idicies of all of player's prisoners.
+	 */
+	public Set<Index> prisonersOf(FieldColor player) {
 		switch (player) {
 		case BLACK:
 			return blackPrisoners;
 		case WHITE:
 			return whitePrisoners;
+		default:
+			break;
 		}
 		return null;
 	}
