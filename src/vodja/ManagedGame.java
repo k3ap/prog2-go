@@ -30,6 +30,7 @@ public class ManagedGame {
 	 * Which spaces can the player play on.
 	 */
 	private boolean[][] validity;
+	private boolean outdatedValidity;
 	private Window window;
 	
 	class Sleeper extends Thread {
@@ -57,6 +58,7 @@ public class ManagedGame {
 				validity[i][j] = true;
 			}
 		}
+		outdatedValidity = false;
 		this.window = window;
 		handleType(managedGameType);
 	}
@@ -112,22 +114,21 @@ public class ManagedGame {
 			return;
 		}
 		
-		// update validity
-		for (int i = 0; i < height(); i++) {
-			for (int j = 0; j < width(); j++) {
-				validity[i][j] = game.isValid(new Index(i, j));
-				
-			}
-		}
-		
 		status = winnerToGameStatus(game.winner());
 		if ((gameType == GameType.HUMCOM || gameType == GameType.COMHUM) // the game type has the computer making moves 
 			&& status.canMakeMove()) // no one has won yet 
 		{
-			// When the human has made their move it's the coputer's turn.
+			// When the human has made their move it's the computer's turn.
 			status = MoveResult.WAIT;
+			for (int i = 0; i < height(); i++) {
+				for (int j = 0; j < width(); j++) {
+					validity[i][j] = false;
+					
+				}
+			}
 			getMoveFromIntelligence();
 		}
+		outdatedValidity = true;
 	}
 
 	private void getMoveFromIntelligence() {
@@ -328,7 +329,18 @@ public class ManagedGame {
 	 * @return An array of indices that the component occupies.
 	 */
 	public Index[] losingComponent() { return game.losingComponent(); }
-	public boolean isValid(Index idx) { return validity[idx.i()][idx.j()]; }
+	public boolean isValid(Index idx) {
+		if (outdatedValidity) {
+			for (int i = 0; i < height(); i++) {
+				for (int j = 0; j < width(); j++) {
+					validity[i][j] = game.isValid(new Index(i, j));
+					
+				}
+			}
+			outdatedValidity = false;
+		}
+		return validity[idx.i()][idx.j()];
+	}
 
 	public int stoneCount(PlayerColor player) {
 		int count = 0;
