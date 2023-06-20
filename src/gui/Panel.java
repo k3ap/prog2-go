@@ -165,20 +165,6 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			drawShadowStone(g2, shadow.i(), shadow.j(), game.playerTurn());
 		}
 		
-		// control & prisoners
-		/*
-		for (PlayerColor player : PlayerColor.values()) {
-			if (game.controlledZones(player) == null)
-				continue;
-			for (Index idx : game.controlledZones(player)) {
-				markControl(g2, idx.i(), idx.j(), player);
-			}
-			for (Index idx : game.prisonersOf(player)) {
-				markPrisoner(g2, idx.i(), idx.j(), player);
-			}
-		}
-		*/
-		
 		String passNotice = "";
 		String prefix = "";
 		switch (game.goGameType()) {
@@ -230,7 +216,11 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			break;
 		case WHITEWINS:
 		case BLACKWINS:
-			highlightLoser(g2);
+			if (game.goGameType() == GoGameType.GO)
+				drawControllAndPrisoners(g2);
+			else
+				highlightLoser(g2);
+				
 			switch (game.getOutcome()) {
 			case COMBLACKWON:
 				window.writeMessage("Algoritem " + game.intelligence1Name() + " (črni) je zmagal.");
@@ -460,6 +450,19 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		game.setIntelligences(intelligences);
 		this.gameSize = gameSize;
 		repaint();
+	}
+	
+	private void drawControllAndPrisoners(Graphics2D g2) {
+		for (PlayerColor player : PlayerColor.values()) {
+			if (game.controlledZones(player) == null)
+				continue;
+			for (Index idx : game.controlledZones(player)) {
+				markControl(g2, idx.i(), idx.j(), player);
+			}
+			for (Index idx : game.prisonersOf(player)) {
+				markPrisoner(g2, idx.i(), idx.j(), player);
+			}
+		}
 	}
 
 	@Override
