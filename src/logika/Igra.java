@@ -53,7 +53,6 @@ public class Igra {
 	public boolean odigraj(Poteza poteza) {
 		lastMove = poteza;
 		// mark passes
-		boolean isPass = poteza.x() == -1 && poteza.y() == -1;
 		GridGo gridGo = null;
 		if (gameType == GoGameType.GO) {
 			gridGo = (GridGo) grid;
@@ -62,15 +61,15 @@ public class Igra {
 		if (gameType == GoGameType.GO) {
 			switch (nextPlayer) {
 			case BLACK:
-				gridGo.blackPass = isPass;
+				gridGo.blackPass = poteza.isPass();
 				break;
 			case WHITE:
-				gridGo.whitePass = isPass;
+				gridGo.whitePass = poteza.isPass();
 				break;
 			}
 		}
 		
-		if (!isPass) {
+		if (!poteza.isPass()) {
 			// an actual move was played
 			Index idx = new Index(poteza);
 			

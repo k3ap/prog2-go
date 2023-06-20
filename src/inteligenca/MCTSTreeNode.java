@@ -50,7 +50,7 @@ public class MCTSTreeNode {
 	
 	private MCTSTreeNode(GridGo grid, PlayerColor previuousPlayer, Poteza move) {
 		this.state = (GridGo) grid.deepcopy();
-		if (move.x() == -1) {
+		if (move.isPass()) {
 			switch(previuousPlayer) {
 			case WHITE:
 				state.whitePass = true;
