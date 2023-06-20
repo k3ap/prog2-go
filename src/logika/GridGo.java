@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 public class GridGo extends Grid {
@@ -135,74 +136,54 @@ public class GridGo extends Grid {
 		return toReturn;
 	}
 	
+	/**
+	 * Find the controller (if one exists) of every empty zone.
+	 */
 	private Map<Index, FieldColor> getZoneConrol() {
-		final int[][] NEIGHBOURS = new int[][] {{0, 1}, {1, 0}, {-1, 0}, {0, -1}};
-		
-		// Find all connected empty zones and all the stones bordering those zones.
-		Map<Index, Set<Index>> zonesNeighbours = new HashMap<Index, Set<Index>>();
-		
-		// TODO: remove this when you're feeling confident enough that UFDS.getSize() works properly
-		Map<Index, Integer> zonesSizes = new HashMap<Index, Integer>();
-		
-		for (Index idx : connectedComponents.getToplevels()) {
-			if (colorOfField(idx).equals(FieldColor.EMPTY)) {
-				zonesNeighbours.put(idx, new HashSet<Index>());
-				zonesSizes.put(idx, 0);
-			}
-		}
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
-				Index idx = new Index(i, j);
-				if (!colorOfField(idx).equals(FieldColor.EMPTY)) {
-					continue;
-				}
-				Index component = connectedComponents.getRepresentative(idx);
-				int oldSize = zonesSizes.get(component);
-				zonesSizes.put(component, oldSize + 1);
-				for (int didx = 0; didx < 4; didx++) {
-					int di = NEIGHBOURS[didx][0];
-					int dj = NEIGHBOURS[didx][1];
-					if (idx.i() + di < 0 || idx.j() + dj < 0 || idx.i() + di >= height || idx.j() + dj >= width)
-						continue;
-					Index neighbor = new Index(i + di, j + dj);
-					if (!colorOfField(neighbor).equals(FieldColor.EMPTY)) {
-						zonesNeighbours.get(connectedComponents.getRepresentative(idx)).add(neighbor);
-					}
-				}
-			}
-		}
 		
 		// Assign each empty zone a controller.
 		Map<Index, FieldColor> zoneControl = new HashMap<Index, FieldColor>();
-		for (Index zoneIdx : zonesNeighbours.keySet()) {
-			int black = 0, white = 0;
-			for (Index border : zonesNeighbours.get(zoneIdx)) {
-				if (colorOfField(border).equals(FieldColor.BLACK)) {
-					black++;
+		
+		for (Index tln : connectedComponents.getToplevels()) {
+			if (colorOfField(tln).equals(FieldColor.EMPTY)) {
+				// count the number of border nodes of each color
+				int black = 0, white = 0;
+				
+				// we iterate through the "liberties" of an empty component,
+				// which are actually just all the adjacent nodes
+				for (Index idx : connectedComponents.get(tln).liberties) {
+					if (colorOfField(idx).equals(FieldColor.BLACK)) {
+						black++;
+					}
+					else if (colorOfField(idx).equals(FieldColor.WHITE)) {
+						white++;
+					}
+					else {
+						System.out.println("Houston, we have a problem.");
+					}
+				}
+				
+				System.out.format("black: %d, white: %d\n", black, white);
+				
+				double blockage = (double) Integer.max(black, white);
+				double gridAverage = (double) (height + width) / 2.0;
+				
+				// The zone is neutral if
+				// either both sides have the same claim to the zone or
+				// the second formula is correct. In the 9x9 case the formula means,
+				// that you need to have at least 1 stone per 7.2 controlled empty fields.
+				// The second case is here mostly to avoid black having control over the
+				// entire board every other turn at the start of the game.
+				if (black == white ||
+					connectedComponents.getSize(tln) >= (blockage * gridAverage) * 0.8) {
+					zoneControl.put(tln, FieldColor.EMPTY);
+				}
+				else if (black > white) {
+					zoneControl.put(tln, FieldColor.BLACK);
 				}
 				else {
-					white++;
+					zoneControl.put(tln, FieldColor.WHITE);
 				}
-			}
-			
-			double blockage = (double) Integer.max(black, white);
-			double gridAverage = (double) (height + width) / 2.0;
-
-			// The zone is neutral if
-			// either both sides have the same claim to the zone or
-			// the second formula is correct. In the 9x9 case the formula means,
-			// that you need to have at least 1 stone per 7.2 controlled empty fields.
-			// The second case is here mostly to avoid black having control over the
-			// entire board every other turn at the start of the game.
-			if (black == white ||
-				connectedComponents.getSize(zoneIdx) >= (blockage * gridAverage) * 0.8) {
-				zoneControl.put(zoneIdx, FieldColor.EMPTY);
-			}
-			else if (black > white) {
-				zoneControl.put(zoneIdx, FieldColor.BLACK);
-			}
-			else {
-				zoneControl.put(zoneIdx, FieldColor.WHITE);
 			}
 		}
 		
@@ -329,6 +310,19 @@ public class GridGo extends Grid {
 			break;
 		}
 		return null;
+	}
+	
+	public static final Random RNG = new Random(); 
+	
+	/**
+	 * Return the index of a random empty field.
+	 */
+	public Index getRandomEmptyField() {
+		Index ret;
+		do {
+			ret = new Index(RNG.nextInt(height), RNG.nextInt(width));
+		} while (!colorOfField(ret).equals(FieldColor.EMPTY));
+		return ret;
 	}
 
 }
