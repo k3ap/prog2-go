@@ -14,7 +14,7 @@ public class MCTSMoveChooser extends MoveChooser {
 	 * The number of runs the algorithm performs.
 	 * Should probably be dynamic.
 	 */
-	private final int NUM_RUNS = 100;
+	private final int NUM_RUNS = 200;
 
 	@Override
 	public String name() {

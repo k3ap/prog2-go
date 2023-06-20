@@ -51,11 +51,14 @@ public abstract class Grid {
 
 		@Override
 		protected void noticeAction(Index neighbor, Index parent, Index startIdx) {
-			if (grid.colorOfField(parent) == FieldColor.EMPTY) 
-				return;
+			if (grid.colorOfField(parent).equals(FieldColor.EMPTY) && !grid.colorOfField(neighbor).equals(FieldColor.EMPTY)) {
+				// if this is an empty connected component, we're not counting liberties but all bordering fields
+				// we call them liberties nonetheless
+				grid.connectedComponents.get(parent).liberties.add(neighbor);
+			}
 			
-			if (grid.colorOfField(neighbor) == FieldColor.EMPTY) {
-				//System.out.format("liberty for %d,%d at %d,%d\n", parent.i(), parent.j(), neighbor.i(), neighbor.j());
+			// we don't care about bordering fields of the opposing color here
+			if (!grid.colorOfField(parent).equals(FieldColor.EMPTY) && grid.colorOfField(neighbor) == FieldColor.EMPTY) {
 				grid.connectedComponents.get(parent).liberties.add(neighbor);
 			}
 		}

@@ -1,6 +1,7 @@
 package inteligenca;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -24,15 +25,14 @@ public class MCTSTreeNode {
 	/**
 	 * The depth of the simulation to be performed before two consecutive passes are enforced. 
 	 */
-	private final static int SIMULATION_DEPTH = 20;
-	
-	private static Random RNG = new Random();
+	private final static int SIMULATION_DEPTH = 25;
 	
 	private GridGo state;
 	private PlayerColor player;
 	private Map<Poteza, MCTSTreeNode> children;
 	private double score;
 	private int numPlays;
+	private Iterator<Poteza> unvisitedMoveIterator;
 	
 	/**
 	 * Construct a new tree from the given grid.
@@ -83,6 +83,9 @@ public class MCTSTreeNode {
 			children.put(move.poteza(), null);
 		}
 		children.put(new Poteza(-1, -1), null);
+		
+		// we assume that children will not change
+		this.unvisitedMoveIterator = children.keySet().iterator();
 	}
 	
 	/**
@@ -91,21 +94,15 @@ public class MCTSTreeNode {
 	 * @return How many points this node's player scored in the expansion 
 	 */
 	private double selectAndExpand() {
-		Poteza moveToMake = null;
-		for (Poteza move : children.keySet()) {
-			if (children.get(move) == null) {
-				moveToMake = move;
-				break;
-			}
-		}
 		
-		if (moveToMake == null) {
+		if (!unvisitedMoveIterator.hasNext()) {
 			// this is a fully expanded node
 			double delta = findBestAndSelect();
 			numPlays++;
 			score += delta;
 			return delta;
 		} else {
+			Poteza moveToMake = unvisitedMoveIterator.next();
 			children.put(moveToMake, new MCTSTreeNode(state, player, moveToMake));
 			double delta = 1 - children.get(moveToMake).simulate();
 			score += delta;
@@ -135,16 +132,17 @@ public class MCTSTreeNode {
 	
 	/**
 	 * Simulate a random run, starting at this node.
+	 * This simulation ignores all placement criteria, except the empty-field criterion 
 	 * @return The score granted to this node
 	 */
 	private double simulate() {
 		PlayerColor currentPlayer = player;
 		GridGo grid = (GridGo) state.deepcopy();
 		for (int moveNumber = 0; moveNumber < SIMULATION_DEPTH; moveNumber++) {
-			List<Index> validMoves = state.fieldsValidForPlayer(currentPlayer.field());
-			Index move = validMoves.get(RNG.nextInt(validMoves.size()));
+			Index move = grid.getRandomEmptyField();
 			grid.placeColor(move, currentPlayer.field());
 			currentPlayer = currentPlayer.next();
+			grid.captureComponentsOf(currentPlayer.field());
 		}
 		// because of the komi rule, there are no ties
 		double delta = grid.hasColorLost(player.field()) ? 0 : 1;
