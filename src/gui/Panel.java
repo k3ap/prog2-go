@@ -24,7 +24,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	private static final long serialVersionUID = 7693008210122811280L;
 	private ManagedGame game;
 	private Dimension dimensions;
-	private Style style;
+	public Style style;
 	private Window window;
 	private Index shadow;
 	private int leftEdge, topEdge, widthStep, heightStep, sideLength;
@@ -98,6 +98,11 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		// Can't draw a 1x1 grid
 		assert gridWidth > 1;
 		assert gridHeight > 1;
+		
+		// background
+		
+		g2.setBackground(style.background);
+		g2.clearRect(leftEdge - widthStep / 2, topEdge - heightStep / 2, gridWidth * widthStep, gridHeight * heightStep);
 
 		// grid
 		g2.setStroke(style.grid);
@@ -155,6 +160,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		*/
 		
 		String passNotice = "";
+		String prefix = "";
 		switch (game.goGameType()) {
 		case FCGO:
 			passNotice = ".";

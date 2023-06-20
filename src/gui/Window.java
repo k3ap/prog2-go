@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.util.LinkedList;
 
 import javax.swing.JButton;
+import javax.swing.JColorChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -27,7 +28,7 @@ public class Window extends JFrame implements ActionListener {
 	private JScrollPane infoTableScrollPane;
 	private JMenu gameMenu, optionsMenu;
 	private JMenuItem newGame;
-	private JMenuItem compDelayOption;
+	private JMenuItem compDelayOption, colorsOption;
 	private JMenuBar menubar;
 	private JButton newGameButton, passButton;
 	
@@ -115,6 +116,7 @@ public class Window extends JFrame implements ActionListener {
 		optionsMenu = new JMenu("Nastavitve");
 		menubar.add(optionsMenu);
 		compDelayOption = newMenuItem(optionsMenu, "Hitrost računalnika...");
+		colorsOption =  newMenuItem(optionsMenu, "Barva ozadja...");
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		update();
@@ -193,6 +195,9 @@ public class Window extends JFrame implements ActionListener {
 		}
 		else if (source == compDelayOption) {
 			compDelay = Popups.getDelayOption(compDelay);
+		}
+		else if (source == colorsOption) {
+			panel.style.background = JColorChooser.showDialog(this, "Barva ozadja", panel.style.background);
 		}
 		
 		update();
