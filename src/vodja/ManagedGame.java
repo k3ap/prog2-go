@@ -357,4 +357,7 @@ public class ManagedGame {
 	public Set<Index> prisonersOf(PlayerColor player) { return game.prisonersOf(player); }
 	
 	public GoGameType goGameType() { return game.goGameType(); }
+	
+	public boolean didPass(PlayerColor player) { return game.didPass(player); }
+	public Poteza lastMove() { return game.lastMove(); }
 }

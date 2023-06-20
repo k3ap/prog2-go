@@ -140,6 +140,26 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			}
 		}
 		
+		// last stone that was placed
+		if (game.lastMove() != null) {
+			if (!game.lastMove().isPass()) {
+				Index idx = new Index(game.lastMove());
+				Color markColor = null;
+				switch (game.fieldColor(idx)) {
+				case BLACK:
+					markColor = style.whiteStone;
+					break;
+				case WHITE:
+					markColor = style.blackStone;
+					break;
+				case EMPTY:
+					assert false;
+					break;
+				}
+				drawMark(g2, idx.i(), idx.j(), markColor);
+			}
+		}
+		
 		// shadow stone
 		if (shadow != null) {
 			drawShadowStone(g2, shadow.i(), shadow.j(), game.playerTurn());
@@ -168,7 +188,18 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		case GO:
 			passNotice = ", desni klik za izpust.";
 			break;
+		}
 		
+		PlayerColor prevPlayer = game.playerTurn().next();
+		if (game.didPass(prevPlayer)) {
+			switch (prevPlayer) {
+			case BLACK:
+				prefix = "Črn je izpustil potezo. ";
+				break;
+			case WHITE:
+				prefix = "Bel je izpustil potezo. ";
+				break;
+			}
 		}
 		
 		// draw game status
@@ -177,15 +208,15 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		case PLAY:
 			if (game.gameType().mixedGame()) {
 				// mixedGame => there is only one human player
-				window.writeMessage("Na vrsti ste" + passNotice);
+				window.writeMessage(prefix + "Na vrsti ste" + passNotice);
 			}
 			else {
 				switch (game.playerTurn()) {
 				case WHITE:
-					window.writeMessage("Na vrsti je bel" + passNotice);
+					window.writeMessage(prefix + "Na vrsti je bel" + passNotice);
 					break;
 				case BLACK:
-					window.writeMessage("Na vrsti je črn" + passNotice);
+					window.writeMessage(prefix + "Na vrsti je črn" + passNotice);
 					break;
 				}
 			}
@@ -291,11 +322,15 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		drawAbstractStone(g2, i, j, center, edge);
 	}
 	
+	private int stoneDiameter() {
+		return style.stoneDiameter * sideLength * 9 / 500 / gameSize;
+	}
+	
 	/**
 	 * Do not call this method directly.
 	 */
 	private void drawAbstractStone(Graphics2D g2, int i, int j, Color center, Color edge) {
-		int d = style.stoneDiameter * sideLength * 9 / 500 / gameSize;
+		int d = stoneDiameter();
 		// sideLength is 500 if the window hasn't been resized
 		int y = topEdge + i * heightStep - d / 2;
 		int x = leftEdge + j * widthStep - d / 2;
@@ -303,6 +338,16 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		g2.setColor(center);
 		g2.fillOval(x, y, d, d);
 		g2.setColor(edge);
+		g2.drawOval(x, y, d, d);
+	}
+	
+	private void drawMark(Graphics2D g2, int i, int j, Color color) {
+		int d = stoneDiameter() / 3;
+		// sideLength is 500 if the window hasn't been resized
+		int y = topEdge + i * heightStep - d / 2;
+		int x = leftEdge + j * widthStep - d / 2;
+
+		g2.setColor(color);;
 		g2.drawOval(x, y, d, d);
 	}
 	
