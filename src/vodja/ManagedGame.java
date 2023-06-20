@@ -122,7 +122,7 @@ public class ManagedGame {
 		
 		status = winnerToGameStatus(game.winner());
 		if ((gameType == GameType.HUMCOM || gameType == GameType.COMHUM) // the game type has the computer making moves 
-			&& status == MoveResult.PLAY) // no one has won yet 
+			&& status.canMakeMove()) // no one has won yet 
 		{
 			// When the human has made their move it's the coputer's turn.
 			status = MoveResult.WAIT;

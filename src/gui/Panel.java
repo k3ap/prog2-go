@@ -165,17 +165,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			drawShadowStone(g2, shadow.i(), shadow.j(), game.playerTurn());
 		}
 		
-		String passNotice = "";
 		String prefix = "";
-		switch (game.goGameType()) {
-		case FCGO:
-			passNotice = ".";
-			break;
-		case GO:
-			passNotice = ", desni klik za izpust.";
-			break;
-		}
-		
 		PlayerColor prevPlayer = game.playerTurn().next();
 		if (game.didPass(prevPlayer)) {
 			switch (prevPlayer) {
@@ -194,15 +184,15 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		case PLAY:
 			if (game.gameType().mixedGame()) {
 				// mixedGame => there is only one human player
-				window.writeMessage(prefix + "Na vrsti ste" + passNotice);
+				window.writeMessage(prefix + "Na vrsti ste.");
 			}
 			else {
 				switch (game.playerTurn()) {
 				case WHITE:
-					window.writeMessage(prefix + "Na vrsti je bel" + passNotice);
+					window.writeMessage(prefix + "Na vrsti je bel.");
 					break;
 				case BLACK:
-					window.writeMessage(prefix + "Na vrsti je črn" + passNotice);
+					window.writeMessage(prefix + "Na vrsti je črn.");
 					break;
 				}
 			}
@@ -245,6 +235,16 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		case ALLCOMPUTERS:
 			window.writeMessage("Računalnik igra proti samemu sebi...");
 			break;
+		}
+		
+		MoveResult status = game.gameStatus();
+		this.setToolTipText("");
+		if (status.canMakeMove()) {
+			this.setToolTipText("Desni klik za izpust poteze.");
+		}
+		else if (status.isWonGame()) {
+			if (game.goGameType() == GoGameType.GO)
+				this.setToolTipText("Znak + označuje ujetnika, znak x pa nadzor nad praznim poljem.");
 		}
 	}
 	
@@ -469,8 +469,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	public void mouseClicked(MouseEvent e) {
 		if (game == null) { return; }
 		// Ignore clicks if the player is not allowed to play a move.
-		if (game.gameStatus() != MoveResult.INVALID
-			&& game.gameStatus() != MoveResult.PLAY) { return; }
+		if (!game.gameStatus().canMakeMove()) { return; }
 		
 		Poteza move = null;
 		if (e.getButton() == MouseEvent.BUTTON1) {
@@ -499,8 +498,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	public void mouseMoved(MouseEvent e) {
 		if (game == null) { return; }
 		// Ignore clicks if the player is not allowed to play a move.
-		if (game.gameStatus() != MoveResult.INVALID
-			&& game.gameStatus() != MoveResult.PLAY) { return; }
+		if (!game.gameStatus().canMakeMove()) { return; }
 		
 		Poteza hoveredMaybe = moveFromXY(e.getX(), e.getY());
 		if (hoveredMaybe == null) {

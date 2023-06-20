@@ -17,7 +17,7 @@ public class InfoTable {
 		data = new Vector<Vector<String>>();
 		column = new Vector<String>();
 		column.add("Lastnost");
-		column.add("Črt");
+		column.add("Črn");
 		column.add("Bel");
 		table = new JTable(data, column) {
 		    private static final long serialVersionUID = 4588881758826517817L;

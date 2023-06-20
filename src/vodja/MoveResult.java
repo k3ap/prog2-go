@@ -42,4 +42,8 @@ public enum MoveResult {
 	public boolean isWonGame() {
 		return this == BLACKWINS || this == WHITEWINS;
 	}
+	
+	public boolean canMakeMove() {
+		return this == PLAY || this == INVALID;
+	}
 }

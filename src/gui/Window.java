@@ -164,10 +164,14 @@ public class Window extends JFrame implements ActionListener {
 	public void update() {
 		infoTable.updateTable(panel.getGame());
 		if (panel.getGame() != null) {
-			if (panel.getGame().goGameType() == GoGameType.GO)
+			if (panel.getGame().goGameType() == GoGameType.GO) {
 				passButton.setVisible(true);
+				// you may only pass if the player can play a move right now
+				passButton.setEnabled(panel.getGame().gameStatus().canMakeMove());
+			}
 			else 
 				passButton.setVisible(false);
+
 		}
 		repaint();
 		panel.repaint();
@@ -191,7 +195,9 @@ public class Window extends JFrame implements ActionListener {
 				newGameButton.setVisible(false);
 		}
 		else if (source == passButton) {
-			panel.playMove(Poteza.pass());
+			if (Popups.getPassConfirmation(panel.getGame())) {
+				panel.playMove(Poteza.pass());
+			}
 		}
 		else if (source == compDelayOption) {
 			compDelay = Popups.getDelayOption(compDelay);

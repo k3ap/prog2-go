@@ -18,6 +18,7 @@ import inteligenca.RandomMoveChooser;
 import inteligenca.WeightedGridEstimator;
 import logika.GoGameType;
 import vodja.GameType;
+import vodja.ManagedGame;
 
 public class Popups {
 	private final static Inteligenca[] intelligenceOptionsFC = {
@@ -116,5 +117,17 @@ public class Popups {
 		} else {
 			return currentDelay;
 		}
+	}
+	
+	public static boolean getPassConfirmation(ManagedGame game) {
+		if (!game.didPass(game.playerTurn().next())) {
+			// if the previous player didn't pass, passing now has no major consequences
+			return true;
+		}
+		
+		JLabel text = new JLabel("Če zdaj izpustite potezo, se bo igra zaradi dveh zaporednih izpuščenih potez končala.");
+		
+		int result = JOptionPane.showConfirmDialog(null, text, "Igra se po končala", JOptionPane.OK_CANCEL_OPTION);
+		return result == JOptionPane.OK_OPTION;
 	}
 }
