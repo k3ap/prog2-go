@@ -207,7 +207,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		case WHITEWINS:
 		case BLACKWINS:
 			if (game.goGameType() == GoGameType.GO)
-				drawControllAndPrisoners(g2);
+				drawControlAndPrisoners(g2);
 			else
 				highlightLoser(g2);
 				
@@ -452,7 +452,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		repaint();
 	}
 	
-	private void drawControllAndPrisoners(Graphics2D g2) {
+	private void drawControlAndPrisoners(Graphics2D g2) {
 		for (PlayerColor player : PlayerColor.values()) {
 			if (game.controlledZones(player) == null)
 				continue;
