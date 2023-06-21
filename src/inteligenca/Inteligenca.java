@@ -15,6 +15,7 @@ public class Inteligenca extends KdoIgra {
 	 */
 	public Inteligenca(MoveChooser dolocevalec) {
 		super(dolocevalec.name());
+		this.isHuman = false;
 		this.dolocevalec = dolocevalec;
 	}
 	

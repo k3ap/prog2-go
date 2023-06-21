@@ -1,4 +1,5 @@
 package gui;
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -202,7 +203,10 @@ public class Window extends JFrame implements ActionListener {
 			compDelay = Popups.getDelayOption(compDelay);
 		}
 		else if (source == colorsOption) {
-			panel.style.background = JColorChooser.showDialog(this, "Barva ozadja", panel.style.background);
+			Color newColor = JColorChooser.showDialog(this, "Barva ozadja", panel.style.background);
+			if (newColor != null) {
+				panel.style.background = newColor;
+			}
 		}
 		
 		update();

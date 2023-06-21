@@ -121,10 +121,12 @@ public class Popups {
 	
 	public static boolean getPassConfirmation(ManagedGame game) {
 		if (!game.didPass(game.playerTurn().next())) {
-			// if the previous player didn't pass, passing now has no major consequences
+			// if the previous player didn't pass, passing now has no major consequences,
+			// so there is no need to confirm the pass.
 			return true;
 		}
 		
+		// warn that the game will end if this move is passed
 		JLabel text = new JLabel("Če zdaj izpustite potezo, se bo igra zaradi dveh zaporednih izpuščenih potez končala.");
 		
 		int result = JOptionPane.showConfirmDialog(null, text, "Igra se po končala", JOptionPane.OK_CANCEL_OPTION);
