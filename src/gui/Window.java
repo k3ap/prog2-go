@@ -164,14 +164,27 @@ public class Window extends JFrame implements ActionListener {
 	public void update() {
 		infoTable.updateTable(panel.getGame());
 		if (panel.getGame() != null) {
-			if (panel.getGame().goGameType() == GoGameType.GO) {
+			if (panel.getGame().gameStatus().isWonGame()) {
+				// show the button for a new game if the current one is over
+				newGameButton.setVisible(true);
+				passButton.setVisible(false);
+			}
+			else if (panel.getGame().goGameType() == GoGameType.GO) {
+				// pass button is visible but
+				// it's only enabled if the player can play a move right now
 				passButton.setVisible(true);
-				// you may only pass if the player can play a move right now
 				passButton.setEnabled(panel.getGame().gameStatus().canMakeMove());
 			}
-			else 
+			else {
+				// FCGO is being played, show neither button
+				newGameButton.setVisible(false);
 				passButton.setVisible(false);
-
+			}
+		}
+		else {
+			// there is no game
+			passButton.setVisible(false);
+			newGameButton.setVisible(true);
 		}
 		repaint();
 		panel.repaint();
