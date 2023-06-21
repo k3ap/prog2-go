@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 
 import logika.FieldColor;
-import logika.Grid;
 import logika.GridFirstCapture;
 import logika.Igra;
 import logika.Index;
