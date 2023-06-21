@@ -170,10 +170,10 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		if (game.didPass(prevPlayer)) {
 			switch (prevPlayer) {
 			case BLACK:
-				prefix = "Črn je izpustil potezo. ";
+				prefix = "Črn igralec je izpustil potezo. ";
 				break;
 			case WHITE:
-				prefix = "Bel je izpustil potezo. ";
+				prefix = "Bel igralec je izpustil potezo. ";
 				break;
 			}
 		}
