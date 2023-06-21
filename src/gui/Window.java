@@ -1,6 +1,7 @@
 package gui;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
@@ -63,17 +64,14 @@ public class Window extends JFrame implements ActionListener {
 		consButton.weighty = 0.0;
 		consButton.gridy = 1;
 		consButton.weightx = 1.0;
+		consButton.insets = new Insets(5, 5, 5, 5);
 		grid.setConstraints(newGameButton, consButton);
 		add(newGameButton);
 		
 		// pass button
 		passButton = new JButton("Izpusti potezo");
 		passButton.addActionListener(this);
-		GridBagConstraints consPassButton = new GridBagConstraints();
-		consPassButton.weighty = 0.0;
-		consPassButton.gridy = 1;
-		consPassButton.weightx = 1.0;
-		grid.setConstraints(passButton, consPassButton);
+		grid.setConstraints(passButton, consButton);
 		passButton.setVisible(false);
 		add(passButton);
 		
@@ -100,6 +98,7 @@ public class Window extends JFrame implements ActionListener {
 		constTable.ipadx = 100;
 		constTable.weightx = 0.5;
 		constTable.fill = GridBagConstraints.BOTH;
+		constTable.insets = new Insets(10, 10, 10, 10);
 		grid.setConstraints(infoTableScrollPane, constTable);
 		//infoTableScrollPane.setVisible(false);
 		add(infoTableScrollPane);
