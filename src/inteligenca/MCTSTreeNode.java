@@ -70,7 +70,12 @@ public class MCTSTreeNode {
 	 * Initialize children as a map from the valid moves to the subnodes.
 	 */
 	private void fillChildren(List<Index> validMoves) {
-		validMoves.add(new Index(-1, -1));
+		
+		// we only consider passing if there's already a lot of
+		// stones on the board
+		if (validMoves.size() < state.width() * state.height() / 2)
+			validMoves.add(new Index(-1, -1));
+		
 		Collections.shuffle(validMoves);
 		
 		for (Index move : validMoves) {
