@@ -155,12 +155,7 @@ public class GridGo extends Grid {
 					else if (colorOfField(idx).equals(FieldColor.WHITE)) {
 						white++;
 					}
-					else {
-						System.out.println("Houston, we have a problem.");
-					}
 				}
-				
-				System.out.format("black: %d, white: %d\n", black, white);
 				
 				double blockage = (double) Integer.max(black, white);
 				double gridAverage = (double) (height + width) / 2.0;
