@@ -51,7 +51,6 @@ public class Igra {
 	 * @return Whether the move was valid.
 	 */
 	public boolean odigraj(Poteza poteza) {
-		lastMove = poteza;
 		// mark passes
 		GridGo gridGo = null;
 		if (gameType == GoGameType.GO) {
@@ -79,6 +78,7 @@ public class Igra {
 			
 			grid.placeColor(idx, nextPlayer.field());
 		}
+		lastMove = poteza;
 		PlayerColor thisPlayer = nextPlayer;
 		nextPlayer = nextPlayer.next();
 		
