@@ -156,8 +156,16 @@ public abstract class Grid {
 	 * @param color Color of the new stone.
 	 */
 	public void placeColor(Index idx, FieldColor color) {
-		
 		final int[][] NEIGHBOURS = new int[][] {{0, 1}, {1, 0}, {-1, 0}, {0, -1}};
+		
+		// we need to do two things in this method:
+		// 1. reset the color in the grid
+		// 2. update the connectedComponents (UFDS) structure to reflect this change
+		
+		// updating the UFDS structure means we have to do two things:
+		// 1. put this node in the new component it is now in
+		// 2. remove it from the old component it was in
+		// we also need to maintain the structure's mapping (liberties)
 		
 		FieldColor oldColor = grid[idx.i()][idx.j()];
 		grid[idx.i()][idx.j()] = color;
@@ -171,10 +179,10 @@ public abstract class Grid {
 		for (int didx = 0; didx < 4; didx++) {
 			int di = NEIGHBOURS[didx][0];
 			int dj = NEIGHBOURS[didx][1];
-			
+				
 			if (idx.i() + di < 0 || idx.j() + dj < 0 || idx.i() + di >= height || idx.j() + dj >= width)
 				continue;
-			
+				
 			// if the colors before didn't match, there's nothing to fix
 			if (grid[idx.i() + di][idx.j() + dj].equals(oldColor)) {
 				Index newpar = new Index(idx.i() + di, idx.j() + dj);
@@ -196,6 +204,8 @@ public abstract class Grid {
 			}
 			
 		} else if (color.equals(FieldColor.EMPTY)) {
+			
+			// this is probably unused
 			
 			// we need to add this field to any liberties it could be in
 			for (int didx = 0; didx < 4; didx++) {

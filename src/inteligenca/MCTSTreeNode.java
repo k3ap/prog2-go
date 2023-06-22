@@ -21,33 +21,30 @@ public class MCTSTreeNode {
 	 */
 	private final static double CONST = 2.1;
 	
-	/**
-	 * The depth of the simulation to be performed before two consecutive passes are enforced. 
-	 */
-	private final static int SIMULATION_DEPTH = 25;
-	
 	private GridGo state;
 	private PlayerColor player;
 	private Map<Poteza, MCTSTreeNode> children;
 	private double score;
 	private int numPlays;
 	private Iterator<Poteza> unvisitedMoveIterator;
+	private int simulationDepth;
 	
 	/**
 	 * Construct a new tree from the given grid.
 	 * @param grid The currect state of the grid
 	 */
-	public MCTSTreeNode(GridGo grid, PlayerColor player) {
+	public MCTSTreeNode(GridGo grid, PlayerColor player, int simulationDepth) {
 		this.state = (GridGo) grid.deepcopy();
 		this.player = player;
 		this.children = new TreeMap<>();
 		this.score = 0;
 		this.numPlays = 0;
+		this.simulationDepth = simulationDepth;
 		
-		this.fillChildren();
+		this.fillChildren(state.fieldsValidForPlayer(player.field()));
 	}
 	
-	private MCTSTreeNode(GridGo grid, PlayerColor previuousPlayer, Poteza move) {
+	private MCTSTreeNode(GridGo grid, PlayerColor previuousPlayer, Poteza move, int simulationDepth) {
 		this.state = (GridGo) grid.deepcopy();
 		if (move.isPass()) {
 			switch(previuousPlayer) {
@@ -65,23 +62,25 @@ public class MCTSTreeNode {
 		this.children = new TreeMap<>();
 		this.score = 0;
 		this.numPlays = 0;
-		
-		// TODO: what if this was game end?
-		
-		this.fillChildren();
+		this.simulationDepth = simulationDepth;
+		this.fillChildren(this.state.allEmptyFields());
 	}
 
 	/**
 	 * Initialize children as a map from the valid moves to the subnodes.
 	 */
-	private void fillChildren() {
-		List<Index> moves = state.fieldsValidForPlayer(player.field());
-		Collections.shuffle(moves);
+	private void fillChildren(List<Index> validMoves) {
 		
-		for (Index move : moves) {
+		// we only consider passing if there's already a lot of
+		// stones on the board
+		if (validMoves.size() < state.width() * state.height() / 2)
+			validMoves.add(new Index(-1, -1));
+		
+		Collections.shuffle(validMoves);
+		
+		for (Index move : validMoves) {
 			children.put(move.poteza(), null);
 		}
-		children.put(new Poteza(-1, -1), null);
 		
 		// we assume that children will not change
 		this.unvisitedMoveIterator = children.keySet().iterator();
@@ -93,7 +92,6 @@ public class MCTSTreeNode {
 	 * @return How many points this node's player scored in the expansion 
 	 */
 	private double selectAndExpand() {
-		
 		if (!unvisitedMoveIterator.hasNext()) {
 			// this is a fully expanded node
 			double delta = findBestAndSelect();
@@ -102,7 +100,7 @@ public class MCTSTreeNode {
 			return delta;
 		} else {
 			Poteza moveToMake = unvisitedMoveIterator.next();
-			children.put(moveToMake, new MCTSTreeNode(state, player, moveToMake));
+			children.put(moveToMake, new MCTSTreeNode(state, player, moveToMake, simulationDepth));
 			double delta = 1 - children.get(moveToMake).simulate();
 			score += delta;
 			numPlays++;
@@ -137,7 +135,7 @@ public class MCTSTreeNode {
 	private double simulate() {
 		PlayerColor currentPlayer = player;
 		GridGo grid = (GridGo) state.deepcopy();
-		for (int moveNumber = 0; moveNumber < SIMULATION_DEPTH; moveNumber++) {
+		for (int moveNumber = 0; moveNumber < simulationDepth; moveNumber++) {
 			Index move = grid.getRandomEmptyField();
 			grid.placeColor(move, currentPlayer.field());
 			currentPlayer = currentPlayer.next();
@@ -168,6 +166,11 @@ public class MCTSTreeNode {
 		Poteza best = null;
 		int bestNum = -1;
 		for (Poteza move : children.keySet()) {
+			if (children.get(move) == null) {
+				// this is a very bad situation
+				// we have fewer runs than possible moves
+				break;
+			}
 			if (best == null || children.get(move).numPlays > bestNum) {
 				best = move;
 				bestNum = children.get(move).numPlays;
