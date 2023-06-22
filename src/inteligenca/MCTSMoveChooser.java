@@ -18,9 +18,15 @@ public class MCTSMoveChooser extends MoveChooser {
 	@Override
 	public Poteza chooseMove(Igra igra) {
 		int simDepth = igra.grid.width() * igra.grid.height() / 5;
-		int numRuns = igra.grid.width() * igra.grid.height() * 2;
+		
+		double boardsize = igra.grid.width();
+		long allotedTime = (long) (boardsize*boardsize*boardsize/48. - 13. * boardsize*boardsize / 16. + 551.*boardsize/48. - 760. / 16.);
+		allotedTime *= 1000000000;
+		
 		MCTSTreeNode root = new MCTSTreeNode((GridGo) igra.grid, igra.playerTurn(), simDepth);
-		for (int i = 0; i < numRuns; i++) {
+		long startTime = System.nanoTime();
+		int c = 0;
+		while (System.nanoTime() - startTime < allotedTime) {
 			root.singleRun();
 		}
 		return root.getBestMove();
