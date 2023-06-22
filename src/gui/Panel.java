@@ -238,13 +238,15 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		}
 		
 		MoveResult status = game.gameStatus();
-		this.setToolTipText("");
-		if (status.canMakeMove()) {
+		if (status.canMakeMove() && game.goGameType() == GoGameType.GO) {
 			this.setToolTipText("Desni klik za izpust poteze.");
 		}
 		else if (status.isWonGame()) {
 			if (game.goGameType() == GoGameType.GO)
 				this.setToolTipText("Znak + označuje ujetnika, znak x pa nadzor nad praznim poljem.");
+		}
+		else {
+			this.setToolTipText(null);
 		}
 	}
 	
