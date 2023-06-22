@@ -37,12 +37,21 @@ public class Popups {
 			new Inteligenca(new RandomMoveChooser()),
 	};
 	
+	private final static String[] gameSizeOptions = {
+			"9x9",
+			"13x13",
+			"17x17",
+			"19x19"
+	};
+	
 	protected static GameParams getGameChoice() {
 		JComboBox<GoGameType> type = new JComboBox<GoGameType>(new GoGameType[] {GoGameType.FCGO, GoGameType.GO});
 		JComboBox<Inteligenca> izbira = new JComboBox<Inteligenca>(intelligenceOptionsFC);
 		izbira.setSelectedIndex(0);
 		JComboBox<Inteligenca> izbira2 = new JComboBox<Inteligenca>(intelligenceOptionsFC);
 		izbira2.setSelectedIndex(0);
+		JComboBox<String> gameSize = new JComboBox<String>(gameSizeOptions);
+		gameSize.setSelectedIndex(0);
 		type.addItemListener(new GameTypeListener(izbira, izbira2, intelligenceOptionsFC, intelligenceOptionsGO));
 		final JComponent[] inputs = new JComponent[] {
 				new JLabel("Igra:"),
@@ -51,6 +60,8 @@ public class Popups {
 				izbira,
 				new JLabel("Igralec belih kamnov:"),
 				izbira2,
+				new JLabel("Velikost plošče:"),
+				gameSize,
 		};
 		int result = JOptionPane.showConfirmDialog(null, inputs, "Izberite odločevalca potez", JOptionPane.OK_CANCEL_OPTION);
 		if (result == JOptionPane.OK_OPTION) {
@@ -65,10 +76,14 @@ public class Popups {
 			if (!black.isHuman() && white.isHuman())
 				gameType = GameType.COMHUM;
 			
+			String selectedSize = gameSizeOptions[gameSize.getSelectedIndex()];
+			int size = Integer.parseInt(selectedSize.split("x")[0]);
+			
 			return new GameParams(
 					(GoGameType) type.getSelectedItem(),
 					gameType,
-					new IntelligencePair(black, white)
+					new IntelligencePair(black, white),
+					size
 			);
 		} else {
 			return null;

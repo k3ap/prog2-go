@@ -233,16 +233,16 @@ public class Window extends JFrame implements ActionListener {
 		
 		switch (params.gameType()) {
 		case COMCOM:
-			panel.newComComGame(params.ip(), this, 9, params.goGameType());
+			panel.newComComGame(params.ip(), this, params.size(), params.goGameType());
 			break;
 		case COMHUM:
-			panel.newComGame(params.gameType(), params.ip().i1(), this, 9, params.goGameType());
+			panel.newComGame(params.gameType(), params.ip().i1(), this, params.size(), params.goGameType());
 			break;
 		case HUMCOM:
-			panel.newComGame(params.gameType(), params.ip().i2(), this, 9, params.goGameType());
+			panel.newComGame(params.gameType(), params.ip().i2(), this, params.size(), params.goGameType());
 			break;
 		case HUMHUM:
-			panel.newHumHumGame(this, 9, params.goGameType());
+			panel.newHumHumGame(this, params.size(), params.goGameType());
 			break;
 		}
 		
