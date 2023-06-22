@@ -25,7 +25,6 @@ public class MCTSMoveChooser extends MoveChooser {
 		
 		MCTSTreeNode root = new MCTSTreeNode((GridGo) igra.grid, igra.playerTurn(), simDepth);
 		long startTime = System.nanoTime();
-		int c = 0;
 		while (System.nanoTime() - startTime < allotedTime) {
 			root.singleRun();
 		}
