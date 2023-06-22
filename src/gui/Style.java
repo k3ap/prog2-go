@@ -45,6 +45,7 @@ public class Style {
 		// color with which the losing component is highlighted
 		losingHighlight = new Color(200, 10, 10, 40);
 		
+		// prisoners and control
 		controlPrisonerStroke = new BasicStroke(3);
 		blackPrisonersControl = new Color(30, 30, 50);
 		whitePrisonersControl = new Color(210, 220, 210);

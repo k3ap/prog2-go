@@ -78,8 +78,8 @@ public class ManagedGame {
 	 */
 	public void setIntelligences(IntelligencePair p) {
 		assert gameType.equals(GameType.COMCOM);
-		this.intelligence = p.i1();
-		this.intelligence2 = p.i2();
+		this.intelligence = p.black();
+		this.intelligence2 = p.white();
 	}
 
 	private void handleType(GameType gameType) {

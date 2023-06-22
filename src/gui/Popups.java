@@ -20,7 +20,14 @@ import logika.GoGameType;
 import vodja.GameType;
 import vodja.ManagedGame;
 
+/**
+ * Contains static methods for various popups that Window uses.
+ *
+ */
 public class Popups {
+	/**
+	 * The intelligences the user can select for FC Go.
+	 */
 	private final static Inteligenca[] intelligenceOptionsFC = {
 			new Inteligenca("Človek", true),
 			new Inteligenca(new AlphaBetaFCMoveChooser(4, new WeightedGridEstimator())),
@@ -29,6 +36,9 @@ public class Popups {
 			new Inteligenca(new RandomMoveChooser()),
 	};
 	
+	/**
+	 * The intelligences the user can select for Go.
+	 */
 	private final static Inteligenca[] intelligenceOptionsGO = {
 			new Inteligenca("Človek", true),
 			new Inteligenca(new MCTSMoveChooser()),
@@ -37,6 +47,9 @@ public class Popups {
 			new Inteligenca(new RandomMoveChooser()),
 	};
 	
+	/**
+	 * The grid sizes the user can select.
+	 */
 	private final static String[] gameSizeOptions = {
 			"9x9",
 			"13x13",
@@ -46,27 +59,27 @@ public class Popups {
 	
 	protected static GameParams getGameChoice() {
 		JComboBox<GoGameType> type = new JComboBox<GoGameType>(new GoGameType[] {GoGameType.FCGO, GoGameType.GO});
-		JComboBox<Inteligenca> izbira = new JComboBox<Inteligenca>(intelligenceOptionsFC);
-		izbira.setSelectedIndex(0);
-		JComboBox<Inteligenca> izbira2 = new JComboBox<Inteligenca>(intelligenceOptionsFC);
-		izbira2.setSelectedIndex(0);
+		JComboBox<Inteligenca> blackInt = new JComboBox<Inteligenca>(intelligenceOptionsFC);
+		blackInt.setSelectedIndex(0);
+		JComboBox<Inteligenca> whiteInt = new JComboBox<Inteligenca>(intelligenceOptionsFC);
+		whiteInt.setSelectedIndex(0);
 		JComboBox<String> gameSize = new JComboBox<String>(gameSizeOptions);
 		gameSize.setSelectedIndex(0);
-		type.addItemListener(new GameTypeListener(izbira, izbira2, intelligenceOptionsFC, intelligenceOptionsGO));
+		type.addItemListener(new GameTypeListener(blackInt, whiteInt, intelligenceOptionsFC, intelligenceOptionsGO));
 		final JComponent[] inputs = new JComponent[] {
 				new JLabel("Igra:"),
 				type,
 				new JLabel("Igralec črnih kamnov:"),
-				izbira,
+				blackInt,
 				new JLabel("Igralec belih kamnov:"),
-				izbira2,
+				whiteInt,
 				new JLabel("Velikost plošče:"),
 				gameSize,
 		};
 		int result = JOptionPane.showConfirmDialog(null, inputs, "Izberite odločevalca potez", JOptionPane.OK_CANCEL_OPTION);
 		if (result == JOptionPane.OK_OPTION) {
-			Inteligenca black = (Inteligenca) izbira.getSelectedItem();
-			Inteligenca white = (Inteligenca) izbira2.getSelectedItem();
+			Inteligenca black = (Inteligenca) blackInt.getSelectedItem();
+			Inteligenca white = (Inteligenca) whiteInt.getSelectedItem();
 			
 			GameType gameType = GameType.COMCOM;
 			if (black.isHuman() && white.isHuman())
@@ -134,6 +147,11 @@ public class Popups {
 		}
 	}
 	
+	/**
+	 * Show a popup if passing now will end the game (Go).
+	 * @param game The game being played.
+	 * @return true iff the pass move should be played.
+	 */
 	public static boolean getPassConfirmation(ManagedGame game) {
 		if (!game.didPass(game.playerTurn().next())) {
 			// if the previous player didn't pass, passing now has no major consequences,

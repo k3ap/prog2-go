@@ -8,8 +8,19 @@ import javax.swing.JComboBox;
 import inteligenca.Inteligenca;
 import logika.GoGameType;
 
+/**
+ * Listen to changes if the JComboBox for selecting game type (FC Go or Go)
+ * and update the JComboBoxes for picking the opponent AI, since the options
+ * for Go and FC Go are different.
+ */
 public class GameTypeListener implements ItemListener {
+	/**
+	 * The dropdowns for picking the black and white intelligences.
+	 */
 	private JComboBox<Inteligenca> blackCombo, whiteCombo;
+	/**
+	 * The lists of available intelligences for both games.  
+	 */
 	private Inteligenca[] fc, go;
 	
 	public GameTypeListener(JComboBox<Inteligenca> blackCombo, JComboBox<Inteligenca> whiteCombo, Inteligenca[] fc, Inteligenca[] go) {
@@ -36,6 +47,8 @@ public class GameTypeListener implements ItemListener {
 			return;
 		}
 		
+		// Reset the available options to the ones corresponding to the
+		// selected game.
 		blackCombo.removeAllItems();
 		whiteCombo.removeAllItems();
 		for (Inteligenca i : desired) {

@@ -8,6 +8,9 @@ import logika.GoGameType;
 import logika.PlayerColor;
 import vodja.ManagedGame;
 
+/**
+ * The table on the side showing info about the game.
+ */
 public class InfoTable {
 	public Vector<Vector<String>> data;
 	private Vector<String> column;
@@ -36,6 +39,10 @@ public class InfoTable {
 		return table;
 	}
 	
+	/**
+	 * Update the table to display the status of the given game.
+	 * @param game the given game.
+	 */
 	public void updateTable(ManagedGame game) {
 		data.clear();
 		
@@ -47,6 +54,7 @@ public class InfoTable {
 			data.add(stoneCount);
 			
 			if (game.goGameType().equals(GoGameType.GO)) {
+				// go specific info
 				Vector<String> captured = new Vector<String>();
 				captured.add("Izgubljeni");
 				captured.add(Integer.toString(game.captured(PlayerColor.BLACK)));
