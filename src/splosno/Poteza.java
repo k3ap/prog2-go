@@ -10,5 +10,13 @@ public record Poteza (int x, int y) implements Comparable<Poteza> {
 		if (y > other.y) return 1;
 		return 0;
 	}
+	
+	public boolean isPass() {
+		return x == -1 && y == -1;
+	}
+	
+	public static Poteza pass() {
+		return new Poteza(-1, -1);
+	}
 }
 	

@@ -84,9 +84,6 @@ public class GridGo extends Grid {
 		int blackPoints = calculatePoints(FieldColor.BLACK);
 		int whitePoints = calculatePoints(FieldColor.WHITE);
 		
-		System.out.println("Points for black:   0 - " + blackCaptured + " + " + blackControl.size() + " - " + blackPrisoners.size() + " = " + blackPoints);
-		System.out.println("Points for white: 6.5 - " + whiteCaptured + " + " + whiteControl.size() + " - " + whitePrisoners.size() + " = " + whitePoints + ".5");
-		
 		if (blackPoints > whitePoints) {
 			// black won, white lost
 			return field.equals(FieldColor.WHITE);

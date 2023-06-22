@@ -7,6 +7,7 @@ import java.awt.Color;
 public class Style {
 	public Stroke grid;
 	public Stroke stoneEdge;
+	public Color background;
 	public Color whiteStone;
 	public Color whiteStoneEdge;
 	public Color blackStone;
@@ -26,6 +27,7 @@ public class Style {
 		// grid
 		grid = new BasicStroke(1);
 		gridColor = new Color(0, 0, 0);
+		background = new Color(244, 188, 124);
 
 		// stone color
 		stoneEdge = new BasicStroke(1);

@@ -24,7 +24,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	private static final long serialVersionUID = 7693008210122811280L;
 	private ManagedGame game;
 	private Dimension dimensions;
-	private Style style;
+	public Style style;
 	private Window window;
 	private Index shadow;
 	private int leftEdge, topEdge, widthStep, heightStep, sideLength;
@@ -46,6 +46,10 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		gameSize = null;
 		addMouseListener(this);
 		addMouseMotionListener(this);
+	}
+	
+	public ManagedGame getGame() {
+		return game;
 	}
 	
 	/**
@@ -94,6 +98,11 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		// Can't draw a 1x1 grid
 		assert gridWidth > 1;
 		assert gridHeight > 1;
+		
+		// background
+		
+		g2.setBackground(style.background);
+		g2.clearRect(leftEdge - widthStep / 2, topEdge - heightStep / 2, gridWidth * widthStep, gridHeight * heightStep);
 
 		// grid
 		g2.setStroke(style.grid);
@@ -131,34 +140,42 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			}
 		}
 		
+		// last stone that was placed
+		if (game.lastMove() != null) {
+			if (!game.lastMove().isPass()) {
+				Index idx = new Index(game.lastMove());
+				Color markColor = null;
+				switch (game.fieldColor(idx)) {
+				case BLACK:
+					markColor = style.whiteStone;
+					break;
+				case WHITE:
+					markColor = style.blackStone;
+					break;
+				case EMPTY:
+					assert false;
+					break;
+				}
+				drawMark(g2, idx.i(), idx.j(), markColor);
+			}
+		}
+		
 		// shadow stone
 		if (shadow != null) {
 			drawShadowStone(g2, shadow.i(), shadow.j(), game.playerTurn());
 		}
 		
-		// control & prisoners
-		/*
-		for (PlayerColor player : PlayerColor.values()) {
-			if (game.controlledZones(player) == null)
-				continue;
-			for (Index idx : game.controlledZones(player)) {
-				markControl(g2, idx.i(), idx.j(), player);
+		String prefix = "";
+		PlayerColor prevPlayer = game.playerTurn().next();
+		if (game.didPass(prevPlayer)) {
+			switch (prevPlayer) {
+			case BLACK:
+				prefix = "Črn igralec je izpustil potezo. ";
+				break;
+			case WHITE:
+				prefix = "Bel igralec je izpustil potezo. ";
+				break;
 			}
-			for (Index idx : game.prisonersOf(player)) {
-				markPrisoner(g2, idx.i(), idx.j(), player);
-			}
-		}
-		*/
-		
-		String passNotice = "";
-		switch (game.getGoGameType()) {
-		case FCGO:
-			passNotice = ".";
-			break;
-		case GO:
-			passNotice = ", desni klik za izpust.";
-			break;
-		
 		}
 		
 		// draw game status
@@ -167,15 +184,15 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		case PLAY:
 			if (game.gameType().mixedGame()) {
 				// mixedGame => there is only one human player
-				window.writeMessage("Na vrsti ste" + passNotice);
+				window.writeMessage(prefix + "Na vrsti ste.");
 			}
 			else {
 				switch (game.playerTurn()) {
 				case WHITE:
-					window.writeMessage("Na vrsti je bel" + passNotice);
+					window.writeMessage(prefix + "Na vrsti je bel.");
 					break;
 				case BLACK:
-					window.writeMessage("Na vrsti je črn" + passNotice);
+					window.writeMessage(prefix + "Na vrsti je črn.");
 					break;
 				}
 			}
@@ -189,7 +206,11 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			break;
 		case WHITEWINS:
 		case BLACKWINS:
-			highlightLoser(g2);
+			if (game.goGameType() == GoGameType.GO)
+				drawControlAndPrisoners(g2);
+			else
+				highlightLoser(g2);
+				
 			switch (game.getOutcome()) {
 			case COMBLACKWON:
 				window.writeMessage("Algoritem " + game.intelligence1Name() + " (črni) je zmagal.");
@@ -214,6 +235,18 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		case ALLCOMPUTERS:
 			window.writeMessage("Računalnik igra proti samemu sebi...");
 			break;
+		}
+		
+		MoveResult status = game.gameStatus();
+		if (status.canMakeMove() && game.goGameType() == GoGameType.GO) {
+			this.setToolTipText("Desni klik za izpust poteze.");
+		}
+		else if (status.isWonGame()) {
+			if (game.goGameType() == GoGameType.GO)
+				this.setToolTipText("Znak + označuje ujetnika, znak x pa nadzor nad praznim poljem.");
+		}
+		else {
+			this.setToolTipText(null);
 		}
 	}
 	
@@ -281,11 +314,15 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		drawAbstractStone(g2, i, j, center, edge);
 	}
 	
+	private int stoneDiameter() {
+		return style.stoneDiameter * sideLength * 9 / 500 / gameSize;
+	}
+	
 	/**
 	 * Do not call this method directly.
 	 */
 	private void drawAbstractStone(Graphics2D g2, int i, int j, Color center, Color edge) {
-		int d = style.stoneDiameter * sideLength * 9 / 500 / gameSize;
+		int d = stoneDiameter();
 		// sideLength is 500 if the window hasn't been resized
 		int y = topEdge + i * heightStep - d / 2;
 		int x = leftEdge + j * widthStep - d / 2;
@@ -293,6 +330,16 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		g2.setColor(center);
 		g2.fillOval(x, y, d, d);
 		g2.setColor(edge);
+		g2.drawOval(x, y, d, d);
+	}
+	
+	private void drawMark(Graphics2D g2, int i, int j, Color color) {
+		int d = stoneDiameter() / 3;
+		// sideLength is 500 if the window hasn't been resized
+		int y = topEdge + i * heightStep - d / 2;
+		int x = leftEdge + j * widthStep - d / 2;
+
+		g2.setColor(color);;
 		g2.drawOval(x, y, d, d);
 	}
 	
@@ -406,27 +453,45 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		this.gameSize = gameSize;
 		repaint();
 	}
+	
+	private void drawControlAndPrisoners(Graphics2D g2) {
+		for (PlayerColor player : PlayerColor.values()) {
+			if (game.controlledZones(player) == null)
+				continue;
+			for (Index idx : game.controlledZones(player)) {
+				markControl(g2, idx.i(), idx.j(), player);
+			}
+			for (Index idx : game.prisonersOf(player)) {
+				markPrisoner(g2, idx.i(), idx.j(), player);
+			}
+		}
+	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if (game == null) { return; }
 		// Ignore clicks if the player is not allowed to play a move.
-		if (game.gameStatus() != MoveResult.INVALID
-			&& game.gameStatus() != MoveResult.PLAY) { return; }
+		if (!game.gameStatus().canMakeMove()) { return; }
 		
 		Poteza move = null;
 		if (e.getButton() == MouseEvent.BUTTON1) {
 			move = moveFromXY(e.getX(), e.getY());
 		}
 		else if (e.getButton() == MouseEvent.BUTTON3) {
-			if (game.getGoGameType().equals(GoGameType.GO)) {
-				move = new Poteza(-1, -1);
+			if (game.goGameType().equals(GoGameType.GO)) {
+				move = Poteza.pass();
 			}
 			// otherwise leave move as null, FCGO has no passes
 		}
+		playMove(move);
+	}
+	
+	public void playMove(Poteza move) {
 		if (move != null) {
 			game.play(move);
-			mouseMoved(e); // update the shadow once a stone is placed
+			if (!move.isPass()) {
+				shadow = null;
+			}
 			window.update();
 		}
 	}
@@ -435,8 +500,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	public void mouseMoved(MouseEvent e) {
 		if (game == null) { return; }
 		// Ignore clicks if the player is not allowed to play a move.
-		if (game.gameStatus() != MoveResult.INVALID
-			&& game.gameStatus() != MoveResult.PLAY) { return; }
+		if (!game.gameStatus().canMakeMove()) { return; }
 		
 		Poteza hoveredMaybe = moveFromXY(e.getX(), e.getY());
 		if (hoveredMaybe == null) {

@@ -15,6 +15,7 @@ public class Igra {
 	private PlayerColor nextPlayer;
 	private PlayerColor winner;
 	private GoGameType gameType;
+	private Poteza lastMove;
 
 	/**
 	 * Creates a new game with a 9x9 grid and FC rules.
@@ -36,6 +37,7 @@ public class Igra {
 		};
 		
 		winner = null; // null means no one has won yet
+		lastMove = null;
 		nextPlayer = PlayerColor.BLACK;
 	}
 	
@@ -50,7 +52,6 @@ public class Igra {
 	 */
 	public boolean odigraj(Poteza poteza) {
 		// mark passes
-		boolean isPass = poteza.x() == -1 && poteza.y() == -1;
 		GridGo gridGo = null;
 		if (gameType == GoGameType.GO) {
 			gridGo = (GridGo) grid;
@@ -59,15 +60,15 @@ public class Igra {
 		if (gameType == GoGameType.GO) {
 			switch (nextPlayer) {
 			case BLACK:
-				gridGo.blackPass = isPass;
+				gridGo.blackPass = poteza.isPass();
 				break;
 			case WHITE:
-				gridGo.whitePass = isPass;
+				gridGo.whitePass = poteza.isPass();
 				break;
 			}
 		}
 		
-		if (!isPass) {
+		if (!poteza.isPass()) {
 			// an actual move was played
 			Index idx = new Index(poteza);
 			
@@ -77,6 +78,7 @@ public class Igra {
 			
 			grid.placeColor(idx, nextPlayer.field());
 		}
+		lastMove = poteza;
 		PlayerColor thisPlayer = nextPlayer;
 		nextPlayer = nextPlayer.next();
 		
@@ -173,5 +175,21 @@ public class Igra {
 		}
 	}
 	
-	public GoGameType getGoGameType() { return gameType; }
+	public GoGameType goGameType() { return gameType; }
+	
+	public boolean didPass(PlayerColor player) {
+		if (gameType.equals(GoGameType.FCGO))
+			return false;
+		
+		switch (player) {
+		case BLACK:
+			return ((GridGo) grid).blackPass;
+		case WHITE:
+			return ((GridGo) grid).whitePass;
+		}
+		
+		return false;
+	}
+
+	public Poteza lastMove() { return lastMove; }
 }

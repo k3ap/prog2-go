@@ -12,6 +12,7 @@ import inteligenca.Inteligenca;
 import logika.PlayerColor;
 import logika.FieldColor;
 import logika.GoGameType;
+import logika.GridGo;
 import logika.Igra;
 import logika.Index;
 import splosno.Poteza;
@@ -29,6 +30,7 @@ public class ManagedGame {
 	 * Which spaces can the player play on.
 	 */
 	private boolean[][] validity;
+	private boolean outdatedValidity;
 	private Window window;
 	
 	class Sleeper extends Thread {
@@ -56,6 +58,7 @@ public class ManagedGame {
 				validity[i][j] = true;
 			}
 		}
+		outdatedValidity = false;
 		this.window = window;
 		handleType(managedGameType);
 	}
@@ -111,22 +114,21 @@ public class ManagedGame {
 			return;
 		}
 		
-		// update validity
-		for (int i = 0; i < height(); i++) {
-			for (int j = 0; j < width(); j++) {
-				validity[i][j] = game.isValid(new Index(i, j));
-				
-			}
-		}
-		
 		status = winnerToGameStatus(game.winner());
 		if ((gameType == GameType.HUMCOM || gameType == GameType.COMHUM) // the game type has the computer making moves 
-			&& status == MoveResult.PLAY) // no one has won yet 
+			&& status.canMakeMove()) // no one has won yet 
 		{
-			// When the human has made their move it's the coputer's turn.
+			// When the human has made their move it's the computer's turn.
 			status = MoveResult.WAIT;
+			for (int i = 0; i < height(); i++) {
+				for (int j = 0; j < width(); j++) {
+					validity[i][j] = false;
+					
+				}
+			}
 			getMoveFromIntelligence();
 		}
+		outdatedValidity = true;
 	}
 
 	private void getMoveFromIntelligence() {
@@ -327,10 +329,47 @@ public class ManagedGame {
 	 * @return An array of indices that the component occupies.
 	 */
 	public Index[] losingComponent() { return game.losingComponent(); }
-	public boolean isValid(Index idx) { return validity[idx.i()][idx.j()]; }
+	public boolean isValid(Index idx) {
+		if (outdatedValidity) {
+			for (int i = 0; i < height(); i++) {
+				for (int j = 0; j < width(); j++) {
+					validity[i][j] = game.isValid(new Index(i, j));
+					
+				}
+			}
+			outdatedValidity = false;
+		}
+		return validity[idx.i()][idx.j()];
+	}
 
+	public int stoneCount(PlayerColor player) {
+		int count = 0;
+		for (int i = 0; i < game.height(); i++) {
+			for (int j = 0; j < game.width(); j++) {
+				if (game.grid.colorOfField(new Index(i, j)) == player.field())
+					count++;
+			}
+		}
+		return count;
+	}
+	public int captured(PlayerColor player) {
+		assert game.goGameType() == GoGameType.GO;
+		switch (player) {
+		case BLACK:
+			return ((GridGo) game.grid).blackCaptured;
+		case WHITE:
+			return ((GridGo) game.grid).whiteCaptured;
+		}
+		return -1;
+	}
+	public int calculatePoints(PlayerColor player) {
+		return ((GridGo) game.grid).calculatePoints(player.field());
+	}
 	public Set<Index> controlledZones(PlayerColor player) { return game.controlledZones(player); }
 	public Set<Index> prisonersOf(PlayerColor player) { return game.prisonersOf(player); }
 	
-	public GoGameType getGoGameType() { return game.getGoGameType(); }
+	public GoGameType goGameType() { return game.goGameType(); }
+	
+	public boolean didPass(PlayerColor player) { return game.didPass(player); }
+	public Poteza lastMove() { return game.lastMove(); }
 }
