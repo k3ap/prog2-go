@@ -8,8 +8,6 @@ import java.util.Random;
 import java.util.Set;
 
 public class GridGo extends Grid {
-	private Set<Index> blackControl, blackPrisoners;
-	private Set<Index> whiteControl, whitePrisoners;
 	protected int prevState, prevPrevState;
 	/**
 	 * Whether black / white passed in the previous turn.
@@ -31,10 +29,6 @@ public class GridGo extends Grid {
 		this.whitePass = whitePass;
 		this.prevState = prevState;
 		this.prevPrevState = prevPrevState;
-		this.blackControl = new HashSet<>();
-		this.whiteControl = new HashSet<>();
-		this.blackPrisoners = new HashSet<>();
-		this.whitePrisoners = new HashSet<>();
 		blackCaptured = whiteCaptured = 0;
 	}
 
@@ -43,8 +37,6 @@ public class GridGo extends Grid {
 	}
 	
 	public void captureComponentsOf(FieldColor player) {
-    	assert !player.equals(FieldColor.EMPTY);
-    	
     	Index[] captured = libertylessFields(player);
     	if (player.equals(FieldColor.BLACK))
 			blackCaptured += captured.length;
@@ -54,10 +46,16 @@ public class GridGo extends Grid {
     	for (Index idx : captured) {
 			grid[idx.i()][idx.j()] = FieldColor.EMPTY;
 		}
-		graphSearch.runAll();
+    	if (captured.length > 0)
+    		graphSearch.runAll();
 	}
 	
 	public int calculatePoints(FieldColor color) {
+		Map<Index, FieldColor> zoneControl = getZoneConrol();
+		Set<Index> blackPrisoners = calculatePrisonersOf(FieldColor.BLACK, zoneControl);
+		Set<Index> whitePrisoners = calculatePrisonersOf(FieldColor.WHITE, zoneControl);
+		Set<Index> blackControl = calculateControlledZones(FieldColor.BLACK, zoneControl);
+		Set<Index> whiteControl = calculateControlledZones(FieldColor.WHITE, zoneControl);
 		int score = 0;
 		switch(color) {
 		case BLACK:
@@ -199,8 +197,8 @@ public class GridGo extends Grid {
 			// Who is the controller of the zone (connected component of FieldColor.EMPTYs)
 			// that this liberty is in?
 			Index neighborComponent = connectedComponents.getRepresentative(liberty);
-			FieldColor liberyZoneController = zoneControl.get(neighborComponent);
-			if (liberyZoneController.equals(colorOfField(idx)) || liberyZoneController.equals(FieldColor.EMPTY)) {
+			FieldColor libertyZoneController = zoneControl.get(neighborComponent);
+			if (libertyZoneController.equals(colorOfField(idx)) || libertyZoneController.equals(FieldColor.EMPTY)) {
 				// if the component of idx has a liberty in a friendly or neutral zone, then
 				// it is less likely to be a prisoner
 				friendly++;
@@ -211,15 +209,10 @@ public class GridGo extends Grid {
 			}
 		}
 		
-		if (friendly >= enemy) {
-			return false;
-		}
-		else {
-			return true;
-		}
+		return enemy > friendly;
 	}
 	
-	private Set<Index> calculateControlledZones(PlayerColor player, Map<Index, FieldColor> zoneControl) {
+	private Set<Index> calculateControlledZones(FieldColor player, Map<Index, FieldColor> zoneControl) {
 		Set<Index> controlled = new HashSet<Index>();
 		
 		for (int i = 0; i < height; i++) {
@@ -228,7 +221,7 @@ public class GridGo extends Grid {
 				if (!colorOfField(idx).equals(FieldColor.EMPTY))
 					continue;
 				Index component = connectedComponents.getRepresentative(idx);
-				if (zoneControl.get(component).equals(player.field())) {
+				if (zoneControl.get(component).equals(player)) {
 					controlled.add(idx);
 				}
 			}
@@ -237,16 +230,22 @@ public class GridGo extends Grid {
 		return controlled;
 	}
 
-	private Set<Index> calculatePrisonersOf(PlayerColor player, Map<Index, FieldColor> zoneControl) {
+	private Set<Index> calculatePrisonersOf(FieldColor player, Map<Index, FieldColor> zoneControl) {
 		Set<Index> prisoners = new HashSet<Index>();
+		
+		for (Index component : connectedComponents.getToplevels()) {
+			if (!colorOfField(component).equals(player))
+				continue;
+			if (isPrisoner(component, zoneControl))
+				prisoners.add(component);
+		}
 		
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				Index idx = new Index(i, j);
-				if (!colorOfField(idx).equals(player.field()))
+				if (!colorOfField(idx).equals(player))
 					continue;
-				Index component = connectedComponents.getRepresentative(idx);
-				if (isPrisoner(component, zoneControl))
+				if (prisoners.contains(connectedComponents.getRepresentative(idx)))
 					prisoners.add(idx);
 				
 			}
@@ -257,11 +256,6 @@ public class GridGo extends Grid {
 	@Override
 	public void placeColor(Index idx, FieldColor color) {
 		super.placeColor(idx, color);
-		Map<Index, FieldColor> zoneControl = getZoneConrol();
-		blackPrisoners = calculatePrisonersOf(PlayerColor.BLACK, zoneControl);
-		whitePrisoners = calculatePrisonersOf(PlayerColor.WHITE, zoneControl);
-		blackControl = calculateControlledZones(PlayerColor.BLACK, zoneControl);
-		whiteControl = calculateControlledZones(PlayerColor.WHITE, zoneControl);
 		prevPrevState = prevState;
 		prevState = hash2D(grid);
 	}
@@ -275,15 +269,7 @@ public class GridGo extends Grid {
 	 * @return The empty fields controlled by player.
 	 */
 	public Set<Index> controlledZones(FieldColor fieldColor) {
-		switch (fieldColor) {
-		case BLACK:
-			return blackControl;
-		case WHITE:
-			return whiteControl;
-		default:
-			break;
-		}
-		return null;
+		return calculateControlledZones(fieldColor, getZoneConrol());
 	}
 
 	/**
@@ -293,15 +279,7 @@ public class GridGo extends Grid {
 	 * @return The idicies of all of player's prisoners.
 	 */
 	public Set<Index> prisonersOf(FieldColor player) {
-		switch (player) {
-		case BLACK:
-			return blackPrisoners;
-		case WHITE:
-			return whitePrisoners;
-		default:
-			break;
-		}
-		return null;
+		return calculatePrisonersOf(player, getZoneConrol());
 	}
 	
 	public static final Random RNG = new Random(); 

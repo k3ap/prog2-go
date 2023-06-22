@@ -65,9 +65,6 @@ public class MCTSTreeNode {
 		this.children = new TreeMap<>();
 		this.score = 0;
 		this.numPlays = 0;
-		
-		// TODO: what if this was game end?
-		
 		this.fillChildren();
 	}
 
@@ -93,7 +90,6 @@ public class MCTSTreeNode {
 	 * @return How many points this node's player scored in the expansion 
 	 */
 	private double selectAndExpand() {
-		
 		if (!unvisitedMoveIterator.hasNext()) {
 			// this is a fully expanded node
 			double delta = findBestAndSelect();
@@ -135,14 +131,34 @@ public class MCTSTreeNode {
 	 * @return The score granted to this node
 	 */
 	private double simulate() {
+		long ts, te;
+		long t1=0, t2=0, t3=0;
 		PlayerColor currentPlayer = player;
+		ts = System.nanoTime();
 		GridGo grid = (GridGo) state.deepcopy();
+		te = System.nanoTime();
+		System.out.println("Delta for deepcopy: " + (te-ts));
 		for (int moveNumber = 0; moveNumber < SIMULATION_DEPTH; moveNumber++) {
+			ts = System.nanoTime();
 			Index move = grid.getRandomEmptyField();
+			te = System.nanoTime();
+			t1 += te - ts;
+			
+			ts = System.nanoTime();
 			grid.placeColor(move, currentPlayer.field());
+			te = System.nanoTime();
+			t2 += te - ts;
+			
 			currentPlayer = currentPlayer.next();
+			
+			ts = System.nanoTime();
 			grid.captureComponentsOf(currentPlayer.field());
+			te = System.nanoTime();
+			t3 += te - ts;
 		}
+		System.out.println("Delta for getRandomEmptyField: " + t1);
+		System.out.println("Delta for placeColor: " + t2);
+		System.out.println("Delta for captureComponentsOf: " + t3);
 		// because of the komi rule, there are no ties
 		double delta = grid.hasColorLost(player.field()) ? 0 : 1;
 		numPlays++;
@@ -168,6 +184,11 @@ public class MCTSTreeNode {
 		Poteza best = null;
 		int bestNum = -1;
 		for (Poteza move : children.keySet()) {
+			if (children.get(move) == null) {
+				// this is a very bad situation
+				// we have fewer runs than possible moves
+				break;
+			}
 			if (best == null || children.get(move).numPlays > bestNum) {
 				best = move;
 				bestNum = children.get(move).numPlays;
