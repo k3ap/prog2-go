@@ -1,8 +1,10 @@
 package logika;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -293,6 +295,17 @@ public class GridGo extends Grid {
 			ret = new Index(RNG.nextInt(height), RNG.nextInt(width));
 		} while (!colorOfField(ret).equals(FieldColor.EMPTY));
 		return ret;
+	}
+	
+	public List<Index> allEmptyFields() {
+		List<Index> retval = new ArrayList<>();
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				if (grid[i][j].equals(FieldColor.EMPTY))
+					retval.add(new Index(i, j));
+			}
+		}
+		return retval;
 	}
 
 }

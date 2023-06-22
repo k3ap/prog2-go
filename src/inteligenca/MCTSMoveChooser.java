@@ -9,12 +9,6 @@ import splosno.Poteza;
  * Only available for GO.
  */
 public class MCTSMoveChooser extends MoveChooser {
-	
-	/**
-	 * The number of runs the algorithm performs.
-	 * Should probably be dynamic.
-	 */
-	private final int NUM_RUNS = 1000;
 
 	@Override
 	public String name() {
@@ -23,10 +17,12 @@ public class MCTSMoveChooser extends MoveChooser {
 
 	@Override
 	public Poteza chooseMove(Igra igra) {
-		MCTSTreeNode root = new MCTSTreeNode((GridGo) igra.grid, igra.playerTurn());
-		for (int i = 0; i < NUM_RUNS; i++) {
+		int simDepth = igra.grid.width() * igra.grid.height() / 4;
+		int numRuns = igra.grid.width() * igra.grid.height() * 2;
+		MCTSTreeNode root = new MCTSTreeNode((GridGo) igra.grid, igra.playerTurn(), simDepth);
+		for (int i = 0; i < numRuns; i++) {
 			root.singleRun();
-			System.out.format("Completed run %d of %d\n", i+1, NUM_RUNS);
+			System.out.format("Completed run %d of %d\n", i+1, numRuns);
 		}
 		return root.getBestMove();
 	}
