@@ -35,9 +35,14 @@ public class GridGo extends Grid {
 	}
 
 	public boolean consecutivePasses() {
+		// the game is over
 		return blackPass && whitePass;
 	}
 	
+	/**
+	 * Capture components of the given color with no liberties.
+	 * @param player The color of the components being removed, cannot be EMPTY.
+	 */
 	public void captureComponentsOf(FieldColor player) {
     	Index[] captured = libertylessFields(player);
     	if (player.equals(FieldColor.BLACK))
@@ -52,6 +57,13 @@ public class GridGo extends Grid {
     		graphSearch.runAll();
 	}
 	
+	/**
+	 * Calculate the points that the given player has,
+	 * Since points are stored as an integer white cannot receive 0.5 points, so
+	 * we round their points down and when black points == white points white wins.
+	 * @param color The color of the player whose points we're measuring, cannot be EMPTY.
+	 * @return The amount of points the player has.
+	 */
 	public int calculatePoints(FieldColor color) {
 		Map<Index, FieldColor> zoneControl = getZoneConrol();
 		Set<Index> blackPrisoners = calculatePrisonersOf(FieldColor.BLACK, zoneControl);
@@ -89,7 +101,7 @@ public class GridGo extends Grid {
 			return field.equals(FieldColor.WHITE);
 		}
 		// if blackPoints <= whitePoints
-		// again because of the komi rule white wins, black loses
+		// because of the komi rule white wins, black loses
 		return field.equals(FieldColor.BLACK);
 	}
 
@@ -105,6 +117,13 @@ public class GridGo extends Grid {
 		return newGrid;
 	}
 	
+	/**
+	 * Return a hash of a 2d array that takes the contents
+	 * of each field into account. If arr1.equals(arr2) then hash2D(arr1) == hash2D(arr2)
+	 * while the opposite is very unlikely.
+	 * @param arr 2d array.
+	 * @return The hash of the array.
+	 */
 	private int hash2D(Object[][] arr) {
 		int hash = 0;
 		for (Object[] line : arr) {
@@ -118,6 +137,7 @@ public class GridGo extends Grid {
 		if (!colorOfField(idx).equals(FieldColor.EMPTY))
 			return false; // this field is not empty
 		
+		// test that the move is not suicidal
 		GridGo g = (GridGo) deepcopy();
 		
 		boolean toReturn = true;
@@ -214,6 +234,12 @@ public class GridGo extends Grid {
 		return enemy > friendly;
 	}
 	
+	/**
+	 * Find all the fields controlled by the given player.
+	 * @param player The player.
+	 * @param zoneControl The output of getZoneControl()
+	 * @return A set of all the indices controlled by the player.
+	 */
 	private Set<Index> calculateControlledZones(FieldColor player, Map<Index, FieldColor> zoneControl) {
 		Set<Index> controlled = new HashSet<Index>();
 		
@@ -232,6 +258,12 @@ public class GridGo extends Grid {
 		return controlled;
 	}
 
+	/**
+	 * Find all the prisoners of the given color.
+	 * @param player The color of the prisoners.
+	 * @param zoneControl The output of getZoneControl()
+	 * @return A set of all the indices of prisoner stones of that color.
+	 */
 	private Set<Index> calculatePrisonersOf(FieldColor player, Map<Index, FieldColor> zoneControl) {
 		Set<Index> prisoners = new HashSet<Index>();
 		

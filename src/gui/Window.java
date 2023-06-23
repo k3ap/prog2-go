@@ -5,7 +5,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.LinkedList;
 
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
@@ -75,7 +74,7 @@ public class Window extends JFrame implements ActionListener {
 		grid.setConstraints(passButton, consButton);
 		passButton.setVisible(false);
 		add(passButton);
-		
+
 		
 		// Add the panel for games
 		panel = new Panel(1000, 600, this);
@@ -88,6 +87,7 @@ public class Window extends JFrame implements ActionListener {
 		grid.setConstraints(panel, consPanel);
 		add(panel);
 		
+		// add the table on the right with info about the game
 		infoTableScrollPane = new JScrollPane();
 		infoTable = new InfoTable();
 		infoTableScrollPane.setViewportView(infoTable.getTable());
@@ -101,7 +101,6 @@ public class Window extends JFrame implements ActionListener {
 		constTable.fill = GridBagConstraints.BOTH;
 		constTable.insets = new Insets(10, 10, 10, 10);
 		grid.setConstraints(infoTableScrollPane, constTable);
-		//infoTableScrollPane.setVisible(false);
 		add(infoTableScrollPane);
 		
 		// Add the menu bar, submenus and items
@@ -130,32 +129,11 @@ public class Window extends JFrame implements ActionListener {
 	}
 	
 	protected void writeMessage(String message) {
-		// use <html> and <br /> to break the text into multiple lines
-		int charsPerLine = (int) (getWidth() * 2 / fontSize);
-		if (charsPerLine <= 0) {
-			charsPerLine = 10;
-		}
-		
-		String[] words = message.split(" ");
-		LinkedList<String> lines = new LinkedList<String>();
-		lines.add(words[0]);
-		for (int i = 1; i < words.length; i++) {
-			if (lines.getLast().length() + words[i].length() > charsPerLine) {
-				lines.add(words[i]);
-			}
-			else {
-				lines.set(lines.size() - 1, lines.getLast() + " " + words[i]);
-			}
-		}
-		
-		String brokenMessage = "<html>";
-		for (int i = 0; i < lines.size(); i++) {
-			if (i != 0)
-				brokenMessage += "<br />";
-			brokenMessage += lines.get(i);
-		}
-		brokenMessage += "</html>";
-		statusBar.setText(brokenMessage);
+		// use <html> and <center> to break the text into multiple lines
+		// and center it
+		statusBar.setText(
+				"<html><center>" + message + "</center></html>"
+		);
 	}
 
 	/**
@@ -163,6 +141,7 @@ public class Window extends JFrame implements ActionListener {
 	 */
 	public void update() {
 		infoTable.updateTable(panel.getGame());
+		// set the visibility of the "new game" and "pass" buttons
 		if (panel.getGame() != null) {
 			if (panel.getGame().gameStatus().isWonGame()) {
 				// show the button for a new game if the current one is over
@@ -201,7 +180,7 @@ public class Window extends JFrame implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// A click on the menu bar at the top of the window.
+		// A click on the menu bar at the top of the window or on a button.
 		Object source = e.getSource();
 		if (source == newGame || source == newGameButton) {
 			if (newGame())
@@ -225,6 +204,10 @@ public class Window extends JFrame implements ActionListener {
 		update();
 	}
 	
+	/**
+	 * Start a new game.
+	 * @return true iff a new game was started.
+	 */
 	private boolean newGame() {
 		GameParams params = Popups.getGameChoice();
 		
@@ -236,10 +219,10 @@ public class Window extends JFrame implements ActionListener {
 			panel.newComComGame(params.ip(), this, params.size(), params.goGameType());
 			break;
 		case COMHUM:
-			panel.newComGame(params.gameType(), params.ip().i1(), this, params.size(), params.goGameType());
+			panel.newComGame(params.gameType(), params.ip().black(), this, params.size(), params.goGameType());
 			break;
 		case HUMCOM:
-			panel.newComGame(params.gameType(), params.ip().i2(), this, params.size(), params.goGameType());
+			panel.newComGame(params.gameType(), params.ip().white(), this, params.size(), params.goGameType());
 			break;
 		case HUMHUM:
 			panel.newHumHumGame(this, params.size(), params.goGameType());

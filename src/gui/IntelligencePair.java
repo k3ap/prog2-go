@@ -2,6 +2,10 @@ package gui;
 
 import inteligenca.Inteligenca;
 
-public record IntelligencePair(Inteligenca i1, Inteligenca i2) {
+/**
+ * Two intelligences (Inteligenca may also be a human) 
+ * that will play against each other.
+ */
+public record IntelligencePair(Inteligenca black, Inteligenca white) {
 
 }

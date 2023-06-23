@@ -60,7 +60,23 @@ public class ManagedGame {
 		}
 		outdatedValidity = false;
 		this.window = window;
-		handleType(managedGameType);
+		this.gameType = managedGameType;
+		// handle game type
+		switch (gameType) {
+		case HUMHUM:
+			status = MoveResult.PLAY;
+			break;
+		case HUMCOM:
+			status = MoveResult.PLAY; // it's the human's turn first
+			break;
+		case COMHUM:
+			status = MoveResult.WAIT; // it's the computer's turn first
+			getMoveFromIntelligence();
+			break;
+		case COMCOM:
+			comComLoop();
+			break;
+		}
 	}
 	
 	/**
@@ -78,27 +94,8 @@ public class ManagedGame {
 	 */
 	public void setIntelligences(IntelligencePair p) {
 		assert gameType.equals(GameType.COMCOM);
-		this.intelligence = p.i1();
-		this.intelligence2 = p.i2();
-	}
-
-	private void handleType(GameType gameType) {
-		this.gameType = gameType;
-		switch (gameType) {
-		case HUMHUM:
-			status = MoveResult.PLAY;
-			break;
-		case HUMCOM:
-			status = MoveResult.PLAY; // it's the human's turn first
-			break;
-		case COMHUM:
-			status = MoveResult.WAIT; // it's the computer's turn first
-			getMoveFromIntelligence();
-			break;
-		case COMCOM:
-			comComLoop();
-			break;
-		}
+		this.intelligence = p.black();
+		this.intelligence2 = p.white();
 	}
 
 	/**
@@ -131,6 +128,12 @@ public class ManagedGame {
 		outdatedValidity = true;
 	}
 
+	/**
+	 * Asynchronously choose a move with intelligence.
+	 * Once the move is chosen, play it in the game and update the status
+	 * to indicate it's the player's turn again. Since we have a pointer to
+	 * the window we can update it when we do that.
+	 */
 	private void getMoveFromIntelligence() {
 		SwingWorker<Poteza, Void> worker = new SwingWorker<Poteza, Void> () {
 			@Override
@@ -144,6 +147,8 @@ public class ManagedGame {
 				try {
 					sleeper.run();
 					move = get();
+					// If move took less time than the constant set for sleeper, we wait
+					// for sleeper to wake up.
 					sleeper.join();
 				}
 				catch (ExecutionException | InterruptedException e) {
@@ -160,7 +165,7 @@ public class ManagedGame {
 				}
 
 				game.odigraj(move);
-				status = winnerToGameStatus(game.winner());
+				status = winnerToGameStatus(game.winner()); // game.winner() can also be null
 				window.update();
 			}
 		};
@@ -247,6 +252,10 @@ public class ManagedGame {
 		}
 	}
 	
+	/**
+	 * Called when the perpetrator returns null.
+	 * @param perpetrator
+	 */
 	private void nullReturnError(Inteligenca perpetrator) {
 		// Returning null is an error on Intelligence's part.
 		System.out.println("Intelligence.getMove od " + perpetrator.ime() + " je vrnila null.");
@@ -331,6 +340,10 @@ public class ManagedGame {
 	public Index[] losingComponent() { return game.losingComponent(); }
 	public boolean isValid(Index idx) {
 		if (outdatedValidity) {
+			// This method is called to draw the shadow (transparent stone) when the mouse
+			// hovers over a field, so we cache the values to increase speed.
+			// This only matters in Go since checking if the move is suicidal takes a
+			// non-negligible amount of time.
 			for (int i = 0; i < height(); i++) {
 				for (int j = 0; j < width(); j++) {
 					validity[i][j] = game.isValid(new Index(i, j));
@@ -342,6 +355,10 @@ public class ManagedGame {
 		return validity[idx.i()][idx.j()];
 	}
 
+	/**
+	 * @param player
+	 * @return The amount stone the player has on the board.
+	 */
 	public int stoneCount(PlayerColor player) {
 		int count = 0;
 		for (int i = 0; i < game.height(); i++) {
@@ -352,6 +369,10 @@ public class ManagedGame {
 		}
 		return count;
 	}
+	/**
+	 * @param player
+	 * @return The amount of stones player has lost.
+	 */
 	public int captured(PlayerColor player) {
 		assert game.goGameType() == GoGameType.GO;
 		switch (player) {

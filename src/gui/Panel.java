@@ -22,13 +22,27 @@ import vodja.GameType;
 
 class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	private static final long serialVersionUID = 7693008210122811280L;
+	/**
+	 * The game being played.
+	 */
 	private ManagedGame game;
 	private Dimension dimensions;
+	/**
+	 * The style for drawing the board.
+	 */
 	public Style style;
+	/**
+	 * The parent window.
+	 */
 	private Window window;
+	/**
+	 * Hovering over a valid vertex draws a "shadow" (transparent) stone at it.
+	 */
 	private Index shadow;
+	/**
+	 * Coordinates of the top left edge of the board and the height / width of each square.
+	 */
 	private int leftEdge, topEdge, widthStep, heightStep, sideLength;
-	
 	/**
 	 * The size (in grid intersections) of the current game.
 	 * null if there is no game
@@ -100,7 +114,6 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		assert gridHeight > 1;
 		
 		// background
-		
 		g2.setBackground(style.background);
 		g2.clearRect(leftEdge - widthStep / 2, topEdge - heightStep / 2, gridWidth * widthStep, gridHeight * heightStep);
 
@@ -140,7 +153,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			}
 		}
 		
-		// last stone that was placed
+		// mark the last stone that was placed
 		if (game.lastMove() != null) {
 			if (!game.lastMove().isPass()) {
 				Index idx = new Index(game.lastMove());
@@ -165,6 +178,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			drawShadowStone(g2, shadow.i(), shadow.j(), game.playerTurn());
 		}
 		
+		// draw game status 
 		String prefix = "";
 		PlayerColor prevPlayer = game.playerTurn().next();
 		if (game.didPass(prevPlayer)) {
@@ -177,8 +191,6 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 				break;
 			}
 		}
-		
-		// draw game status
 		switch (game.gameStatus()) {
 		case INVALID:
 		case PLAY:
@@ -237,6 +249,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			break;
 		}
 		
+		// update the tool tip
 		MoveResult status = game.gameStatus();
 		if (status.canMakeMove() && game.goGameType() == GoGameType.GO) {
 			this.setToolTipText("Desni klik za izpust poteze.");
@@ -250,6 +263,9 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		}
 	}
 	
+	/**
+	 * Used in FC Go, highlights the component that was captured.
+	 */
 	private void highlightLoser(Graphics2D g2) {
 		Index[] loser = game.losingComponent();
 		g2.setColor(style.losingHighlight);
@@ -266,8 +282,8 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	/**
 	 * Draw a stone (colored circle) at the given coordinates. 
 	 * @param g2 Graphics on which to draw.
-	 * @param i grid index on which to draw the stone.
-	 * @param j grid index on the panel on which to draw the stone.
+	 * @param i grid index (row) on which to draw the stone.
+	 * @param j grid index (column) on which to draw the stone.
 	 * @param color Player color to draw the stone with.
 	 */
 	private void drawStone(Graphics2D g2, int i, int j, PlayerColor color) {
@@ -292,8 +308,8 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	 * Draw a shadow of a stone at the given coordinates.
 	 * A shadow is drawn when hovering over a valid spot for a stone.
 	 * @param g2 Graphics on which to draw.
-	 * @param i grid index on which to draw the stone.
-	 * @param j grid index on the panel on which to draw the stone.
+	 * @param i grid index (row) on which to draw the stone.
+	 * @param j grid index (column) on which to draw the stone.
 	 * @param color Player color to draw the stone with.
 	 */
 	private void drawShadowStone(Graphics2D g2, int i, int j, PlayerColor color) {
@@ -314,6 +330,9 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		drawAbstractStone(g2, i, j, center, edge);
 	}
 	
+	/**
+	 * @return The diameter a stone should be drawn with.
+	 */
 	private int stoneDiameter() {
 		return style.stoneDiameter * sideLength * 9 / 500 / gameSize;
 	}
@@ -323,7 +342,6 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	 */
 	private void drawAbstractStone(Graphics2D g2, int i, int j, Color center, Color edge) {
 		int d = stoneDiameter();
-		// sideLength is 500 if the window hasn't been resized
 		int y = topEdge + i * heightStep - d / 2;
 		int x = leftEdge + j * widthStep - d / 2;
 
@@ -333,9 +351,16 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		g2.drawOval(x, y, d, d);
 	}
 	
+	/**
+	 * Draw the mark (small circle) that indicates the latest stone
+	 * that was placed.
+	 * @param g2 The graphics on which to draw on.
+	 * @param i grid index (row) on which to draw the mark.
+	 * @param j grid index (column) on which to draw the mark.
+	 * @param color The color for the mark.
+	 */
 	private void drawMark(Graphics2D g2, int i, int j, Color color) {
-		int d = stoneDiameter() / 3;
-		// sideLength is 500 if the window hasn't been resized
+		int d = stoneDiameter() / 3; // mark is smaller that the stones
 		int y = topEdge + i * heightStep - d / 2;
 		int x = leftEdge + j * widthStep - d / 2;
 
@@ -347,8 +372,8 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	 * Draw a black or white cross symbolizing control over
 	 * an empty field.
 	 * @param g2 Graphics on which to draw.
-	 * @param i grid index on which to draw the cross.
-	 * @param j grid index on the panel on which to draw the cross.
+	 * @param i grid index (row) on which to draw the cross.
+	 * @param j grid index (column) on which to draw the cross.
 	 * @param color Player color to draw the cross with.
 	 */
 	private void markControl(Graphics2D g2, int i, int j, PlayerColor color) {
@@ -374,10 +399,10 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	}
 	
 	/**
-	 * Draw a black or white cross symbolizing a stone being a prisoner.
+	 * Draw a black or white plus symbolizing a stone being a prisoner.
 	 * @param g2 Graphics on which to draw.
-	 * @param i grid index on which to draw the cross.
-	 * @param j grid index on the panel on which to draw the cross.
+	 * @param i grid index (row) on which to draw the plus.
+	 * @param j grid index (column) on which to draw the plus.
 	 * @param color Player color to draw the cross with.
 	 */
 	private void markPrisoner(Graphics2D g2, int i, int j, PlayerColor color) {
@@ -402,6 +427,12 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		g2.drawLine(x, y - r, x, y + r);
 	}
 	
+	/**
+	 * Pares a Poteza object from coordinates on the panel.
+	 * @param x the x coordinate
+	 * @param y the y coordinate
+	 * @return The Poteza of the field at the given coordinates, null if the field is invalid.
+	 */
 	private Poteza moveFromXY(int x, int y) {
 		calculateDimensions();
 		
@@ -419,8 +450,6 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	 * Starts a new game with the type HUMHUM.
 	 */
 	protected void newHumHumGame(Window window, int gameSize, GoGameType gameType) {
-		// ManagedGame needs access to the window to update the board 
-		// once the computer has decided what to play
 		game = new ManagedGame(GameType.HUMHUM, window, gameType, gameSize);
 		this.gameSize = gameSize;
 		repaint();
@@ -432,8 +461,6 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	 * @param intelligence The intelligence playing.
 	 */
 	protected void newComGame(GameType type, Inteligenca intelligence, Window window, int gameSize, GoGameType gameType) {
-		// ManagedGame needs access to the window to update the board 
-		// once the computer has decided what to play
 		assert type == GameType.HUMCOM || type == GameType.COMHUM;
 		game = new ManagedGame(type, window, gameType, gameSize);
 		game.setIntelligence(intelligence);
@@ -446,14 +473,18 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	 * @param intelligences The pair of intelligences playing against each other.
 	 */
 	protected void newComComGame(IntelligencePair intelligences, Window window, int gameSize, GoGameType gameType) {
-		// ManagedGame needs access to the window to update the board
-		// once the computer has decided what to play
 		game = new ManagedGame(GameType.COMCOM, window, gameType, gameSize);
 		game.setIntelligences(intelligences);
 		this.gameSize = gameSize;
 		repaint();
 	}
 	
+	/**
+	 * Called when a game of Go is over.
+	 * Highlight which stones have been labeled as prisoners and which
+	 * empty fields have been labeled as controlled.
+	 * @param g2 The graphics on which to draw.
+	 */
 	private void drawControlAndPrisoners(Graphics2D g2) {
 		for (PlayerColor player : PlayerColor.values()) {
 			if (game.controlledZones(player) == null)
@@ -483,9 +514,14 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 			}
 			// otherwise leave move as null, FCGO has no passes
 		}
-		playMove(move);
+		playMove(move); // playMove(null) does nothing.
 	}
 	
+	/**
+	 * Play the given move on the board and update the window.
+	 * If move == null nothing happens.
+	 * @param move The move to be played.
+	 */
 	public void playMove(Poteza move) {
 		if (move != null) {
 			game.play(move);
@@ -498,8 +534,9 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	
 	@Override
 	public void mouseMoved(MouseEvent e) {
+		// draw a shadow stone when the mouse hovers over a valid field
+		// don't draw anything if the player can't make a move 
 		if (game == null) { return; }
-		// Ignore clicks if the player is not allowed to play a move.
 		if (!game.gameStatus().canMakeMove()) { return; }
 		
 		Poteza hoveredMaybe = moveFromXY(e.getX(), e.getY());
@@ -509,6 +546,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 		else {
 			Index hovered = new Index(hoveredMaybe);
 			if (game.isValid(hovered)) {
+				// paintComponent draws the shadow.
 				shadow = hovered;
 			}
 			else {
@@ -520,6 +558,7 @@ class Panel extends JPanel implements MouseListener, MouseMotionListener {
 	
 	@Override
 	public void mouseExited(MouseEvent e) {
+		// remove the shadow
 		shadow = null;
 		window.update();
 	}
