@@ -29,6 +29,9 @@ public abstract class Grid {
 		}
 	}
 	
+	/**
+	 * Graph search which fills the UFDS structure with components and liberties
+	 */
 	protected static class ComponentLibertySearch extends BreadthFirstSearch {
 
 		public ComponentLibertySearch(Grid grid, SearchData data) {
@@ -38,7 +41,6 @@ public abstract class Grid {
 
 		@Override
 		protected void entryAction(Index idx, Index startIdx) {
-			//System.out.format("entryAction at %d,%d with start %d,%d\n", idx.i(), idx.j(), startIdx.i(), startIdx.j());
 			// no need to fill out the set mapping here; we'll do that in noticeAction
 			grid.connectedComponents.insert(idx, new LibertiesSetMapping());
 			
@@ -129,6 +131,9 @@ public abstract class Grid {
 		return connectedComponents.isSameSet(idx1, idx2);
 	}
 	
+	/**
+	 * Search for a component with exactly n liberties and return them.
+	 */
 	protected Set<Index> NLibertiesComponent(FieldColor color, int n) {
 		for (Index idx : connectedComponents.getToplevels()) {
 			if (colorOfField(idx).equals(color) && connectedComponents.get(idx).liberties.size() == n) {
@@ -141,7 +146,7 @@ public abstract class Grid {
 	/**
      * Find any component that only has one liberty.
      * @param color The color we're interested in.
-     * @return The Index if the only liberty if such a component exists, null otherwise.
+     * @return The Index of the only liberty if such a component exists, null otherwise.
      */
     protected Index oneLibertyComponent(FieldColor color) {
     	Set<Index> noLiberties = NLibertiesComponent(color, 1);
@@ -161,18 +166,14 @@ public abstract class Grid {
 		// we need to do two things in this method:
 		// 1. reset the color in the grid
 		// 2. update the connectedComponents (UFDS) structure to reflect this change
-		
-		// updating the UFDS structure means we have to do two things:
-		// 1. put this node in the new component it is now in
-		// 2. remove it from the old component it was in
-		// we also need to maintain the structure's mapping (liberties)
+		//    this means putting the new stone in its correct component, and splitting other components
+		//    if needed (the placed stone might have been an articulation point
 		
 		FieldColor oldColor = grid[idx.i()][idx.j()];
 		grid[idx.i()][idx.j()] = color;
 		
 		// The component directly adjacent to the field we've just painted over may be invalidated
 		// by this, so we need to rerun the BFS
-		
 		graphSearch.data.clear();
 		graphSearch.run(idx);
 		
@@ -205,7 +206,7 @@ public abstract class Grid {
 			
 		} else if (color.equals(FieldColor.EMPTY)) {
 			
-			// this is probably unused
+			// this is used in the alphabeta estimator for FCGO
 			
 			// we need to add this field to any liberties it could be in
 			for (int didx = 0; didx < 4; didx++) {
@@ -239,8 +240,7 @@ public abstract class Grid {
 	public abstract boolean isValidForPlayer(Index idx, FieldColor player);
 	
 	/**
-	 * Finds all free fields.
-	 * @return A list of all free fields in the grid.
+	 * Finds all fields that the given player could place a stone upon.
 	 */
 	public List<Index> fieldsValidForPlayer(FieldColor player) {
 		ArrayList<Index> valid = new ArrayList<>();

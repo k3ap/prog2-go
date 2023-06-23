@@ -6,6 +6,10 @@ import logika.PlayerColor;
 @SuppressWarnings("serial")
 class InvalidWeightNumberException extends Exception {}
 
+/**
+ * An advanced grid estimator checking different properties of the
+ * grid to determine a better score estimation than simply counting liberties
+ */
 public class WeightedGridEstimator extends GridEstimator {
 	
 	private double myComponentNumberWeight = -0.2;
