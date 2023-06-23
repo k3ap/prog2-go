@@ -4,47 +4,54 @@ import logika.Igra;
 import splosno.KdoIgra;
 import splosno.Poteza;
 
+/**
+ * A container class for MoveChooser
+ */
 public class Inteligenca extends KdoIgra {
 	
-	private MoveChooser dolocevalec;
-	private boolean isHuman;
+	private MoveChooser moveChooser;
 	
 	/**
-	 * Konstruktor z določenim določevalcem poteze
-	 * @param dolocevalec
+	 * If this is set to true, the intelligence is just a placeholder
+	 * for a human player.
 	 */
-	public Inteligenca(MoveChooser dolocevalec) {
-		super(dolocevalec.name());
+	private boolean isHuman;
+	
+	public Inteligenca(MoveChooser chooser) {
+		super(chooser.name());
 		this.isHuman = false;
-		this.dolocevalec = dolocevalec;
+		this.moveChooser = chooser;
 	}
 	
 	/**
-	 * Konstruktor, ki uporablja najboljšega določevalca.
-	 * Je tu za namene tekmovanja.
+	 * The constructor to be used in the competition.
 	 */
 	public Inteligenca() {
 		this(new AlphaBetaFCMoveChooser(4, new WeightedGridEstimator()));
+		
+		// override the name (we don't want to be known as betago-alphabeta-4-weighted)
 		this.ime = "betago";
 	}
 	
 	/**
-	 * Inteligenca, brez dolocevalca z danim imenom.
-	 * @param ime Ime inteligence.
-	 * @param isHuman Če je ta inteligenca človek.
+	 * This is really a placeholder for a human player 
+	 * @param name An arbitrary name
+	 * @param isHuman Must be true.
 	 */
-	public Inteligenca(String ime, boolean isHuman) {
-		super(ime);
+	public Inteligenca(String name, boolean isHuman) {
+		super(name);
+		assert isHuman;
 		this.isHuman = isHuman;
-		this.dolocevalec = null;
+		this.moveChooser = null;
 	}
 	
 	public boolean isHuman() {
 		return this.isHuman;
 	}
 	
-	public Poteza izberiPotezo(Igra igra) {		
-		return dolocevalec.chooseMove(igra);
+	public Poteza izberiPotezo(Igra igra) {
+		assert !isHuman;
+		return moveChooser.chooseMove(igra);
 	}
 	
 	@Override

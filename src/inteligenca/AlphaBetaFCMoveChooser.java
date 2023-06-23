@@ -32,21 +32,32 @@ public class AlphaBetaFCMoveChooser extends MoveChooser {
 		return "betago-alphabeta-"+maxDepth+"-"+estimator.name;
 	}
 	
+	/**
+	 * Perform a recursive position estimation.
+	 * @param grid The current grid state
+	 * @param depth The current depth of the search tree
+	 * @param player The player whose turn it is
+	 * @param alpha
+	 * @param beta
+	 * @return A position estimation, with high values being better for the given player
+	 */
 	private double alphabetaEstimate(GridFirstCapture grid, int depth, PlayerColor player, double alpha, double beta) {
 		
+		// check if the game's concluded
 		if (grid.hasColorLost(player.next().field())) {
 			return INFINITY-depth;
 		} else if (grid.hasColorLost(player.field())) {
 			return -INFINITY+depth;
 		}
 		
+		// if we're deep enough in the tree, switch to the estimator
 		if (depth >= maxDepth) {
-			double e = estimator.estimateGrid(grid, player);
-			return e;
+			return estimator.estimateGrid(grid, player);
 		}
 		
+		// if we have forced moves, we play them immediately as
+		// there is nothing to be gained by checking other moves
 		Index forcedMove = grid.forcedMove(player.field());
-		
 		if (forcedMove != null) {
 			grid.placeColor(forcedMove, player.field());
 			double estimate = -alphabetaEstimate(grid, depth, player.next(), -beta, -alpha);
@@ -54,10 +65,14 @@ public class AlphaBetaFCMoveChooser extends MoveChooser {
 			return estimate;
 		}
 
+		// we now check the possible moves recursively
+		// we only check the "interesting" fields, whatever that might mean
 		Double bestValue = null;
-
 		List<Index> interesting = grid.interestingFields(player.field());
+		
+		// shuffle the list for performance reasons
 		Collections.shuffle(interesting);
+		
 		for (Index move : interesting) {
 			
 			grid.placeColor(move, player.field());
@@ -92,43 +107,39 @@ public class AlphaBetaFCMoveChooser extends MoveChooser {
        
         // check for forced moves
 		Index forced = ((GridFirstCapture)igra.grid).forcedMove(igra.playerTurn().field());
-		if (forced == null) {// there are no forced moves
-			
-			Poteza best = null;
-			double bestEst = 0;
-			double alpha = -INFINITY;
-			double beta = INFINITY;
-			
-			// copy the grid to be used for move determining
-			GridFirstCapture newGrid = (GridFirstCapture) igra.grid.deepcopy();
-			
-			// find interesting moves
-			var interesting = igra.interestingMoves();
-			Collections.shuffle(interesting);
-			for (Poteza poteza : interesting) {
-				
-				// play the given move and recursievely estimate outcome
-				
-				newGrid.placeColor(new Index(poteza), igra.playerTurn().field());
-				
-				double estimate = 
-					-alphabetaEstimate(newGrid, 1, igra.playerTurn().next(), -beta, -alpha);
-				
-				// we should now undo the change
-				newGrid.placeColor(new Index(poteza), FieldColor.EMPTY);
-				
-				if (best == null || bestEst < estimate) {
-					best = poteza;
-					bestEst = estimate;
-				}
-				
-				if (alpha < estimate)
-					alpha = estimate;
-			}
-			return best;
-		} else {
+		if (forced != null)
 			return forced.poteza();
+		
+			
+		Poteza best = null;
+		double bestEst = 0;
+		double alpha = -INFINITY;
+		double beta = INFINITY;
+			
+		// copy the grid to be used for move determining
+		// we only do this once per call to chooseMove, and use the copy
+		// in the recursive search, modifying it in-place
+		GridFirstCapture newGrid = (GridFirstCapture) igra.grid.deepcopy();
+
+		var interesting = igra.interestingMoves();
+		Collections.shuffle(interesting);
+		for (Poteza poteza : interesting) {
+			newGrid.placeColor(new Index(poteza), igra.playerTurn().field());
+			
+			double estimate = 
+				-alphabetaEstimate(newGrid, 1, igra.playerTurn().next(), -beta, -alpha);
+
+			newGrid.placeColor(new Index(poteza), FieldColor.EMPTY);
+
+			if (best == null || bestEst < estimate) {
+				best = poteza;
+				bestEst = estimate;
+			}
+
+			if (alpha < estimate)
+				alpha = estimate;
 		}
+		return best;
 	}
 
 }

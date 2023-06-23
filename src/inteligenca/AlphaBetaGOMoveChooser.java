@@ -11,6 +11,8 @@ import splosno.Poteza;
 
 /**
  * Move chooser for GO using the alphabeta algorithm.
+ * This is a simpler algorithm than alphabeta for FCGO, largely because
+ * of the lack of forced moves.
  */
 public class AlphaBetaGOMoveChooser extends MoveChooser {
 	private int maxDepth;
@@ -31,6 +33,8 @@ public class AlphaBetaGOMoveChooser extends MoveChooser {
 	
 	private double alphabetaEstimate(GridGo grid, int depth, PlayerColor player, double alpha, double beta) {
 		
+		// the only way a game can end is with two consecutive passes;
+		// if that happened, we just check who won
 		if (grid.consecutivePasses()) {
 			if (grid.hasColorLost(player.field())) {
 				return -INFINITY;
@@ -44,11 +48,13 @@ public class AlphaBetaGOMoveChooser extends MoveChooser {
 		}
 
 		Double bestValue = null;
-
 		List<Index> interesting = grid.interestingFields(player.field());
 		Collections.shuffle(interesting);
+		
 		for (Index move : interesting) {
 			
+			// we can't do much better than copying the grid at every step,
+			// as placing a color can have major consequences because of capturing
 			GridGo newGrid = (GridGo) grid.deepcopy();
 			
 			newGrid.placeColor(move, player.field());
@@ -75,6 +81,7 @@ public class AlphaBetaGOMoveChooser extends MoveChooser {
 			grid.whitePass = true;
 			break;
 		}
+		// no need to copy the grid here, as we'll discard it immediately afterward
 		double value = -alphabetaEstimate(grid, depth+1, player.next(), -beta, -alpha);
 		if (value > bestValue)
 			bestValue = value;
@@ -89,7 +96,6 @@ public class AlphaBetaGOMoveChooser extends MoveChooser {
 		double alpha = -INFINITY;
 		double beta = INFINITY;
 
-		// find interesting moves
 		var interesting = igra.interestingMoves();
 		Collections.shuffle(interesting);
 		for (Poteza poteza : interesting) {

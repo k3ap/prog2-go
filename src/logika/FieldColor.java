@@ -29,6 +29,7 @@ public enum FieldColor {
 		case WHITE:
 			return BLACK;
 		case EMPTY:
+			assert false;
 			break;
 		}
 		return null;

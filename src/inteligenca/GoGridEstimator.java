@@ -4,6 +4,10 @@ import logika.Grid;
 import logika.GridGo;
 import logika.PlayerColor;
 
+/**
+ * An elementary grid estimator for GO.
+ * Checks the difference in points if the game were to end at this state.
+ */
 public class GoGridEstimator extends GridEstimator {
 
 	public GoGridEstimator() {
